@@ -6,8 +6,8 @@ from telegram.ext import CommandHandler, Updater
 app = Flask(__name__)
 
 # Токены
-TELEGRAM_TOKEN = 'ТВОЙ_ТЕЛЕГРАМ_ТОКЕН'
-SHOP_API_KEY = 'ТВОЙ_API_КЛЮЧ_МАГАЗИНА'
+TELEGRAM_TOKEN = 7210822073:AAFM7PAj5D9PEJrvwArF8rSaU4FqsyT-3ns
+SHOP_API_KEY = WWH15wOAGd0PwdBxGLc5nr2X0YGg0ALqXzbRUmpUoyqcpyXNs1RcyL1Hh1XUAKgbd4vmSKfSIrhA4lF4bdCais1F6WziIbcFBjmpzbCYst0Pz11Dyg0wvUrABdKPRlWz4Bd5ZNQD7wd8tNcJALBWQKmCi1kLcUtITtJaJLvAK2zb6bAs4bcxs6cWckd7LQdidT52hLU0xhZm3HXoSa3IrILHba0rSTwnqyCTe7DaPVlbssCUiSmUnJhHbtEMYySG
 
 # Создание бота
 bot = Bot(token=TELEGRAM_TOKEN)
