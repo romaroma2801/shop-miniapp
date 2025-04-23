@@ -1,3 +1,4 @@
+import asyncio
 from telegram import Update, ext
 from flask import Flask, render_template
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackContext, filters
@@ -48,14 +49,18 @@ async def main():
     # Запуск бота
     await application.run_polling()
 
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
-
 # Запуск Flask-приложения
 @app.route("/")
 def index():
     return render_template("index.html")
 
+# Для асинхронного запуска Flask и Telegram-бота в одном цикле событий
 if __name__ == "__main__":
-    app.run(debug=True)
+    loop = asyncio.get_event_loop()
+
+    # Запуск Flask-приложения в фоновом потоке
+    loop.create_task(main())
+
+    # Запуск Flask-сервера
+    app.run(debug=True, use_reloader=False)  # use_reloader=False для предотвращения повторного запуска
+
