@@ -1,6 +1,6 @@
+from telegram import Update, ext
 from flask import Flask, render_template
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
 import requests
 import config
 
@@ -12,11 +12,11 @@ def start(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
     update.message.reply_html(
         rf'Привет {user.mention_html()}! Добро пожаловать в наш магазин.',
-        reply_markup=ReplyKeyboardMarkup([['Запустить приложение']], one_time_keyboard=True),
+        reply_markup=ext.ReplyKeyboardMarkup([['Запустить приложение']], one_time_keyboard=True),
     )
 
 def show_main_menu(update: Update, context: CallbackContext):
-    reply_markup = ReplyKeyboardMarkup([
+    reply_markup = ext.ReplyKeyboardMarkup([
         ['Адреса магазинов', 'Каталог товаров'],
         ['Оставить отзыв', 'Контакты'],
         ['Вакансии', 'Акции']
@@ -42,7 +42,7 @@ def main():
 
     # Регистрируем команды
     dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, show_main_menu))
+    dispatcher.add_handler(MessageHandler(ext.Filters.text & ~ext.Filters.command, show_main_menu))
 
     updater.start_polling()
     updater.idle()
