@@ -1,34 +1,59 @@
-from flask import Flask, jsonify, request
+from flask import Flask, render_template
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 import requests
-from telegram import Bot, Update
-from telegram.ext import CommandHandler, Updater
+import config
 
+# Инициализация Flask-приложения
 app = Flask(__name__)
 
-# Токены
-TELEGRAM_TOKEN = 7210822073:AAFM7PAj5D9PEJrvwArF8rSaU4FqsyT-3ns
-SHOP_API_KEY = WWH15wOAGd0PwdBxGLc5nr2X0YGg0ALqXzbRUmpUoyqcpyXNs1RcyL1Hh1XUAKgbd4vmSKfSIrhA4lF4bdCais1F6WziIbcFBjmpzbCYst0Pz11Dyg0wvUrABdKPRlWz4Bd5ZNQD7wd8tNcJALBWQKmCi1kLcUtITtJaJLvAK2zb6bAs4bcxs6cWckd7LQdidT52hLU0xhZm3HXoSa3IrILHba0rSTwnqyCTe7DaPVlbssCUiSmUnJhHbtEMYySG
+# Инициализация бота
+def start(update: Update, context: CallbackContext) -> None:
+    user = update.effective_user
+    update.message.reply_html(
+        rf'Привет {user.mention_html()}! Добро пожаловать в наш магазин.',
+        reply_markup=ReplyKeyboardMarkup([['Запустить приложение']], one_time_keyboard=True),
+    )
 
-# Создание бота
-bot = Bot(token=TELEGRAM_TOKEN)
+def show_main_menu(update: Update, context: CallbackContext):
+    reply_markup = ReplyKeyboardMarkup([
+        ['Адреса магазинов', 'Каталог товаров'],
+        ['Оставить отзыв', 'Контакты'],
+        ['Вакансии', 'Акции']
+    ], resize_keyboard=True)
 
-@app.route('/')
-def home():
-    return "Hello, welcome to the shop mini app!"
+    update.message.reply_text('Выберите опцию:', reply_markup=reply_markup)
 
-@app.route('/start', methods=['POST'])
-def start():
-    json_str = request.get_data().decode("UTF-8")
-    update = Update.de_json(json_str, bot)
-    dispatcher = Updater(token=TELEGRAM_TOKEN, use_context=True).dispatcher
-    dispatcher.process_update(update)
-    return "OK"
+def handle_catalog(update: Update, context: CallbackContext):
+    # Здесь будет логика для отображения категорий товаров
+    pass
 
-def get_shop_info():
-    # Здесь можно использовать API магазина для получения информации
-    response = requests.get('https://api.shop.com/addresses', headers={'Authorization': f'Bearer {SHOP_API_KEY}'})
-    return response.json()
+def handle_address(update: Update, context: CallbackContext):
+    # Здесь будет логика для отображения адресов магазинов
+    pass
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+def handle_review(update: Update, context: CallbackContext):
+    # Здесь будет логика для обработки отзывов
+    pass
 
+def main():
+    updater = Updater(config.TELEGRAM_API_TOKEN)
+    dispatcher = updater.dispatcher
+
+    # Регистрируем команды
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, show_main_menu))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == "__main__":
+    main()
+
+# Запуск Flask-приложения
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+if __name__ == "__main__":
+    app.run(debug=True)
