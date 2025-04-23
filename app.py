@@ -62,5 +62,11 @@ if __name__ == "__main__":
     loop.create_task(main())
 
     # Запуск Flask-сервера
-    app.run(debug=True, use_reloader=False)  # use_reloader=False для предотвращения повторного запуска
+    import os
+
+# Получаем порт из переменной окружения, установленной на Render
+    port = int(os.environ.get("PORT", 5000))
+
+    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
+  # use_reloader=False для предотвращения повторного запуска
 
