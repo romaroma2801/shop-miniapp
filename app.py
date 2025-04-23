@@ -1,6 +1,6 @@
 from telegram import Update, ext
 from flask import Flask, render_template
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackContext, filters
 import requests
 import config
 
@@ -8,47 +8,49 @@ import config
 app = Flask(__name__)
 
 # Инициализация бота
-def start(update: Update, context: CallbackContext) -> None:
+async def start(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
-    update.message.reply_html(
+    await update.message.reply_html(
         rf'Привет {user.mention_html()}! Добро пожаловать в наш магазин.',
         reply_markup=ext.ReplyKeyboardMarkup([['Запустить приложение']], one_time_keyboard=True),
     )
 
-def show_main_menu(update: Update, context: CallbackContext):
+async def show_main_menu(update: Update, context: CallbackContext):
     reply_markup = ext.ReplyKeyboardMarkup([
         ['Адреса магазинов', 'Каталог товаров'],
         ['Оставить отзыв', 'Контакты'],
         ['Вакансии', 'Акции']
     ], resize_keyboard=True)
 
-    update.message.reply_text('Выберите опцию:', reply_markup=reply_markup)
+    await update.message.reply_text('Выберите опцию:', reply_markup=reply_markup)
 
-def handle_catalog(update: Update, context: CallbackContext):
+async def handle_catalog(update: Update, context: CallbackContext):
     # Здесь будет логика для отображения категорий товаров
     pass
 
-def handle_address(update: Update, context: CallbackContext):
+async def handle_address(update: Update, context: CallbackContext):
     # Здесь будет логика для отображения адресов магазинов
     pass
 
-def handle_review(update: Update, context: CallbackContext):
+async def handle_review(update: Update, context: CallbackContext):
     # Здесь будет логика для обработки отзывов
     pass
 
-def main():
-    updater = Updater(config.TELEGRAM_API_TOKEN)
-    dispatcher = updater.dispatcher
+# Инициализация Application и диспетчера
+async def main():
+    # Создание объекта Application с токеном
+    application = Application.builder().token(config.TELEGRAM_API_TOKEN).build()
 
-    # Регистрируем команды
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(ext.Filters.text & ~ext.Filters.command, show_main_menu))
+    # Регистрируем обработчики
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, show_main_menu))
 
-    updater.start_polling()
-    updater.idle()
+    # Запуск бота
+    await application.run_polling()
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())
 
 # Запуск Flask-приложения
 @app.route("/")
