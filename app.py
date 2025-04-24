@@ -1,16 +1,6 @@
-import os
-from flask import Flask, render_template
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import config
-
-# Инициализация Flask-приложения
-app = Flask(__name__)
-
-# Главная страница веб-приложения
-@app.route("/")
-def index():
-    return render_template("index.html")
 
 # Функция для команды /start в Telegram
 def start(update: Update, context: CallbackContext) -> None:
@@ -39,12 +29,5 @@ def main():
     updater.start_polling()
     updater.idle()
 
-if __name__ == "__main__":
-    # Получаем порт из переменной окружения (для Render)
-    port = int(os.environ.get("PORT", 5000))
-    
-    # Запуск Flask-приложения
-    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
-    
-    # Запуск Telegram-бота в фоновом режиме
+if __name__ == '__main__':
     main()
