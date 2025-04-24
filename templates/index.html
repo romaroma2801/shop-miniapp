@@ -1,22 +1,55 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мини-приложение магазина</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Мини-приложение</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="header">
-        <h1>Добро пожаловать в наш магазин</h1>
+    <h1>Добро пожаловать!</h1>
+    <div id="menu">
+        <button onclick="showSection('addresses')">Адреса магазинов</button>
+        <button onclick="showSection('catalog')">Каталог товаров</button>
+        <button onclick="showSection('review')">Оставить отзыв</button>
+        <button onclick="showSection('contacts')">Контакты</button>
+        <button onclick="showSection('jobs')">Вакансии</button>
+        <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <div class="content">
-        <p>Выберите категорию:</p>
-        <button class="button">Каталог товаров</button>
-        <button class="button">Акции</button>
-        <button class="button">Контакты</button>
-    </div>
+    <div id="content"></div>
+
+    <script>
+        // Проверка initData
+        if (!window.Telegram?.WebApp) {
+            document.body.innerHTML = "Ошибка: откройте через Telegram!";
+        }
+
+        // Функция для загрузки данных
+        async function loadData(url) {
+            const response = await fetch(`/api/${url}`);
+            return await response.json();
+        }
+
+        // Пример логики для адресов магазинов
+        async function showSection(section) {
+            const content = document.getElementById('content');
+            
+            if (section === 'addresses') {
+                const regions = await loadData('regions');
+                content.innerHTML = `
+                    <h3>Выберите область:</h3>
+                    <select onchange="loadCities(this.value)">
+                        ${regions.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                    </select>
+                `;
+            }
+            // Добавьте остальные секции аналогично
+        }
+
+        // Пример загрузки городов
+        async function loadCities(regionId) {
+            const cities = await loadData(`cities/${regionId}`);
+            // Отобразите города и логику выбора магазина
+        }
+    </script>
 </body>
 </html>
-
