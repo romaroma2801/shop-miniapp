@@ -58,9 +58,10 @@ body {
     width: 100%;
     background: #ff0000; /* Красный фон */
     color: white;
-    padding: 30px; /* Увеличить отступы */
+    padding: 20px; /* Уменьшить отступы */
     display: flex;
     justify-content: space-around;
+    height: 80px; /* Уменьшить высоту нижнего меню */
 }
 
 .footer button {
