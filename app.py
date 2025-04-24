@@ -4,10 +4,13 @@ import os
 import requests
 
 app = Flask(__name__)
-CORS(app, origins=["https://shop-miniapp.onrender.com"])
+CORS(app, origins=[os.getenv("TELEGRAM_WEB_APP_URL")])
 
 SHOP_API_KEY = os.getenv("SHOP_API_KEY", "WWH15wOAGd0PwdBxGLc5nr2X0YGg0ALqXzbRUmpUoyqcpyXNs1RcyL1Hh1XUAKgbd4vmSKfSIrhA4lF4bdCais1F6WziIbcFBjmpzbCYst0Pz11Dyg0wvUrABdKPRlWz4Bd5ZNQD7wd8tNcJALBWQKmCi1kLcUtITtJaJLvAK2zb6bAs4bcxs6cWckd7LQdidT52hLU0xhZm3HXoSa3IrILHba0rSTwnqyCTe7DaPVlbssCUiSmUnJhHbtEMYySG")
 
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 # Пример эндпоинта для получения областей
 @app.route('/api/regions', methods=['GET'])
 def get_regions():
