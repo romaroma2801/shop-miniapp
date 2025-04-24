@@ -28,20 +28,20 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 20px;
+    gap: 20px; /* Увеличить расстояние между кнопками */
+    padding: 40px; /* Увеличить отступы */
 }
 
 .menu-vertical button {
-    padding: 20px 40px; /* Увеличить высоту и ширину кнопок */
+    padding: 30px 60px; /* Увеличить высоту и ширину кнопок */
     border: none;
-    border-radius: 10px; /* Большие радиусы скругления */
+    border-radius: 15px; /* Большие радиусы скругления */
     background: #ff0000; /* Красный фон */
     color: white;
     cursor: pointer;
-    font-size: 24px; /* Увеличить размер текста */
+    font-size: 30px; /* Увеличить размер текста */
     width: 90%; /* Занимать 90% ширины экрана */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Более заметная тень */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Более заметная тень */
 }
 
 .content {
@@ -55,7 +55,7 @@ body {
     width: 100%;
     background: #ff0000; /* Красный фон */
     color: white;
-    padding: 10px;
+    padding: 20px; /* Увеличить отступы */
     display: flex;
     justify-content: space-around;
 }
@@ -71,30 +71,30 @@ body {
 }
 
 .footer img {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
 }
 
 .cart-button {
     position: relative;
     overflow: hidden;
     border-radius: 50%;
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень вокруг кнопки */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Тень вокруг кнопки */
 }
 
 .cart-button::before {
     content: '';
     position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    border: 2px solid white; /* Белая обводка */
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+    border: 3px solid white; /* Белая обводка */
     border-radius: 50%;
 }
 
