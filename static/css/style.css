@@ -52,7 +52,7 @@ body {
     min-height: 60vh;
 }
 
-.footer-menu {
+.footer-buttons {
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -61,10 +61,10 @@ body {
     padding: 20px; /* Уменьшить отступы */
     display: flex;
     justify-content: space-around;
-    height: 80px; /* Уменьшить высоту нижнего меню */
+    height: 80px; /* Установить фиксированную высоту */
 }
 
-.footer-menu button {
+.footer-buttons button {
     background: transparent;
     border: none;
     color: white;
@@ -74,9 +74,20 @@ body {
     gap: 5px;
 }
 
-.footer-menu img {
+.footer-buttons img {
     width: 60px;
     height: 60px;
+}
+
+.cart-button-container {
+    position: fixed;
+    bottom: 80px; /* Сдвигаем на высоту первого блока */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px; /* Высота на четверть больше первого блока */
+    background: #ff0000; /* Красный фон */
 }
 
 .cart-button {
@@ -94,11 +105,11 @@ body {
 .cart-button::before {
     content: '';
     position: absolute;
-    top: -30px;
-    left: -30px;
-    right: -30px;
-    bottom: -30px;
-    border: 4px solid white; /* Белая обводка */
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    border: 3px solid white; /* Белая обводка */
     border-radius: 50%;
 }
 
