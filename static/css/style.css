@@ -33,15 +33,15 @@ body {
 }
 
 .menu-vertical button {
-    padding: 15px 20px; /* Увеличить высоту кнопок */
+    padding: 20px 40px; /* Увеличить высоту и ширину кнопок */
     border: none;
-    border-radius: 5px;
+    border-radius: 10px; /* Большие радиусы скругления */
     background: #ff0000; /* Красный фон */
     color: white;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 24px; /* Увеличить размер текста */
     width: 90%; /* Занимать 90% ширины экрана */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Более заметная тень */
 }
 
 .content {
@@ -71,8 +71,31 @@ body {
 }
 
 .footer img {
-    width: 24px;
-    height: 24px;
+    width: 40px;
+    height: 40px;
+}
+
+.cart-button {
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень вокруг кнопки */
+}
+
+.cart-button::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border: 2px solid white; /* Белая обводка */
+    border-radius: 50%;
 }
 
 /* Стили для контента */
