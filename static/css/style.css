@@ -52,7 +52,7 @@ body {
     min-height: 60vh;
 }
 
-.footer {
+.footer-menu {
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -64,7 +64,7 @@ body {
     height: 80px; /* Уменьшить высоту нижнего меню */
 }
 
-.footer button {
+.footer-menu button {
     background: transparent;
     border: none;
     color: white;
@@ -74,9 +74,20 @@ body {
     gap: 5px;
 }
 
-.footer img {
+.footer-menu img {
     width: 60px;
     height: 60px;
+}
+
+.cart-button-container {
+    position: fixed;
+    bottom: 80px; /* Сдвигаем на высоту нижнего меню */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px; /* Высота на четверть больше нижнего меню */
+    background: #ff0000; /* Красный фон */
 }
 
 .cart-button {
@@ -89,7 +100,6 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Тень вокруг кнопки */
-    z-index: 1; /* Убедитесь, что круг находится поверх других элементов */
 }
 
 .cart-button::before {
