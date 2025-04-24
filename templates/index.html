@@ -4,16 +4,61 @@
     <title>Мини-приложение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Минимальные стили для тестирования */
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        #menu button { margin: 5px; padding: 10px 20px; background: #0088cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #content { margin-top: 20px; }
-        select { padding: 8px; margin: 10px 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .menu {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background: #e9ecef;
+        }
+        .menu button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        .content {
+            padding: 20px;
+            min-height: 60vh;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .footer button {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <h1>Добро пожаловать!</h1>
-    <div id="menu">
+    <div class="header">
+        <h2>Shop NEKURI.BY</h2>
+        <p>мини-приложение</p>
+    </div>
+
+    <div class="menu">
         <button onclick="showSection('addresses')">Адреса магазинов</button>
         <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
@@ -22,7 +67,15 @@
         <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <div id="content"></div>
+    <div class="content" id="content">
+        <p>Выберите раздел...</p>
+    </div>
+
+    <div class="footer">
+        <button onclick="goHome()">Главная</button>
+        <button onclick="openCart()">Корзина</button>
+        <button onclick="auth()">Авторизация</button>
+    </div>
 
     <script>
         // Проверка initData
@@ -53,58 +106,77 @@
                     if (regions) {
                         content.innerHTML = `
                             <h3>Выберите область:</h3>
-                            <select onchange="loadCities(this.value)">
+                            <select id="region-select" onchange="loadCities()">
                                 <option value="">-- Выберите область --</option>
-                                ${regions.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                                ${regions.map(r => `<option value="${r}">${r}</option>`).join('')}
                             </select>
                         `;
                     }
                     break;
-                // Добавьте обработку других разделов аналогично
                 default:
                     content.innerHTML = `<p>Раздел "${section}" в разработке</p>`;
             }
         }
 
-        // Загрузка городов по региону
-        async function loadCities(regionId) {
-            if (!regionId) return;
-            
-            const cities = await loadData(`cities/${regionId}`);
+        // Загрузка городов по выбранной области
+        async function loadCities() {
+            const regionSelect = document.getElementById('region-select');
+            const region = regionSelect.value;
+
+            if (!region) return;
+
+            const cities = await loadData(`cities/${region}`);
             const content = document.getElementById('content');
-            
+
             if (cities) {
                 content.innerHTML += `
                     <h4>Выберите город:</h4>
-                    <select onchange="loadStores(this.value)">
+                    <select id="city-select" onchange="loadStores('${region}')">
                         <option value="">-- Выберите город --</option>
-                        ${cities.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                        ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
                     </select>
                 `;
             }
         }
 
-        // Загрузка магазинов по городу
-        async function loadStores(cityId) {
-            if (!cityId) return;
-            
-            const stores = await loadData(`stores/${cityId}`);
+        // Загрузка магазинов по выбранному городу
+        async function loadStores(region) {
+            const citySelect = document.getElementById('city-select');
+            const city = citySelect.value;
+
+            if (!city) return;
+
+            const stores = await loadData(`stores/${region}/${city}`);
             const content = document.getElementById('content');
-            
+
             if (stores) {
                 content.innerHTML += `
                     <h5>Магазины:</h5>
                     <ul>
                         ${stores.map(s => `
                             <li>
-                                ${s.address}<br>
-                                Работает: ${s.work_hours}<br>
-                                <a href="${s.map_link}" target="_blank">Посмотреть на карте</a>
+                                <strong>${s.name}</strong><br>
+                                Адрес: ${s.address}<br>
+                                Режим работы: ${s.hours}<br>
+                                <a href="${s.map_url}" target="_blank">Посмотреть на карте</a>
                             </li>
                         `).join('')}
                     </ul>
                 `;
             }
+        }
+
+        // Логика для нижнего меню
+        function goHome() {
+            window.Telegram.WebApp.close(); // Закрыть приложение
+        }
+
+        function openCart() {
+            alert("Функция корзины в разработке!");
+        }
+
+        function auth() {
+            alert("Функция авторизации в разработке!");
         }
     </script>
 </body>
