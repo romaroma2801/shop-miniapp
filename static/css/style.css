@@ -79,17 +79,6 @@ body {
     height: 60px;
 }
 
-.cart-button-container {
-    position: fixed;
-    bottom: 80px; /* Сдвигаем на высоту нижнего меню */
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 120px; /* Высота на четверть больше нижнего меню */
-    background: #ff0000; /* Красный фон */
-}
-
 .cart-button {
     position: relative;
     overflow: hidden;
