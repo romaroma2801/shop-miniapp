@@ -19,16 +19,24 @@
         <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <!-- Нижнее меню -->
-    <div class="footer-menu">
+    <div class="content" id="content">
+        <p>Выберите раздел...</p>
+    </div>
+
+    <!-- Первый блок: Кнопки домой и вход -->
+    <div class="footer-buttons">
         <button onclick="goHome()">
             <img src="/static/home.svg" alt="Домой">
         </button>
-        <button onclick="openCart()" class="cart-button">
-            <img src="/static/shop.svg" alt="Корзина">
-        </button>
         <button onclick="auth()">
             <img src="/static/login.svg" alt="Авторизация">
+        </button>
+    </div>
+
+    <!-- Второй блок: Кнопка корзины -->
+    <div class="cart-button-container">
+        <button onclick="openCart()" class="cart-button">
+            <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
 
