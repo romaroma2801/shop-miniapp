@@ -3,6 +3,13 @@
 <head>
     <title>Мини-приложение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Минимальные стили для тестирования */
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #menu button { margin: 5px; padding: 10px 20px; background: #0088cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #content { margin-top: 20px; }
+        select { padding: 8px; margin: 10px 0; }
+    </style>
 </head>
 <body>
     <h1>Добро пожаловать!</h1>
@@ -25,30 +32,79 @@
 
         // Функция для загрузки данных
         async function loadData(url) {
-            const response = await fetch(`/api/${url}`);
-            return await response.json();
+            try {
+                const response = await fetch(`/api/${url}`);
+                if (!response.ok) throw new Error("Ошибка загрузки данных");
+                return await response.json();
+            } catch (error) {
+                console.error(error);
+                return null;
+            }
         }
 
-        // Пример логики для адресов магазинов
+        // Основная логика отображения разделов
         async function showSection(section) {
             const content = document.getElementById('content');
+            content.innerHTML = "<p>Загрузка...</p>";
+
+            switch(section) {
+                case 'addresses':
+                    const regions = await loadData('regions');
+                    if (regions) {
+                        content.innerHTML = `
+                            <h3>Выберите область:</h3>
+                            <select onchange="loadCities(this.value)">
+                                <option value="">-- Выберите область --</option>
+                                ${regions.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                            </select>
+                        `;
+                    }
+                    break;
+                // Добавьте обработку других разделов аналогично
+                default:
+                    content.innerHTML = `<p>Раздел "${section}" в разработке</p>`;
+            }
+        }
+
+        // Загрузка городов по региону
+        async function loadCities(regionId) {
+            if (!regionId) return;
             
-            if (section === 'addresses') {
-                const regions = await loadData('regions');
-                content.innerHTML = `
-                    <h3>Выберите область:</h3>
-                    <select onchange="loadCities(this.value)">
-                        ${regions.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+            const cities = await loadData(`cities/${regionId}`);
+            const content = document.getElementById('content');
+            
+            if (cities) {
+                content.innerHTML += `
+                    <h4>Выберите город:</h4>
+                    <select onchange="loadStores(this.value)">
+                        <option value="">-- Выберите город --</option>
+                        ${cities.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
                     </select>
                 `;
             }
-            // Добавьте остальные секции аналогично
         }
 
-        // Пример загрузки городов
-        async function loadCities(regionId) {
-            const cities = await loadData(`cities/${regionId}`);
-            // Отобразите города и логику выбора магазина
+        // Загрузка магазинов по городу
+        async function loadStores(cityId) {
+            if (!cityId) return;
+            
+            const stores = await loadData(`stores/${cityId}`);
+            const content = document.getElementById('content');
+            
+            if (stores) {
+                content.innerHTML += `
+                    <h5>Магазины:</h5>
+                    <ul>
+                        ${stores.map(s => `
+                            <li>
+                                ${s.address}<br>
+                                Работает: ${s.work_hours}<br>
+                                <a href="${s.map_link}" target="_blank">Посмотреть на карте</a>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+            }
         }
     </script>
 </body>
