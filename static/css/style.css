@@ -42,7 +42,7 @@ body {
     background: #ff0000; /* Красный фон */
     color: white;
     cursor: pointer;
-    font-size: 36px; /* Увеличить размер текста */
+    font-size: 40px; /* Увеличить размер текста */
     width: 90%; /* Занимать 90% ширины экрана */
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Более заметная тень */
 }
@@ -82,8 +82,8 @@ body {
     position: relative;
     overflow: hidden;
     border-radius: 50%;
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
