@@ -31,7 +31,7 @@ body {
     align-items: center;
     gap: 20px; /* Увеличить расстояние между кнопками */
     padding: 40px; /* Увеличить отступы */
-    max-height: calc(100vh - 150px); /* Ограничиваем высоту меню */
+    max-height: calc(100vh - 180px); /* Ограничиваем высоту меню */
     overflow-y: auto; /* Добавляем скроллинг только для меню */
 }
 
@@ -89,6 +89,7 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Тень вокруг кнопки */
+    z-index: 1; /* Убедитесь, что круг находится поверх других элементов */
 }
 
 .cart-button::before {
