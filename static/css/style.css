@@ -1,6 +1,11 @@
 /* Общие стили */
+@font-face {
+    font-family: 'Roboto';
+    src: url('/static/Roboto-Regular.ttf') format('truetype');
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', Arial, sans-serif;
     background: #f0f0f0;
     margin: 0;
     padding: 0;
