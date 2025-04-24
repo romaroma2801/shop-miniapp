@@ -4,94 +4,13 @@
     <title>Мини-приложение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        /* Общие стили */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .header {
-            background: #007bff;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .menu {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px;
-            background: #e9ecef;
-        }
-        .menu button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background: #007bff;
-            color: white;
-            cursor: pointer;
-        }
-        .content {
-            padding: 20px;
-            min-height: 60vh;
-        }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: #007bff;
-            color: white;
-            padding: 10px;
-            display: flex;
-            justify-content: space-around;
-        }
-        .footer button {
-            background: transparent;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-
-        /* Стили для кнопок нижнего меню */
-        .footer button {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .footer img {
-            width: 24px;
-            height: 24px;
-        }
-
-        /* Стили для контента */
-        .content ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .content li {
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .content a {
-            color: blue;
-            text-decoration: underline;
-        }
-
-        /* Стили для заголовка */
-        h3, h4, h5 {
-            margin-top: 0;
-        }
-    </style>
 </head>
 <body>
     <div class="header">
         <img src="/static/logo22.png" alt="Логотип" style="max-width: 100%; height: auto;">
     </div>
 
-    <div class="menu">
+    <div class="menu-vertical">
         <button onclick="showSection('addresses')">Адреса магазинов</button>
         <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
