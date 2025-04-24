@@ -9,6 +9,7 @@ body {
     background: #f0f0f0;
     margin: 0;
     padding: 0;
+    overflow-y: hidden; /* Отключаем вертикальный скроллинг */
 }
 
 .header {
@@ -30,18 +31,20 @@ body {
     align-items: center;
     gap: 20px; /* Увеличить расстояние между кнопками */
     padding: 40px; /* Увеличить отступы */
+    max-height: calc(100vh - 150px); /* Ограничиваем высоту меню */
+    overflow-y: auto; /* Добавляем скроллинг только для меню */
 }
 
 .menu-vertical button {
-    padding: 30px 60px; /* Увеличить высоту и ширину кнопок */
+    padding: 40px 80px; /* Увеличить высоту и ширину кнопок */
     border: none;
-    border-radius: 15px; /* Большие радиусы скругления */
+    border-radius: 20px; /* Большие радиусы скругления */
     background: #ff0000; /* Красный фон */
     color: white;
     cursor: pointer;
-    font-size: 30px; /* Увеличить размер текста */
+    font-size: 36px; /* Увеличить размер текста */
     width: 90%; /* Занимать 90% ширины экрана */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Более заметная тень */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Более заметная тень */
 }
 
 .content {
@@ -55,7 +58,7 @@ body {
     width: 100%;
     background: #ff0000; /* Красный фон */
     color: white;
-    padding: 20px; /* Увеличить отступы */
+    padding: 30px; /* Увеличить отступы */
     display: flex;
     justify-content: space-around;
 }
@@ -71,30 +74,30 @@ body {
 }
 
 .footer img {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
 }
 
 .cart-button {
     position: relative;
     overflow: hidden;
     border-radius: 50%;
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Тень вокруг кнопки */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Тень вокруг кнопки */
 }
 
 .cart-button::before {
     content: '';
     position: absolute;
-    top: -15px;
-    left: -15px;
-    right: -15px;
-    bottom: -15px;
-    border: 3px solid white; /* Белая обводка */
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    border: 4px solid white; /* Белая обводка */
     border-radius: 50%;
 }
 
