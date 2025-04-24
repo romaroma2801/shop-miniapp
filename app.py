@@ -1,31 +1,29 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
-import config
+from telegram import Update
+from telegram.ext import Application, CommandHandler, InlineKeyboardButton, InlineKeyboardMarkup
+import os
 
-# Функция для команды /start в Telegram
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+# Токен из переменных окружения или напрямую
+TELEGRAM_API_TOKEN = os.getenv("TELEGRAM_TOKEN", "7210822073:AAFM7PAj5D9PEJrvwArF8rSaU4FqsyT-3ns")
 
-def start(update, context):
-    # Создание кнопки для открытия веб-приложения
+# Асинхронная функция для команды /start
+async def start(update: Update, context):
     keyboard = [
         [InlineKeyboardButton("Открыть приложение", url="https://t.me/Shop_NEKURIBY_bot/Shop")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text('Добро пожаловать в наш бот! Нажмите кнопку ниже, чтобы открыть приложение:', reply_markup=reply_markup)
+    await update.message.reply_text('Добро пожаловать в наш бот! Нажмите кнопку ниже, чтобы открыть приложение:', reply_markup=reply_markup)
 
-
-# Функция для запуска Telegram-бота
+# Основная функция для запуска бота
 def main():
-    # Создание объекта Application с токеном
-    updater = Updater(config.TELEGRAM_API_TOKEN, use_context=True)
-    dispatcher = updater.dispatcher
-    
-    # Регистрируем обработчик для команды /start
-    dispatcher.add_handler(CommandHandler('start', start))
-    
+    # Создание Application с передачей токена
+    application = Application.builder().token(TELEGRAM_API_TOKEN).build()
+
+    # Добавление обработчиков команд
+    start_handler = CommandHandler("start", start)
+    application.add_handler(start_handler)
+
     # Запуск бота
-    updater.start_polling()
-    updater.idle()
+    application.run_polling()
 
 if __name__ == '__main__':
     main()
