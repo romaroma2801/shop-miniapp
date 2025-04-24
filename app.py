@@ -3,18 +3,16 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 import config
 
 # Функция для команды /start в Telegram
-def start(update: Update, context: CallbackContext) -> None:
-    # Создание Inline кнопки для открытия веб-приложения
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+def start(update, context):
+    # Создание кнопки для открытия веб-приложения
     keyboard = [
-        [InlineKeyboardButton("Открыть веб-приложение", web_app={'url': 'https://shop-miniapp.onrender.com'})]
+        [InlineKeyboardButton("Открыть приложение", url="https://t.me/Shop_NEKURIBY_bot/Shop")]
     ]
-    
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    update.message.reply_text(
-        "Привет! Нажми на кнопку для открытия веб-приложения.",
-        reply_markup=reply_markup
-    )
+    update.message.reply_text('Добро пожаловать в наш бот! Нажмите кнопку ниже, чтобы открыть приложение:', reply_markup=reply_markup)
+
 
 # Функция для запуска Telegram-бота
 def main():
