@@ -31,7 +31,7 @@ body {
     display: block;
     margin: 0 auto;
 }
-#back-button {
+.back-button {
     background: transparent;
     border: none;
     cursor: pointer;
@@ -39,7 +39,7 @@ body {
     align-items: center;
 }
 
-#back-button img {
+.back-button img {
     width: 40px;
     height: 40px;
 }
