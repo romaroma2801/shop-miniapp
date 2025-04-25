@@ -19,7 +19,7 @@ body {
 }
 
 .logo {
-    max-width: 100%;
+    max-width: 150px; /* Уменьшаем размер логотипа */
     height: auto;
     display: block;
     margin: 0 auto;
@@ -95,6 +95,7 @@ body {
     border-radius: 50%;
     width: 180px;
     height: 180px;
+    background: #ff0000; /* Добавляем красный фон */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -110,6 +111,12 @@ body {
     bottom: -30px;
     border: 3px solid white; /* Белая обводка */
     border-radius: 50%;
+}
+
+.cart-button img {
+    width: 80px; /* Размер иконки внутри кнопки */
+    height: 80px;
+    filter: brightness(0) invert(1); /* Если иконка белая, делаем её черной */
 }
 
 /* Стили для контента */
