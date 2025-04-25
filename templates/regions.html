@@ -7,7 +7,7 @@
 <body>
     <div class="header">
         <!-- Кнопка "Назад" -->
-        <button id="back-button" onclick="goBack()" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
+        <button id="back-button" onclick="goBack()" style="position: absolute; left: 80px; top: 50%; transform: translateY(-50%);">
             <img src="/static/back.svg" alt="Назад">
         </button>
         <img src="/static/logo22.png" alt="Логотип" class="logo">
@@ -18,11 +18,18 @@
     </div>
 
     <div class="footer-buttons">
-        <button onclick="goHome()">
+        <button id="home-button" onclick="goHome()">
             <img src="/static/home.svg" alt="Домой">
         </button>
-        <button onclick="auth()">
+        <button id="login-button" onclick="auth()">
             <img src="/static/login.svg" alt="Авторизация">
+        </button>
+    </div>
+
+    <!-- Кнопка корзины -->
+    <div class="cart-button-container">
+        <button onclick="openCart()" class="cart-button">
+            <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
 
@@ -51,7 +58,9 @@
 
         // Функция для возврата на предыдущий шаг
         function goBack() {
-            if (currentState === "cities") {
+            if (currentState === "regions") {
+                window.location.href = "/"; // Вернуться на главную страницу
+            } else if (currentState === "cities") {
                 showRegions();
             } else if (currentState === "stores") {
                 showCities(currentRegion);
@@ -115,11 +124,15 @@
 
         // Логика для нижнего меню
         function goHome() {
-            window.Telegram.WebApp.close(); // Закрыть приложение
+            window.location.href = "/"; // Вернуться на главную страницу
         }
 
         function auth() {
             alert("Функция авторизации в разработке!");
+        }
+
+        function openCart() {
+            alert("Функция корзины в разработке!");
         }
 
         // Инициализация страницы
