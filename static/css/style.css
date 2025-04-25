@@ -13,6 +13,9 @@ body {
 }
 
 .header {
+    position: fixed; /* Зафиксировать шапку */
+    top: 0;
+    width: 100%;
     background: white;
     text-align: center;
     padding: 15px;
@@ -60,7 +63,7 @@ body {
     color: white;
     padding: 20px; /* Уменьшить отступы */
     display: flex;
-    justify-content: space-around;
+    justify-content: space-around; /* Равномерное распределение кнопок */
     height: 90px; /* Установить фиксированную высоту */
 }
 
