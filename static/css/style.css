@@ -87,7 +87,6 @@ p {
     width: 100%;
     height: 90px; /* Высота блока */
     background: #ff0000; /* Красный фон */
-    padding: 20px; /* Отступы внутри блока */
     display: flex;
     align-items: center; /* Выровнять кнопки по центру по вертикали */
 }
@@ -97,7 +96,6 @@ p {
     left: 150px; /* Отступ от левого края */
     width: 80px; /* Ширина кнопки */
     height: 80px; /* Высота кнопки */
-    padding: 20px; /* Отступы внутри блока */
     display: flex;
     align-items: center; /* Выровнять иконку по центру */
     justify-content: center; /* Выровнять иконку по центру */
@@ -111,7 +109,6 @@ p {
     right: 150px; /* Отступ от правого края */
     width: 80px; /* Ширина кнопки */
     height: 80px; /* Высота кнопки */
-    padding: 20px; /* Отступы внутри блока */
     display: flex;
     align-items: center; /* Выровнять иконку по центру */
     justify-content: center; /* Выровнять иконку по центру */
