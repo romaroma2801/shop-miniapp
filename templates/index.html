@@ -5,19 +5,24 @@
     <title>Мини-приложение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        :root {
+            --vh: 1vh;
+        }
+        html, body {
+            height: calc(var(--vh, 1vh) * 100);
+        }
+    </style>
 </head>
 <body>
     <div class="header">
-    <!-- Кнопка "Назад" -->
-    <button id="back-button" onclick="goBack()" style="display: none;">
-        <img src="/static/back.svg" alt="Назад">
-    </button>
-    <img src="/static/logo22.png" alt="Логотип" class="logo">
-</div>
+        <button id="back-button" onclick="goBack()" style="display: none;">
+            <img src="/static/back.svg" alt="Назад">
+        </button>
+        <img src="/static/logo22.png" alt="Логотип" class="logo">
+    </div>
 
-    <!-- Блок для динамического контента -->
     <div class="menu-vertical" id="content">
-        <!-- Главное меню -->
         <button onclick="showRegions()">Адреса магазинов</button>
         <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
@@ -26,20 +31,15 @@
         <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <!-- Нижнее меню -->
     <div class="footer-buttons">
-        <!-- Кнопка "Домой" -->
         <div id="home-button" onclick="goHome()">
             <img src="/static/home.svg" alt="Домой">
         </div>
-
-        <!-- Кнопка "Вход" -->
         <div id="login-button" onclick="auth()">
             <img src="/static/login.svg" alt="Авторизация">
         </div>
     </div>
 
-    <!-- Второй блок: Кнопка корзины -->
     <div class="cart-button-container">
         <button onclick="openCart()" class="cart-button">
             <img src="/static/shop.svg" alt="Корзина">
@@ -48,166 +48,135 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const viewportHeight = window.innerHeight;
-            document.body.style.height = `${viewportHeight}px`;
-            document.body.style.overflow = 'hidden'; // Отключаем скролл
-            // Отключаем двойной клик
-        document.addEventListener('dblclick', (e) => {
-             e.preventDefault();
-        // Отключаем выделение текста
-        document.body.style.userSelect = 'none';
-            // Проверка initData
-        if (!window.Telegram?.WebApp) {
-            Telegram.WebApp.expand(); // Расширяем окно до максимальной высоты
-            Telegram.WebApp.ready(); // Сообщаем Telegram, что приложение готово
-            Telegram.WebApp.BackButton.hide();
-             Telegram.WebApp.MainButton.hide();
-            document.body.innerHTML = "Ошибка: откройте через Telegram!";
-        }
+            const setFullHeight = () => {
+                document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+            };
+            window.addEventListener('resize', setFullHeight);
+            window.addEventListener('load', setFullHeight);
+            setFullHeight();
 
-        // Глобальные переменные
-        let currentState = "home";
-        let currentRegion = null;
-        let currentCity = null;
+            document.body.style.overflow = 'hidden';
+            document.body.style.userSelect = 'none';
+            document.addEventListener('dblclick', (e) => e.preventDefault());
 
-        // Функция для загрузки данных
-        async function loadData(url) {
-            try {
-                const response = await fetch(`/api/${url}`);
-                if (!response.ok) throw new Error("Ошибка загрузки данных");
-                return await response.json();
-            } catch (error) {
-                console.error(error);
-                return null;
+            if (window.Telegram?.WebApp) {
+                Telegram.WebApp.expand();
+                Telegram.WebApp.ready();
+            } else {
+                document.body.innerHTML = "Ошибка: откройте через Telegram!";
+                return;
             }
-        }
 
-        // Функция для отображения контента с анимацией
-        function showContent(content) {
-            const contentDiv = document.getElementById('content');
-        
-            // Добавляем анимацию исчезновения
-            contentDiv.classList.add('hidden');
-        
-            setTimeout(() => {
-                contentDiv.innerHTML = content;
-            
-                // Добавляем анимацию появления
+            let currentState = "home";
+            let currentRegion = null;
+            let currentCity = null;
+
+            async function loadData(url) {
+                try {
+                    const response = await fetch(`/api/${url}`);
+                    if (!response.ok) throw new Error("Ошибка загрузки данных");
+                    return await response.json();
+                } catch (error) {
+                    console.error(error);
+                    return null;
+                }
+            }
+
+            function showContent(content, showBack = true) {
+                const contentDiv = document.getElementById('content');
+                document.getElementById('back-button').style.display = showBack ? 'block' : 'none';
+                contentDiv.classList.add('hidden');
                 setTimeout(() => {
-                    contentDiv.classList.remove('hidden');
-                }, 50);
-            }, 500);
-        }
-
-        // Функция для кнопки "Назад"
-        function goBack() {
-            const backButton = document.getElementById('back-button');
-        
-            // Возвращаемся на предыдущий шаг
-            if (currentState === "regions") {
-                showHome();
-            } else if (currentState === "cities") {
-                showRegions();
-            } else if (currentState === "stores") {
-                showCities(currentRegion);
-            } else if (currentState === "storeDetails") {
-                showStores(currentCity, currentRegion);
+                    contentDiv.innerHTML = content;
+                    setTimeout(() => {
+                        contentDiv.classList.remove('hidden');
+                    }, 50);
+                }, 500);
             }
-        }
 
-        // Показать главное меню
-        function showHome() {
-            currentState = "home";
-            document.getElementById('back-button').style.display = 'none';
-            showContent(`
-                <button onclick="showRegions()">Адреса магазинов</button>
-                <button onclick="showSection('catalog')">Каталог товаров</button>
-                <button onclick="showSection('review')">Оставить отзыв</button>
-                <button onclick="showSection('contacts')">Контакты</button>
-                <button onclick="showSection('jobs')">Вакансии</button>
-                <button onclick="showSection('promotions')">Акции</button>
-            `);
-        }
-
-        // Показать список областей
-        async function showRegions() {
-            currentState = "regions";
-            const backButton = document.getElementById('back-button');
-            backButton.style.display = 'block';
-        
-            const regions = await loadData('regions');
-            if (regions) {
-                const buttons = regions.map(region => `
-                    <button onclick="showCities('${region}')">${region}</button>
-                `).join('');
-                showContent(`<h3>Выберите область:</h3>${buttons}`);
+            function goBack() {
+                if (currentState === "regions") {
+                    showHome();
+                } else if (currentState === "cities") {
+                    showRegions();
+                } else if (currentState === "stores") {
+                    showCities(currentRegion);
+                } else if (currentState === "storeDetails") {
+                    showStores(currentCity, currentRegion);
+                }
             }
-        }
 
-        // Показать список городов
-        async function showCities(region) {
-            currentState = "cities";
-            currentRegion = region;
-            const backButton = document.getElementById('back-button');
-            backButton.style.display = 'block';
-            const cities = await loadData(`cities/${region}`);
-            if (cities) {
-                const buttons = cities.map(city => `
-                    <button onclick="showStores('${city}', '${region}')">${city}</button>
-                `).join('');
-                showContent(`<h3>Города в области "${region}":</h3>${buttons}`);
-            }
-        }
-
-        // Показать список магазинов
-        async function showStores(city, region) {
-            currentState = "stores";
-            currentCity = city;
-            const backButton = document.getElementById('back-button');
-            backButton.style.display = 'block';
-            const stores = await loadData(`stores/${region}/${city}`);
-            if (stores) {
-                const buttons = stores.map(store => `
-                    <button onclick="showStoreDetails('${store.name}')">${store.name}</button>
-                `).join('');
-                showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`);
-            }
-        }
-
-        // Показать детали магазина
-        async function showStoreDetails(storeName) {
-            currentState = "storeDetails";
-            const backButton = document.getElementById('back-button');
-            backButton.style.display = 'block';
-            const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
-            const store = stores.find(s => s.name === storeName);
-            if (store) {
+            function showHome() {
+                currentState = "home";
                 showContent(`
-                    <h3>${store.name}</h3>
-                    <p><strong>Адрес:</strong> ${store.address}</p>
-                    <p><strong>Режим работы:</strong> ${store.hours.replace(/\n/g, '<br>')}</p>
-                    <button onclick="window.open('${store.map_url}', '_blank')">Посмотреть на карте</button>
-                `);
+                    <button onclick="showRegions()">Адреса магазинов</button>
+                    <button onclick="showSection('catalog')">Каталог товаров</button>
+                    <button onclick="showSection('review')">Оставить отзыв</button>
+                    <button onclick="showSection('contacts')">Контакты</button>
+                    <button onclick="showSection('jobs')">Вакансии</button>
+                    <button onclick="showSection('promotions')">Акции</button>
+                `, false);
             }
-        }
 
-        // Логика для нижнего меню
-        function goHome() {
-            showHome(); // Переход на главное меню
-        }
+            async function showRegions() {
+                currentState = "regions";
+                const regions = await loadData('regions');
+                if (regions) {
+                    const buttons = regions.map(region => `<button onclick=\"showCities('${region}')\">${region}</button>`).join('');
+                    showContent(`<h3>Выберите область:</h3>${buttons}`);
+                }
+            }
 
-        function auth() {
-            alert("Функция авторизации в разработке!");
-        }
+            async function showCities(region) {
+                currentState = "cities";
+                currentRegion = region;
+                const cities = await loadData(`cities/${region}`);
+                if (cities) {
+                    const buttons = cities.map(city => `<button onclick=\"showStores('${city}', '${region}')\">${city}</button>`).join('');
+                    showContent(`<h3>Города в области \"${region}\":</h3>${buttons}`);
+                }
+            }
 
-        function openCart() {
-            alert("Функция корзины в разработке!");
-        }
+            async function showStores(city, region) {
+                currentState = "stores";
+                currentCity = city;
+                const stores = await loadData(`stores/${region}/${city}`);
+                if (stores) {
+                    const buttons = stores.map(store => `<button onclick=\"showStoreDetails('${store.name}')\">${store.name}</button>`).join('');
+                    showContent(`<h3>Магазины в городе \"${city}\":</h3>${buttons}`);
+                }
+            }
 
-        // Дополнительная функция для показа других разделов
-        function showSection(section) {
-            alert(`Раздел "${section}" в разработке!`);
-        }
+            async function showStoreDetails(storeName) {
+                currentState = "storeDetails";
+                const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
+                const store = stores.find(s => s.name === storeName);
+                if (store) {
+                    showContent(`
+                        <h3>${store.name}</h3>
+                        <p><strong>Адрес:</strong> ${store.address}</p>
+                        <p><strong>Режим работы:</strong> ${store.hours.replace(/\n/g, '<br>')}</p>
+                        <button onclick=\"window.open('${store.map_url}', '_blank')\">Посмотреть на карте</button>
+                    `);
+                }
+            }
+
+            function goHome() {
+                showHome();
+            }
+
+            function auth() {
+                alert("Функция авторизации в разработке!");
+            }
+
+            function openCart() {
+                alert("Функция корзины в разработке!");
+            }
+
+            function showSection(section) {
+                alert(`Раздел \"${section}\" в разработке!`);
+            }
+        });
     </script>
 </body>
 </html>
