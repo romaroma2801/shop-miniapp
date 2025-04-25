@@ -67,7 +67,7 @@ body {
     color: white;
     padding: 20px; /* Уменьшить отступы */
     display: flex;
-    justify-content: center; /* Равномерное распределение кнопок */
+    justify-content: space-around; /* Равномерное распределение кнопок */
     height: 90px; /* Установить фиксированную высоту */
 }
 
