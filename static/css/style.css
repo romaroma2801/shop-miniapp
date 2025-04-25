@@ -176,6 +176,10 @@ p {
     background: transparent; /* Прозрачный фон */
     border: none; /* Убрать границы */
     cursor: pointer;
+    
+    display: flex;
+    align-items: center; /* Вертикальное центрирование */
+    justify-content: center; /* Горизонтальное центрирование */
 }
 
 /* Стили для иконки внутри кнопки */
