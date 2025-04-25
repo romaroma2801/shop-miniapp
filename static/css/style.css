@@ -19,7 +19,7 @@ body {
 }
 
 .logo {
-    max-width: 150px; /* Уменьшаем размер логотипа */
+    max-width: 450px; /* Уменьшаем размер логотипа */
     height: auto;
     display: block;
     margin: 0 auto;
@@ -61,7 +61,7 @@ body {
     padding: 20px; /* Уменьшить отступы */
     display: flex;
     justify-content: space-around;
-    height: 70px; /* Установить фиксированную высоту */
+    height: 90px; /* Установить фиксированную высоту */
 }
 
 .footer-buttons button {
@@ -105,10 +105,10 @@ body {
 .cart-button::before {
     content: '';
     position: absolute;
-    top: -30px;
-    left: -30px;
-    right: -30px;
-    bottom: -30px;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
     border: 3px solid white; /* Белая обводка */
     border-radius: 50%;
 }
