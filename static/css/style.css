@@ -176,6 +176,7 @@ p {
 
 /* Стили для иконки внутри кнопки */
 #back-button img {
-    width: 80px; /* Размер иконки */
+    width: 80px;
     height: 80px;
+    filter: brightness(0) invert(1);
 }
