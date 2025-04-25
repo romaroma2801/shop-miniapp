@@ -61,7 +61,7 @@ body {
     padding: 20px; /* Уменьшить отступы */
     display: flex;
     justify-content: space-around;
-    height: 60px; /* Установить фиксированную высоту */
+    height: 70px; /* Установить фиксированную высоту */
 }
 
 .footer-buttons button {
@@ -95,7 +95,6 @@ body {
     border-radius: 50%;
     width: 180px;
     height: 180px;
-    color: #ff0000;
     display: flex;
     align-items: center;
     justify-content: center;
