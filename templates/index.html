@@ -64,7 +64,23 @@
                 return null;
             }
         }
+        function showContent(content) {
+            const contentDiv = document.getElementById('content');
 
+            // Добавляем класс hidden для начала анимации исчезновения
+            contentDiv.classList.add('hidden');
+
+            // Ждем завершения анимации (0.5 секунды)
+            setTimeout(() => {
+                // Обновляем контент
+                contentDiv.innerHTML = content;
+
+                // Удаляем класс hidden для начала анижмации появления
+                setTimeout(() => {
+                    contentDiv.classList.remove('hidden');
+                }, 50); // Небольшая задержка для корректного обновления DOM
+            }, 500); // Время анимации исчезновения
+        }
         // Функция для отображения контента
         function showRegions() {
             currentState = "regions";
