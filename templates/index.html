@@ -54,7 +54,71 @@
                 return null;
             }
         }
+        // Показать список областей
+        // Функция для загрузки данных
+        async function loadData(url) {
+            try {
+                const response = await fetch(`/api/${url}`);
+                if (!response.ok) throw new Error("Ошибка загрузки данных");
+                return await response.json();
+            } catch (error) {
+                console.error(error);
+                return null;
+            }
+        }
 
+        // Показать список областей
+        async function showRegions() {
+            currentState = "regions";
+            const regions = await loadData('regions');
+            if (regions) {
+                const buttons = regions.map(region => `
+                    <button onclick="showCities('${region}')">${region}</button>
+                `).join('');
+                showContent(`<h3>Выберите область:</h3>${buttons}`);
+            }
+        }
+
+        // Показать список городов
+        async function showCities(region) {
+            currentState = "cities";
+            currentRegion = region;
+            const cities = await loadData(`cities/${region}`);
+            if (cities) {
+                const buttons = cities.map(city => `
+                    <button onclick="showStores('${city}', '${region}')">${city}</button>
+                `).join('');
+                showContent(`<h3>Выберите город в области "${region}":</h3>${buttons}`);
+            }
+        }
+
+        // Показать список магазинов
+        async function showStores(city, region) {
+            currentState = "stores";
+            currentCity = city;
+            const stores = await loadData(`stores/${region}/${city}`);
+            if (stores) {
+                const buttons = stores.map(store => `
+                    <button onclick="showStoreDetails('${store.name}')">${store.name}</button>
+                `).join('');
+                showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`);
+            }
+        }
+
+        // Показать детали магазина
+        async function showStoreDetails(storeName) {
+            currentState = "storeDetails";
+            const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
+            const store = stores.find(s => s.name === storeName);
+            if (store) {
+                showContent(`
+                    <h3>${store.name}</h3>
+                    <p><strong>Адрес:</strong> ${store.address}</p>
+                    <p><strong>Режим работы:</strong> ${store.hours}</p>
+                    <button onclick="window.open('${store.map_url}', '_blank')">Посмотреть на карте</button>
+                `);
+            }
+        }
         // Логика для нижнего меню
         function goHome() {
             window.Telegram.WebApp.close(); // Закрыть приложение
