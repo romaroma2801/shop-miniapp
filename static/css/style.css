@@ -10,7 +10,7 @@ body {
     margin: 0;
     padding: 0;
     overflow-y: hidden; /* Отключаем вертикальный скроллинг */
-    height: 90vh; /* Ограничиваем высоту страницы */
+    height: 100vh; /* Ограничиваем высоту страницы */
     display: flex;
     flex-direction: column;
 }
@@ -20,7 +20,7 @@ body {
     align-items: center;
     gap: 20px; /* Расстояние между кнопками */
     padding: 160px 40px 40px; /* Отступы сверху, слева/справа и снизу */
-    max-height: calc(100vh - 200px); /* Ограничиваем высоту меню */
+    max-height: calc(97vh - 200px); /* Ограничиваем высоту меню */
     overflow-y: auto; /* Добавляем скроллинг только для меню */
 }
 .menu-vertical button {
