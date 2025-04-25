@@ -38,7 +38,7 @@ body {
     align-items: center;
     gap: 20px; /* Увеличить расстояние между кнопками */
     padding: 160px 40px 40px; /* Добавить больше отступа сверху */
-    max-height: calc(100vh - 200px); /* Ограничиваем высоту меню */ 
+    max-height: calc(80vh - 200px); /* Ограничиваем высоту меню */ 
     overflow-y: hidden;
 }
 
@@ -60,28 +60,44 @@ body {
 }
 
 .footer-buttons {
-    position: fixed;
+    position: fixed; /* Фиксируем блок внизу */
     bottom: 0;
     width: 100%;
+    height: 90px; /* Высота блока */
     background: #ff0000; /* Красный фон */
-    color: white;
-    padding: 10px; /* Уменьшить отступы */
     display: flex;
-    justify-content: space-around; /* Равномерное распределение кнопок */
     align-items: center; /* Выровнять кнопки по центру по вертикали */
-    height: 90px; /* Установить фиксированную высоту */
 }
 
-.footer-buttons button {
-    background: transparent; /* Прозрачный фон */
-    border: none; /* Убрать границы */
-    cursor: pointer;
+#home-button {
+    position: absolute; /* Абсолютное позиционирование */
+    left: 20px; /* Отступ от левого края */
+    width: 80px; /* Ширина кнопки */
+    height: 80px; /* Высота кнопки */
     display: flex;
     align-items: center; /* Выровнять иконку по центру */
     justify-content: center; /* Выровнять иконку по центру */
-    width: 80px; /* Фиксированная ширина кнопки */
-    height: 80px; /* Фиксированная высота кнопки */
-    padding: 0; /* Убрать внутренние отступы */
+    background: transparent; /* Прозрачный фон */
+    border: none; /* Убрать границы */
+    cursor: pointer;
+}
+
+#login-button {
+    position: absolute; /* Абсолютное позиционирование */
+    right: 20px; /* Отступ от правого края */
+    width: 80px; /* Ширина кнопки */
+    height: 80px; /* Высота кнопки */
+    display: flex;
+    align-items: center; /* Выровнять иконку по центру */
+    justify-content: center; /* Выровнять иконку по центру */
+    background: transparent; /* Прозрачный фон */
+    border: none; /* Убрать границы */
+    cursor: pointer;
+}
+
+.footer-buttons img {
+    width: 70px; /* Размер иконки */
+    height: 70px; /* Размер иконки */
 }
 
 .footer-buttons img {
