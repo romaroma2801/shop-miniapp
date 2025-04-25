@@ -10,7 +10,7 @@ body {
     margin: 0;
     padding: 0;
     overflow-y: hidden; /* Отключаем вертикальный скроллинг */
-    height: 100vh; /* Ограничиваем высоту страницы */
+    height: 80vh; /* Ограничиваем высоту страницы */
     display: flex;
     flex-direction: column;
 }
@@ -33,13 +33,13 @@ body {
 }
 
 .menu-vertical {
+    position: fixed;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px; /* Увеличить расстояние между кнопками */
     padding: 160px 40px 40px; /* Добавить больше отступа сверху */
-    max-height: calc(100vh - 200px); /* Ограничиваем высоту меню */
-    overflow-y: auto; /* Добавляем скроллинг только для меню */
+    max-height: calc(100vh - 200px); /* Ограничиваем высоту меню */    
 }
 
 .menu-vertical button {
@@ -65,25 +65,28 @@ body {
     width: 100%;
     background: #ff0000; /* Красный фон */
     color: white;
-    padding: 20px; /* Уменьшить отступы */
+    padding: 10px; /* Уменьшить отступы */
     display: flex;
     justify-content: space-around; /* Равномерное распределение кнопок */
+    align-items: center; /* Выровнять кнопки по центру по вертикали */
     height: 90px; /* Установить фиксированную высоту */
 }
 
 .footer-buttons button {
-    background: transparent;
-    border: none;
-    color: white;
+    background: transparent; /* Прозрачный фон */
+    border: none; /* Убрать границы */
     cursor: pointer;
     display: flex;
-    align-items: center;
-    gap: 7px;
+    align-items: center; /* Выровнять иконку по центру */
+    justify-content: center; /* Выровнять иконку по центру */
+    width: 80px; /* Фиксированная ширина кнопки */
+    height: 80px; /* Фиксированная высота кнопки */
+    padding: 0; /* Убрать внутренние отступы */
 }
 
 .footer-buttons img {
-    width: 80px; /* Увеличить размер иконок */
-    height: 80px;
+    width: 70px; /* Размер иконки */
+    height: 70px; /* Размер иконки */
 }
 
 .cart-button-container {
