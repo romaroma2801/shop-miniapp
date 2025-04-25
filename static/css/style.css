@@ -57,7 +57,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
+    padding: 20px 80px;
     z-index: 10;
     box-sizing: border-box;
 }
@@ -80,7 +80,7 @@ body {
 
 .cart-button-container {
     position: fixed;
-    bottom: 25%; /* поднята на четверть выше футера */
+    bottom: 0px; /* поднята на четверть выше футера */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -89,8 +89,8 @@ body {
 }
 
 .cart-button {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     background: #ff0000;
     border-radius: 50%;
     border: none;
@@ -115,8 +115,8 @@ body {
 }
 
 .cart-button img {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     filter: brightness(0) invert(1);
     z-index: 20;
 }
