@@ -176,6 +176,8 @@ p {
     background: transparent; /* Прозрачный фон */
     border: none; /* Убрать границы */
     cursor: pointer;
+    padding: 0; /* Убрать внутренние отступы */
+    z-index: 10; /* Размещение поверх других элементов */
     
     display: flex;
     align-items: center; /* Вертикальное центрирование */
@@ -184,6 +186,7 @@ p {
 
 /* Стили для иконки внутри кнопки */
 #back-button img {
+    vertical-align: middle; /* Корректировка позиции иконки */
     width: 80px; /* Размер иконки */
     height: 80px;
 }
