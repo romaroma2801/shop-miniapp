@@ -26,14 +26,17 @@
         <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <!-- Первый блок: Кнопки домой и вход -->
+    <!-- Нижнее меню -->
     <div class="footer-buttons">
-        <button onclick="goHome()">
+        <!-- Кнопка "Домой" -->
+        <div id="home-button" onclick="goHome()">
             <img src="/static/home.svg" alt="Домой">
-        </button>
-        <button onclick="auth()">
+        </div>
+
+        <!-- Кнопка "Вход" -->
+        <div id="login-button" onclick="auth()">
             <img src="/static/login.svg" alt="Авторизация">
-        </button>
+        </div>
     </div>
 
     <!-- Второй блок: Кнопка корзины -->
