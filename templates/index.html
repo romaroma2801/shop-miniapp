@@ -19,9 +19,6 @@
         <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <div class="content" id="content">
-        <p>Выберите раздел...</p>
-    </div>
 
     <!-- Первый блок: Кнопки домой и вход -->
     <div class="footer-buttons">
@@ -55,77 +52,6 @@
             } catch (error) {
                 console.error(error);
                 return null;
-            }
-        }
-
-        // Основная логика отображения разделов
-        async function showSection(section) {
-            const content = document.getElementById('content');
-            content.innerHTML = "<p>Загрузка...</p>";
-
-            switch(section) {
-                case 'addresses':
-                    const regions = await loadData('regions');
-                    if (regions) {
-                        content.innerHTML = `
-                            <h3>Выберите область:</h3>
-                            <select id="region-select" onchange="loadCities()">
-                                <option value="">-- Выберите область --</option>
-                                ${regions.map(r => `<option value="${r}">${r}</option>`).join('')}
-                            </select>
-                        `;
-                    }
-                    break;
-                default:
-                    content.innerHTML = `<p>Раздел "${section}" в разработке</p>`;
-            }
-        }
-
-        // Загрузка городов по выбранной области
-        async function loadCities() {
-            const regionSelect = document.getElementById('region-select');
-            const region = regionSelect.value;
-
-            if (!region) return;
-
-            const cities = await loadData(`cities/${region}`);
-            const content = document.getElementById('content');
-
-            if (cities) {
-                content.innerHTML += `
-                    <h4>Выберите город:</h4>
-                    <select id="city-select" onchange="loadStores('${region}')">
-                        <option value="">-- Выберите город --</option>
-                        ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
-                    </select>
-                `;
-            }
-        }
-
-        // Загрузка магазинов по выбранному городу
-        async function loadStores(region) {
-            const citySelect = document.getElementById('city-select');
-            const city = citySelect.value;
-
-            if (!city) return;
-
-            const stores = await loadData(`stores/${region}/${city}`);
-            const content = document.getElementById('content');
-
-            if (stores) {
-                content.innerHTML += `
-                    <h5>Магазины:</h5>
-                    <ul>
-                        ${stores.map(s => `
-                            <li>
-                                <strong>${s.name}</strong><br>
-                                Адрес: ${s.address}<br>
-                                Режим работы: ${s.hours}<br>
-                                <a href="${s.map_url}" target="_blank">Посмотреть на карте</a>
-                            </li>
-                        `).join('')}
-                    </ul>
-                `;
             }
         }
 
