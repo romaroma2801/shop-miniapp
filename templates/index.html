@@ -48,6 +48,27 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const contentDiv = document.getElementById('content');
+            if (!contentDiv) {
+                console.error("❌ Не найден элемент #content!");
+                return;
+            }
+            contentDiv.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (btn) {
+                    const action = btn.dataset.action;
+                    console.log("🔥 Нажата кнопка:", action);
+                    if (action === 'regions') showRegions();
+                    else if (action.startsWith('section:')) showSection(action.split(':')[1]);
+                }
+
+                if (e.target.classList.contains('star')) {
+                    selectStars(parseInt(e.target.dataset.stars));
+                }
+
+                if (e.target.id === 'submit-review') {
+                    submitReview();
+                }
             const setFullHeight = () => {
                 document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
             };
@@ -109,12 +130,12 @@
             function showHome() {
                 currentState = "home";
                 showContent(`
-                    <button onclick="showRegions()">Адреса магазинов</button>
-                    <button onclick="showSection('catalog')">Каталог товаров</button>
-                    <button onclick="showSection('review')">Оставить отзыв</button>
-                    <button onclick="showSection('contacts')">Контакты</button>
-                    <button onclick="showSection('jobs')">Вакансии</button>
-                    <button onclick="showSection('promotions')">Акции</button>
+                    <button data-action="showRegions()">Адреса магазинов</button>
+                    <button data-action="showSection('catalog')">Каталог товаров</button>
+                    <button data-action="showSection('review')">Оставить отзыв</button>
+                    <button data-action="showSection('contacts')">Контакты</button>
+                    <button data-action="showSection('jobs')">Вакансии</button>
+                    <button data-action="showSection('promotions')">Акции</button>
                 `, false);
             }
 
