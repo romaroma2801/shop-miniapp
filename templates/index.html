@@ -231,7 +231,95 @@
                     toast.classList.remove('show');
                 }, 2000);
             }
+            function showSection(section) {
+                if (section === 'review') {
+                    checkReviewCooldown();
+                    return;
+                }
 
+                // остальное как раньше
+            }
+            function checkReviewCooldown() {
+                const lastTime = localStorage.getItem('lastReviewTime');
+                if (lastTime) {
+                    const now = Date.now();
+                    const diff = now - parseInt(lastTime);
+                    const remaining = 24 * 60 * 60 * 1000 - diff;
+                    if (remaining > 0) {
+                        const hours = Math.floor(remaining / (60 * 60 * 1000));
+                        const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+                        showContent(`
+                            <p>⚠️ Вы уже отправляли отзыв за последние 24 часа.</p>
+                            <p>⌛️ До следующей возможности оставить отзыв осталось:<br><strong>${hours} ч ${minutes} мин</strong>.</p>
+                        `, false);
+                        return;
+                    }
+                }
+                showReviewForm();
+            }
+            function showReviewForm() {
+                showContent(`
+                    <h3>Оцените качество обслуживания</h3>
+                    <div id="stars" style="font-size: 32px;">
+                        ${[1,2,3,4,5].map(i => `<span onclick="selectStars(${i})" class="star" id="star${i}">⭐</span>`).join('')}
+                    </div>
+                    <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5" style="width: 90%; margin-top: 20px;"></textarea>
+                    <button onclick="submitReview()" style="margin-top: 15px;">Отправить</button>
+                    <div id="toast" class="toast"></div>
+                `, false);
+
+                window.reviewStars = 0;
+            }
+            function selectStars(count) {
+                reviewStars = count;
+                for (let i = 1; i <= 5; i++) {
+                    const el = document.getElementById(`star${i}`);
+                    if (i <= count) {
+                        el.textContent = '🌟';
+                        el.classList.add('pop');
+                    } else {
+                        el.textContent = '⭐';
+                        el.classList.remove('pop');
+                    }
+                }
+            }
+            function submitReview() {
+                const text = document.getElementById('reviewText').value.trim();
+                if (reviewStars === 0) {
+                    showToast("Пожалуйста, выберите оценку");
+                    return;
+                }
+                if (text.length < 3) {
+                    showToast("Пожалуйста, напишите отзыв");
+                    return;
+                }
+
+                // Отправка на сервер или в Telegram
+                sendReviewToTelegram(reviewStars, text);
+
+                // Сохраняем время отправки
+                localStorage.setItem('lastReviewTime', Date.now().toString());
+
+                // Показываем благодарность
+                showContent(`
+                    <p>🙏 Спасибо за оставленный отзыв!</p>
+                    <p>Нам важно ваше мнение 😊</p>
+                    <button onclick="goHome()">Главное меню</button>
+                `, false);
+            }
+            function sendReviewToTelegram(stars, text) {
+                const username = Telegram.WebApp.initDataUnsafe?.user?.username || 'Без username';
+                const message = `⭐ Оценка: ${stars}/5\n✍️ Отзыв: ${text}\n👤 Пользователь: @${username}`;
+    
+                fetch('https://api.telegram.org/bot'TELEGRAM_TOKEN'/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: '568416622',
+                        text: message
+                    })
+                });
+            }
 
             // Делать функции доступными глобально
             window.showRegions = showRegions;
