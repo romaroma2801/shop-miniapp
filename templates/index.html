@@ -97,7 +97,8 @@
                     selectStars(count);
                 }
 
-                if (e.target.id === 'submit-review') {
+                const submitBtn = e.target.closest('#submit-review');
+                if (submitBtn) {
                     submitReview();
                 }
             });
