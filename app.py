@@ -1,34 +1,35 @@
-from flask import Flask, jsonify, render_template, request
-from flask_cors import CORS
+from flask import Flask, jsonify, render_template, send_from_directory
 import os
-import requests
 import json
 
 app = Flask(__name__)
-CORS(app, origins=[os.getenv("TELEGRAM_WEB_APP_URL")])
 
+# Загрузка данных о магазинах из файла store_full.json
 with open('store_full.json', 'r', encoding='utf-8') as file:
     STORE_DATA = json.load(file)
-    
-SHOP_API_KEY = os.getenv("SHOP_API_KEY", "WWH15wOAGd0PwdBxGLc5nr2X0YGg0ALqXzbRUmpUoyqcpyXNs1RcyL1Hh1XUAKgbd4vmSKfSIrhA4lF4bdCais1F6WziIbcFBjmpzbCYst0Pz11Dyg0wvUrABdKPRlWz4Bd5ZNQD7wd8tNcJALBWQKmCi1kLcUtITtJaJLvAK2zb6bAs4bcxs6cWckd7LQdidT52hLU0xhZm3HXoSa3IrILHba0rSTwnqyCTe7DaPVlbssCUiSmUnJhHbtEMYySG")
-@app.route('/api/stores/<region>/<city>', methods=['GET'])
-def get_stores(region, city):
-    stores = STORE_DATA.get(region, {}).get(city, [])
-    return jsonify(stores)
-@app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
-# Пример эндпоинта для получения областей
+
+# Эндпоинт для получения списка областей
 @app.route('/api/regions', methods=['GET'])
 def get_regions():
     regions = list(STORE_DATA.keys())
     return jsonify(regions)
 
-# Пример эндпоинта для получения городов по области
+# Эндпоинт для получения списка городов по выбранной области
 @app.route('/api/cities/<region>', methods=['GET'])
 def get_cities(region):
     cities = list(STORE_DATA.get(region, {}).keys())
     return jsonify(cities)
+
+# Эндпоинт для получения списка магазинов по выбранному региону и городу
+@app.route('/api/stores/<region>/<city>', methods=['GET'])
+def get_stores(region, city):
+    stores = STORE_DATA.get(region, {}).get(city, [])
+    return jsonify(stores)
+
+# Служебный эндпоинт для обслуживания статических файлов (иконки, CSS, JS)
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 # Главная страница (рендерит фронтенд)
 @app.route('/')
