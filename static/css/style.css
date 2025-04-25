@@ -59,6 +59,7 @@ body {
     align-items: center;
     padding: 10px 20px;
     z-index: 10;
+    box-sizing: border-box;
 }
 
 #home-button, #login-button {
@@ -79,16 +80,17 @@ body {
 
 .cart-button-container {
     position: fixed;
-    bottom: 60px;
-    width: 100%;
+    bottom: 25%; /* поднята на четверть выше футера */
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
-    z-index: 10;
+    z-index: 15;
 }
 
 .cart-button {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: #ff0000;
     border-radius: 50%;
     border: none;
@@ -98,6 +100,7 @@ body {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     cursor: pointer;
     position: relative;
+    z-index: 15;
 }
 
 .cart-button::before {
@@ -112,9 +115,10 @@ body {
 }
 
 .cart-button img {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     filter: brightness(0) invert(1);
+    z-index: 20;
 }
 
 #back-button {
