@@ -10,7 +10,7 @@ body {
     margin: 0;
     padding: 0;
     overflow-y: hidden; /* Отключаем вертикальный скроллинг */
-    height: 100vh; /* Ограничиваем высоту страницы */
+    height: 90vh; /* Ограничиваем высоту страницы */
     display: flex;
     flex-direction: column;
 }
