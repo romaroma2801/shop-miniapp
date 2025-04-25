@@ -162,9 +162,6 @@ h3 {
 
 #back-button {
     position: absolute; /* Абсолютное позиционирование */
-    left: 150px; /* Отступ от левого края */
-    width: 80px; /* Ширина кнопки */
-    height: 80px; /* Высота кнопки */
     display: flex;
     align-items: center; /* Выровнять иконку по центру */
     justify-content: center; /* Выровнять иконку по центру */
