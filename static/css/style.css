@@ -21,18 +21,18 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 5px; /* Расстояние между кнопками */
-    padding: 40px 20px 20px; /* Отступы сверху, слева/справа и снизу */
+    padding: 50px 20px 20px; /* Отступы сверху, слева/справа и снизу */
     max-height: calc(95vh - 200px); /* Ограничиваем высоту меню */
     overflow-y: auto; /* Добавляем скроллинг только для меню */
 }
 .menu-vertical button {
-    padding: 20px 30px; /* Увеличить высоту и ширину кнопок */
+    padding: 20px 20px; /* Увеличить высоту и ширину кнопок */
     border: none;
     border-radius: 10px; /* Большие радиусы скругления */
     background: #ff0000; /* Красный фон */
     color: white;
     cursor: pointer;
-    font-size: 30px; /* Увеличить размер текста */
+    font-size: 25px; /* Увеличить размер текста */
     width: 90%; /* Занимать 90% ширины экрана */
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Более заметная тень */
 }
@@ -64,7 +64,7 @@ body {
 }
 
 button {
-    padding: 20px 40px;
+    padding: 60px 60px;
     font-size: 50px;
     border: none;
     border-radius: 10px;
@@ -88,12 +88,12 @@ p {
     position: fixed; /* Фиксируем блок внизу */
     bottom: 0;
     width: 100%;
-    height: 20px; /* Высота блока */
+    height: 0px; /* Высота блока */
     background: #ff0000; /* Красный фон */
     display: flex;
     align-items: center; /* Выровнять кнопки по центру по вертикали */
     justify-content: space-around;
-    z-index: 10;
+    z-index: 7;
 }
 
 #home-button {
@@ -123,8 +123,8 @@ p {
 }
 
 .footer-buttons img {
-    width: 20px; /* Размер иконки */
-    height: 20px; /* Размер иконки */
+    width: 30px; /* Размер иконки */
+    height: 30px; /* Размер иконки */
 }
 
 .cart-button-container {
@@ -164,8 +164,8 @@ p {
 }
 
 .cart-button img {
-    width: 80px;
-    height: 80px;
+    width: 30px;
+    height: 30px;
     filter: brightness(0) invert(1);
     z-index: 20; /* Находится выше фона */
 }
