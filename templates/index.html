@@ -177,7 +177,7 @@
                 if (section === 'contacts') {
                     showContent(`
                         <h3>Свяжитесь с нами</h3>
-                        <a href="tel:+375292251334" class="button-link">Позвонить: +375 29 225-13-34</a>
+                        <button onclick="copyPhoneNumber()">Позвонить: +375 29 225-13-34</button>
                         <button onclick="window.open('https://www.instagram.com/nekuri.by/', '_blank')">Instagram</button>
                         <button onclick="window.open('https://t.me/nekuri_by', '_blank')">Telegram канал</button>
                         <button onclick="window.open('https://t.me/nekuri_by_brest', '_blank')">Telegram чат</button>
@@ -187,6 +187,23 @@
                 } else {
                     alert(`Раздел "${section}" в разработке!`);
                 }
+            }
+            function copyPhoneNumber() {
+                const phoneNumber = '+375292251334';
+                navigator.clipboard.writeText(phoneNumber).then(() => {
+                    showToast('Номер скопирован');
+                }).catch(err => {
+                    alert('Не удалось скопировать номер: ' + err);
+                });
+            }
+
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
             }
 
 
