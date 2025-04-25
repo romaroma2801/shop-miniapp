@@ -182,6 +182,9 @@ p {
     display: flex;
     align-items: center; /* Вертикальное центрирование */
     justify-content: center; /* Горизонтальное центрирование */
+    opacity: 0; /* Начальная прозрачность */
+    transform: translateX(-20px); /* Сдвиг влево */
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 /* Стили для иконки внутри кнопки */
@@ -189,4 +192,19 @@ p {
     vertical-align: middle; /* Корректировка позиции иконки */
     width: 80px; /* Размер иконки */
     height: 80px;
+}
+#back-button.show {
+    opacity: 1; /* Полная видимость */
+    transform: translateX(0); /* Возвращение на место */
+}
+/* Общий контейнер для динамического контента */
+#content {
+    opacity: 1; /* Начальная прозрачность */
+    transition: opacity 0.5s ease-in-out; /* Плавный переход */
+}
+
+/* Стиль для скрытия контента */
+#content.hidden {
+    opacity: 0; /* Прозрачность при скрытии */
+    pointer-events: none; /* Отключаем взаимодействие */
 }
