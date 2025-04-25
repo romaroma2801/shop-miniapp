@@ -86,13 +86,6 @@
         function goBack() {
             const backButton = document.getElementById('back-button');
         
-            // Анимация исчезновения кнопки "Назад"
-            backButton.classList.remove('show');
-        
-            setTimeout(() => {
-                backButton.style.display = 'none';
-            }, 500);
-
             // Возвращаемся на предыдущий шаг
             if (currentState === "regions") {
                 showHome();
@@ -125,11 +118,6 @@
             const backButton = document.getElementById('back-button');
             backButton.style.display = 'block';
         
-            // Анимация появления кнопки "Назад"
-            setTimeout(() => {
-                backButton.classList.add('show');
-            }, 50);
-
             const regions = await loadData('regions');
             if (regions) {
                 const buttons = regions.map(region => `
@@ -143,6 +131,8 @@
         async function showCities(region) {
             currentState = "cities";
             currentRegion = region;
+            const backButton = document.getElementById('back-button');
+            backButton.style.display = 'block';
             const cities = await loadData(`cities/${region}`);
             if (cities) {
                 const buttons = cities.map(city => `
@@ -156,6 +146,8 @@
         async function showStores(city, region) {
             currentState = "stores";
             currentCity = city;
+            const backButton = document.getElementById('back-button');
+            backButton.style.display = 'block';
             const stores = await loadData(`stores/${region}/${city}`);
             if (stores) {
                 const buttons = stores.map(store => `
@@ -168,6 +160,8 @@
         // Показать детали магазина
         async function showStoreDetails(storeName) {
             currentState = "storeDetails";
+            const backButton = document.getElementById('back-button');
+            backButton.style.display = 'block';
             const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
             const store = stores.find(s => s.name === storeName);
             if (store) {
