@@ -16,32 +16,26 @@ SHOP_API_KEY = os.getenv("SHOP_API_KEY", "WWH15wOAGd0PwdBxGLc5nr2X0YGg0ALqXzbRUm
 def index():
     return render_template('index.html')
 
-# Страница выбора областей
+# Страница выбора областей и городов
 @app.route('/regions')
 def regions():
+    return render_template('regions.html')
+
+# API для получения данных
+@app.route('/api/regions', methods=['GET'])
+def get_regions():
     regions = list(STORE_DATA.keys())
-    return render_template('regions.html', regions=regions)
+    return jsonify(regions)
 
-# Страница выбора городов
-@app.route('/cities/<region>')
-def cities(region):
+@app.route('/api/cities/<region>', methods=['GET'])
+def get_cities(region):
     cities = list(STORE_DATA.get(region, {}).keys())
-    return render_template('cities.html', region=region, cities=cities)
+    return jsonify(cities)
 
-# Страница выбора магазинов
-@app.route('/stores/<region>/<city>')
-def stores(region, city):
+@app.route('/api/stores/<region>/<city>', methods=['GET'])
+def get_stores(region, city):
     stores = STORE_DATA.get(region, {}).get(city, [])
-    return render_template('stores.html', region=region, city=city, stores=stores)
-
-# Страница с деталями магазина
-@app.route('/store/<region>/<city>/<store_name>')
-def store_details(region, city, store_name):
-    stores = STORE_DATA.get(region, {}).get(city, [])
-    store = next((s for s in stores if s['name'] == store_name), None)
-    if store:
-        return render_template('store_details.html', store=store)
-    return "Магазин не найден", 404
+    return jsonify(stores)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
