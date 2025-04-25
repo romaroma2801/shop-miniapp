@@ -130,14 +130,15 @@
             function showHome() {
                 currentState = "home";
                 showContent(`
-                    <button data-action="showRegions()">Адреса магазинов</button>
-                    <button data-action="showSection('catalog')">Каталог товаров</button>
-                    <button data-action="showSection('review')">Оставить отзыв</button>
-                    <button data-action="showSection('contacts')">Контакты</button>
-                    <button data-action="showSection('jobs')">Вакансии</button>
-                    <button data-action="showSection('promotions')">Акции</button>
+                    <button data-action="regions">Адреса магазинов</button>
+                    <button data-action="section:catalog">Каталог товаров</button>
+                    <button data-action="section:review">Оставить отзыв</button>
+                    <button data-action="section:contacts">Контакты</button>
+                    <button data-action="section:jobs">Вакансии</button>
+                    <button data-action="section:promotions">Акции</button>
                 `, false);
             }
+
 
             async function showRegions() {
                 currentState = "regions";
@@ -354,25 +355,7 @@
             window.openCart = openCart;
             window.goBack = goBack;
             window.showSection = showSection;
-        document.getElementById('content').addEventListener('click', (e) => {
-             // ⭐ Звезды для оценки
-            if (e.target.classList.contains('star')) {
-                const count = parseInt(e.target.dataset.stars);
-                selectStars(count);
-            }
 
-            // 📤 Кнопка "Отправить"
-            if (e.target.id === 'submit-review') {
-                submitReview();
-            }
-
-            // 📌 Главные кнопки меню
-            const btn = e.target.closest('button[data-action]');
-            if (btn) {
-                const action = btn.dataset.action;
-                if (action === 'regions') showRegions();
-                else if (action.startsWith('section:')) showSection(action.split(':')[1]);
-            }
         });
     </script>
 </body>
