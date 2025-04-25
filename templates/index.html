@@ -261,15 +261,16 @@
                 showContent(`
                     <h3>Оцените качество обслуживания</h3>
                     <div id="stars" style="font-size: 32px;">
-                        ${[1,2,3,4,5].map(i => `<span onclick="selectStars(${i})" class="star" id="star${i}">⭐</span>`).join('')}
+                        ${[1,2,3,4,5].map(i => `<span class="star" data-stars="${i}" id="star${i}">⭐</span>`).join('')}
                     </div>
                     <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5" style="width: 90%; margin-top: 20px;"></textarea>
-                    <button onclick="submitReview()" style="margin-top: 15px;">Отправить</button>
+                    <button id="submit-review" style="margin-top: 15px;">Отправить</button>
                     <div id="toast" class="toast"></div>
                 `, false);
 
                 window.reviewStars = 0;
             }
+
             function selectStars(count) {
                 reviewStars = count;
                 for (let i = 1; i <= 5; i++) {
@@ -332,6 +333,25 @@
             window.openCart = openCart;
             window.goBack = goBack;
             window.showSection = showSection;
+        document.getElementById('content').addEventListener('click', (e) => {
+             // ⭐ Звезды для оценки
+            if (e.target.classList.contains('star')) {
+                const count = parseInt(e.target.dataset.stars);
+                selectStars(count);
+            }
+
+            // 📤 Кнопка "Отправить"
+            if (e.target.id === 'submit-review') {
+                submitReview();
+            }
+
+            // 📌 Главные кнопки меню
+            const btn = e.target.closest('button[data-action]');
+            if (btn) {
+                const action = btn.dataset.action;
+                if (action === 'regions') showRegions();
+                else if (action.startsWith('section:')) showSection(action.split(':')[1]);
+            }
         });
     </script>
 </body>
