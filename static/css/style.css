@@ -57,7 +57,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 80px;
+    padding: 12px 80px;
     z-index: 10;
     box-sizing: border-box;
 }
@@ -74,8 +74,8 @@ body {
 }
 
 .footer-buttons img {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
 }
 
 .cart-button-container {
