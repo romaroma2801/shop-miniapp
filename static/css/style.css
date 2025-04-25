@@ -10,7 +10,7 @@ body {
     margin: 0;
     padding: 0;
     overflow-y: hidden; /* Отключаем вертикальный скроллинг */
-    height: 80vh; /* Ограничиваем высоту страницы */
+    height: 100vh; /* Ограничиваем высоту страницы */
     display: flex;
     flex-direction: column;
 }
@@ -178,13 +178,6 @@ p {
     cursor: pointer;
     padding: 0; /* Убрать внутренние отступы */
     z-index: 10; /* Размещение поверх других элементов */
-    
-    display: flex;
-    align-items: center; /* Вертикальное центрирование */
-    justify-content: center; /* Горизонтальное центрирование */
-    opacity: 0; /* Начальная прозрачность */
-    transform: translateX(-20px); /* Сдвиг влево */
-    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 /* Стили для иконки внутри кнопки */
