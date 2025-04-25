@@ -162,7 +162,7 @@ h3 {
 
 #back-button {
     position: absolute;
-    left: 20px;
+    left: 80px; /* Отступ слева */
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
@@ -171,6 +171,6 @@ h3 {
 }
 
 #back-button img {
-    width: 40px;
-    height: 40px;
+    width: 80px; /* Увеличенный размер иконки */
+    height: 80px;
 }
