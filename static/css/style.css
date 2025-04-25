@@ -164,7 +164,7 @@ p {
 
 #back-button {
     position: absolute; /* Абсолютное позиционирование */
-    left: 20px; /* Отступ от левого края */
+    left: 80px; /* Отступ от левого края */
     top: 50%; /* Выравнивание по вертикали */
     transform: translateY(-50%); /* Центрирование по вертикали */
     background: transparent; /* Прозрачный фон */
@@ -178,5 +178,4 @@ p {
 #back-button img {
     width: 80px; /* Размер иконки */
     height: 80px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Тень только для иконки */
 }
