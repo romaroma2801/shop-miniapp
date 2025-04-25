@@ -57,7 +57,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 80px;
+    padding: 12px 50px;
     z-index: 10;
     box-sizing: border-box;
 }
@@ -124,10 +124,10 @@ body {
 #back-button {
     position: absolute;
     top: 50%;
-    left: 20px;
+    left: 30px;
     transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -135,8 +135,8 @@ body {
 }
 
 #back-button img {
-    width: 100%;
-    height: auto;
+    width: 32px;
+    height: 32px;
 }
 
 h3 {
