@@ -91,7 +91,7 @@
                     setTimeout(() => {
                         contentDiv.classList.remove('hidden');
                     }, 50);
-                }, 500);
+                }, 300);
             }
 
             function goBack() {
@@ -122,8 +122,8 @@
                 currentState = "regions";
                 const regions = await loadData('regions');
                 if (regions) {
-                    const buttons = regions.map(region => `<button onclick=\"showCities('${region}')\">${region}</button>`).join('');
-                    showContent(`<h3>Выберите область:</h3>${buttons}`);
+                    const buttons = regions.map(region => `<button onclick='showCities(${JSON.stringify(region)})'>${region}</button>`).join('');
+                    showContent(`<h3>Выберите область:</h3>${buttons}`, true);
                 }
             }
 
@@ -132,8 +132,8 @@
                 currentRegion = region;
                 const cities = await loadData(`cities/${region}`);
                 if (cities) {
-                    const buttons = cities.map(city => `<button onclick=\"showStores('${city}', '${region}')\">${city}</button>`).join('');
-                    showContent(`<h3>Города в области \"${region}\":</h3>${buttons}`);
+                    const buttons = cities.map(city => `<button onclick='showStores(${JSON.stringify(city)}, ${JSON.stringify(region)})'>${city}</button>`).join('');
+                    showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
                 }
             }
 
@@ -142,8 +142,8 @@
                 currentCity = city;
                 const stores = await loadData(`stores/${region}/${city}`);
                 if (stores) {
-                    const buttons = stores.map(store => `<button onclick=\"showStoreDetails('${store.name}')\">${store.name}</button>`).join('');
-                    showContent(`<h3>Магазины в городе \"${city}\":</h3>${buttons}`);
+                    const buttons = stores.map(store => `<button onclick='showStoreDetails(${JSON.stringify(store.name)})'>${store.name}</button>`).join('');
+                    showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
                 }
             }
 
@@ -156,8 +156,8 @@
                         <h3>${store.name}</h3>
                         <p><strong>Адрес:</strong> ${store.address}</p>
                         <p><strong>Режим работы:</strong> ${store.hours.replace(/\n/g, '<br>')}</p>
-                        <button onclick=\"window.open('${store.map_url}', '_blank')\">Посмотреть на карте</button>
-                    `);
+                        <button onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
+                    `, true);
                 }
             }
 
@@ -174,8 +174,20 @@
             }
 
             function showSection(section) {
-                alert(`Раздел \"${section}\" в разработке!`);
+                alert(`Раздел "${section}" в разработке!`);
             }
+
+            // Делать функции доступными глобально
+            window.showRegions = showRegions;
+            window.showCities = showCities;
+            window.showStores = showStores;
+            window.showStoreDetails = showStoreDetails;
+            window.showHome = showHome;
+            window.goHome = goHome;
+            window.auth = auth;
+            window.openCart = openCart;
+            window.goBack = goBack;
+            window.showSection = showSection;
         });
     </script>
 </body>
