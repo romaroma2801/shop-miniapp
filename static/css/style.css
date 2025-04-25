@@ -16,23 +16,23 @@ body {
 }
 .menu-vertical {
     display: flex;
-    margin-top: 100px; /* Отступ под шапку */
-    margin-bottom: 120px; /* Отступ под нижнее меню */
+    margin-top: 20px; /* Отступ под шапку */
+    margin-bottom: 60px; /* Отступ под нижнее меню */
     flex-direction: column;
     align-items: center;
-    gap: 20px; /* Расстояние между кнопками */
+    gap: 5px; /* Расстояние между кнопками */
     padding: 160px 40px 40px; /* Отступы сверху, слева/справа и снизу */
     max-height: calc(95vh - 200px); /* Ограничиваем высоту меню */
     overflow-y: auto; /* Добавляем скроллинг только для меню */
 }
 .menu-vertical button {
-    padding: 40px 80px; /* Увеличить высоту и ширину кнопок */
+    padding: 10px 20px; /* Увеличить высоту и ширину кнопок */
     border: none;
-    border-radius: 20px; /* Большие радиусы скругления */
+    border-radius: 10px; /* Большие радиусы скругления */
     background: #ff0000; /* Красный фон */
     color: white;
     cursor: pointer;
-    font-size: 40px; /* Увеличить размер текста */
+    font-size: 10px; /* Увеличить размер текста */
     width: 90%; /* Занимать 90% ширины экрана */
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Более заметная тень */
 }
@@ -48,7 +48,7 @@ body {
 }
 
 .logo {
-    max-width: 450px;
+    max-width: 150px;
     height: auto;
     display: block;
     margin: 0 auto;
@@ -76,19 +76,19 @@ button {
 }
 
 h3 {
-    font-size: 45px;
+    font-size: 15px;
     margin-bottom: 20px;
     text-align: center;
 }
 p {
-    font-size: 40px; /* Размер шрифта параграфа */
+    font-size: 12px; /* Размер шрифта параграфа */
     text-align: left;
 }
 .footer-buttons {
     position: fixed; /* Фиксируем блок внизу */
     bottom: 0;
     width: 100%;
-    height: 90px; /* Высота блока */
+    height: 20px; /* Высота блока */
     background: #ff0000; /* Красный фон */
     display: flex;
     align-items: center; /* Выровнять кнопки по центру по вертикали */
@@ -98,9 +98,9 @@ p {
 
 #home-button {
     position: absolute; /* Абсолютное позиционирование */
-    left: 150px; /* Отступ от левого края */
-    width: 80px; /* Ширина кнопки */
-    height: 80px; /* Высота кнопки */
+    left: 20px; /* Отступ от левого края */
+    width: 20px; /* Ширина кнопки */
+    height: 20px; /* Высота кнопки */
     display: flex;
     align-items: center; /* Выровнять иконку по центру */
     justify-content: center; /* Выровнять иконку по центру */
@@ -111,9 +111,9 @@ p {
 
 #login-button {
     position: absolute; /* Абсолютное позиционирование */
-    right: 150px; /* Отступ от правого края */
-    width: 80px; /* Ширина кнопки */
-    height: 80px; /* Высота кнопки */
+    right: 20px; /* Отступ от правого края */
+    width: 20px; /* Ширина кнопки */
+    height: 20px; /* Высота кнопки */
     display: flex;
     align-items: center; /* Выровнять иконку по центру */
     justify-content: center; /* Выровнять иконку по центру */
@@ -123,8 +123,8 @@ p {
 }
 
 .footer-buttons img {
-    width: 70px; /* Размер иконки */
-    height: 70px; /* Размер иконки */
+    width: 20px; /* Размер иконки */
+    height: 20px; /* Размер иконки */
 }
 
 .cart-button-container {
@@ -134,20 +134,22 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 120px;
+    height: 20px;
+    z-index: 10; /* Находится выше фона */
 }
 
 .cart-button {
     position: relative;
     overflow: hidden;
     border-radius: 50%;
-    width: 180px;
-    height: 180px;
+    width: 30px;
+    height: 30px;
     background: #ff0000;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 10; /* Находится выше фона */
 }
 
 .cart-button::before {
@@ -165,14 +167,15 @@ p {
     width: 80px;
     height: 80px;
     filter: brightness(0) invert(1);
+    z-index: 20; /* Находится выше фона */
 }
 
 /* Стили для кнопки "Назад" */
 #back-button {
     position: absolute; /* Абсолютное позиционирование */
-    left: 80px; /* Отступ от левого края */
-    width: 80px; /* Ширина кнопки */
-    height: 80px; /* Высота кнопки */
+    left: 20px; /* Отступ от левого края */
+    width: 20px; /* Ширина кнопки */
+    height: 20px; /* Высота кнопки */
     top: 50%; /* Выравнивание по вертикали */
     transform: translateY(-50%); /* Центрирование по вертикали */
     display: flex;
@@ -188,8 +191,8 @@ p {
 /* Стили для иконки внутри кнопки */
 #back-button img {
     vertical-align: middle; /* Корректировка позиции иконки */
-    width: 80px; /* Размер иконки */
-    height: 80px;
+    width: 20px; /* Размер иконки */
+    height: 20px;
 }
 /* Общий контейнер для динамического контента */
 #content {
