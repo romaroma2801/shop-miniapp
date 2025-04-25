@@ -205,6 +205,6 @@ p {
 
 /* Стиль для скрытия контента */
 #content.hidden {
-    opacity: 0; /* Прозрачность при скрытии */
-    pointer-events: none; /* Отключаем взаимодействие */
+    opacity: 0; /* Только прозрачность */
+    transition: opacity 0.5s ease;
 }
