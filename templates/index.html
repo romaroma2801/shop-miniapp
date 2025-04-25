@@ -14,7 +14,9 @@
         <img src="/static/logo22.png" alt="Логотип" class="logo">
     </div>
 
-    <div class="menu-vertical">
+    <!-- Блок для динамического контента -->
+    <div class="menu-vertical" id="content">
+        <!-- Главное меню -->
         <button onclick="showRegions()">Адреса магазинов</button>
         <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
@@ -22,7 +24,6 @@
         <button onclick="showSection('jobs')">Вакансии</button>
         <button onclick="showSection('promotions')">Акции</button>
     </div>
-
 
     <!-- Первый блок: Кнопки домой и вход -->
     <div class="footer-buttons">
@@ -47,7 +48,7 @@
             document.body.innerHTML = "Ошибка: откройте через Telegram!";
         }
 
-         // Глобальные переменные для хранения состояния
+        // Глобальные переменные для хранения состояния
         let currentState = "home";
         let currentRegion = null;
         let currentCity = null;
@@ -86,7 +87,14 @@
         function showHome() {
             currentState = "home";
             document.getElementById('back-button').style.display = 'none'; // Скрываем кнопку "Назад"
-            showContent(`<button onclick="showRegions()">Адреса магазинов</button>`);
+            showContent(`
+                <button onclick="showRegions()">Адреса магазинов</button>
+                <button onclick="showSection('catalog')">Каталог товаров</button>
+                <button onclick="showSection('review')">Оставить отзыв</button>
+                <button onclick="showSection('contacts')">Контакты</button>
+                <button onclick="showSection('jobs')">Вакансии</button>
+                <button onclick="showSection('promotions')">Акции</button>
+            `);
         }
 
         // Показать список областей
@@ -154,6 +162,11 @@
 
         function openCart() {
             alert("Функция корзины в разработке!");
+        }
+
+        // Дополнительная функция для показа других разделов
+        function showSection(section) {
+            alert(`Раздел "${section}" в разработке!`);
         }
     </script>
 </body>
