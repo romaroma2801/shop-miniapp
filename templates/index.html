@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,18 +7,20 @@
 </head>
 <body>
     <div class="header">
-        <!-- Кнопка "Назад" -->
-        <button id="back-button" onclick="goBack()" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
-            <img src="/static/back.svg" alt="Назад">
-        </button>
         <img src="/static/logo22.png" alt="Логотип" class="logo">
     </div>
 
-    <div class="content" id="content">
-        <p>Выберите раздел...</p>
+    <div class="menu-vertical">
+        <button onclick="showSection('addresses')">Адреса магазинов</button>
+        <button onclick="showSection('catalog')">Каталог товаров</button>
+        <button onclick="showSection('review')">Оставить отзыв</button>
+        <button onclick="showSection('contacts')">Контакты</button>
+        <button onclick="showSection('jobs')">Вакансии</button>
+        <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <!-- Нижнее меню -->
+
+    <!-- Первый блок: Кнопки домой и вход -->
     <div class="footer-buttons">
         <button onclick="goHome()">
             <img src="/static/home.svg" alt="Домой">
@@ -29,6 +30,7 @@
         </button>
     </div>
 
+    <!-- Второй блок: Кнопка корзины -->
     <div class="cart-button-container">
         <button onclick="openCart()" class="cart-button">
             <img src="/static/shop.svg" alt="Корзина">
@@ -41,9 +43,6 @@
             document.body.innerHTML = "Ошибка: откройте через Telegram!";
         }
 
-        // Глобальная переменная для хранения текущего состояния
-        let currentState = "home";
-
         // Функция для загрузки данных
         async function loadData(url) {
             try {
@@ -53,88 +52,6 @@
             } catch (error) {
                 console.error(error);
                 return null;
-            }
-        }
-
-        // Функция для отображения контента
-        function showContent(content) {
-            document.getElementById('content').innerHTML = content;
-        }
-
-        // Функция для возврата на предыдущую страницу
-        function goBack() {
-            if (currentState === "regions") {
-                showSection("home");
-            } else if (currentState === "cities") {
-                showRegions();
-            } else if (currentState === "stores") {
-                showCities(currentRegion);
-            } else if (currentState === "storeDetails") {
-                showStores(currentCity, currentRegion);
-            }
-        }
-
-        // Показать домашнюю страницу
-        function showSection(section) {
-            currentState = section;
-
-            if (section === "addresses") {
-                showRegions();
-            } else {
-                showContent(`<p>Раздел "${section}" в разработке</p>`);
-            }
-        }
-
-        // Показать список областей
-        async function showRegions() {
-            currentState = "regions";
-            const regions = await loadData('regions');
-            if (regions) {
-                const buttons = regions.map(region => `
-                    <button onclick="showCities('${region}')">${region}</button>
-                `).join('');
-                showContent(`<h3>Выберите область:</h3>${buttons}`);
-            }
-        }
-
-        // Показать список городов
-        async function showCities(region) {
-            currentState = "cities";
-            currentRegion = region;
-            const cities = await loadData(`cities/${region}`);
-            if (cities) {
-                const buttons = cities.map(city => `
-                    <button onclick="showStores('${city}', '${region}')">${city}</button>
-                `).join('');
-                showContent(`<h3>Выберите город в области "${region}":</h3>${buttons}`);
-            }
-        }
-
-        // Показать список магазинов
-        async function showStores(city, region) {
-            currentState = "stores";
-            currentCity = city;
-            const stores = await loadData(`stores/${region}/${city}`);
-            if (stores) {
-                const buttons = stores.map(store => `
-                    <button onclick="showStoreDetails('${store.name}')">${store.name}</button>
-                `).join('');
-                showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`);
-            }
-        }
-
-        // Показать детали магазина
-        async function showStoreDetails(storeName) {
-            currentState = "storeDetails";
-            const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
-            const store = stores.find(s => s.name === storeName);
-            if (store) {
-                showContent(`
-                    <h3>${store.name}</h3>
-                    <p><strong>Адрес:</strong> ${store.address}</p>
-                    <p><strong>Режим работы:</strong> ${store.hours}</p>
-                    <button onclick="window.open('${store.map_url}', '_blank')">Посмотреть на карте</button>
-                `);
             }
         }
 
