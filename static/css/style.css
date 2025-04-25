@@ -78,7 +78,10 @@ h3 {
     margin-bottom: 20px;
     text-align: center;
 }
-
+p {
+    font-size: 35px; /* Размер шрифта параграфа */
+    text-align: center;
+}
 .footer-buttons {
     position: fixed; /* Фиксируем блок внизу */
     bottom: 0;
