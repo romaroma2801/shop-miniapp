@@ -66,12 +66,28 @@
         }
 
         // Функция для отображения контента
-        function showContent(content) {
-            document.getElementById('content').innerHTML = content;
+        function showRegions() {
+            currentState = "regions";
+            const backButton = document.getElementById('back-button');
+            backButton.style.display = 'block';
+
+            // Добавляем класс для анимации появления
+            setTimeout(() => {
+                backButton.classList.add('show');
+            }, 50);
         }
 
-        // Функция для возврата на предыдущий шаг
         function goBack() {
+            const backButton = document.getElementById('back-button');
+
+            // Удаляем класс для анимации исчезновения
+            backButton.classList.remove('show');
+
+            // Ждем завершения анимации перед скрытием
+            setTimeout(() => {
+                backButton.style.display = 'none';
+            }, 500);
+
             if (currentState === "regions") {
                 showHome();
             } else if (currentState === "cities") {
