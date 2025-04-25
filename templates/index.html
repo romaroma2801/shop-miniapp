@@ -190,11 +190,37 @@
             }
             function copyPhoneNumber() {
                 const phoneNumber = '+375292251334';
-                navigator.clipboard.writeText(phoneNumber).then(() => {
+
+                // Проверяем поддержку clipboard API
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(phoneNumber).then(() => {
+                        showToast('Номер скопирован');
+                    }).catch(err => {
+                        fallbackCopyText(phoneNumber);
+                    });
+                } else {
+                    // fallback для старых браузеров / WebView
+                    fallbackCopyText(phoneNumber);
+                }
+            }
+
+            function fallbackCopyText(text) {
+                const input = document.createElement('textarea');
+                input.value = text;
+                input.style.position = 'fixed';  // не scroll-бар
+                input.style.left = '-9999px';
+                document.body.appendChild(input);
+                input.focus();
+                input.select();
+
+                try {
+                    document.execCommand('copy');
                     showToast('Номер скопирован');
-                }).catch(err => {
+                } catch (err) {
                     alert('Не удалось скопировать номер: ' + err);
-                });
+                }
+
+                document.body.removeChild(input);
             }
 
             function showToast(message) {
