@@ -67,7 +67,7 @@ body {
     color: white;
     padding: 20px; /* Уменьшить отступы */
     display: flex;
-    justify-content: space-around; /* Равномерное распределение кнопок */
+    justify-content: center; /* Равномерное распределение кнопок */
     height: 90px; /* Установить фиксированную высоту */
 }
 
@@ -78,12 +78,12 @@ body {
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 7px;
 }
 
 .footer-buttons img {
-    width: 70px; /* Увеличить размер иконок */
-    height: 70px;
+    width: 80px; /* Увеличить размер иконок */
+    height: 80px;
 }
 
 .cart-button-container {
