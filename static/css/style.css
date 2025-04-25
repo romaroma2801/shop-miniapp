@@ -23,6 +23,17 @@ body {
     max-height: calc(100vh - 200px); /* Ограничиваем высоту меню */
     overflow-y: auto; /* Добавляем скроллинг только для меню */
 }
+.menu-vertical button {
+    padding: 40px 80px; /* Увеличить высоту и ширину кнопок */
+    border: none;
+    border-radius: 20px; /* Большие радиусы скругления */
+    background: #ff0000; /* Красный фон */
+    color: white;
+    cursor: pointer;
+    font-size: 40px; /* Увеличить размер текста */
+    width: 90%; /* Занимать 90% ширины экрана */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Более заметная тень */
+}
 .header {
     position: fixed;
     top: 0;
