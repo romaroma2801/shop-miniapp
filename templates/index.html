@@ -105,8 +105,21 @@
 
             async function loadData(url) {
                 try {
-                    const response = await fetch(`/api/${url}`);
-                    if (!response.ok) throw new Error("Ошибка загрузки данных");
+                    let response;
+
+                    // Если URL начинается с /api/, загружаем данные с вашего сайта
+                    if (url.startsWith('/api/')) {
+                        const baseUrl = 'https://nekuri.by';
+                        response = await fetch(`${baseUrl}${url}`);
+                    } else {
+                        // Иначе загружаем данные локально (например, из store_full.json)
+                        response = await fetch(`/${url}`);
+                    }
+
+                    if (!response.ok) {
+                        throw new Error("Ошибка загрузки данных");
+                    }
+
                     return await response.json();
                 } catch (error) {
                     console.error(error);
@@ -254,11 +267,28 @@
                             </div>
                         </div>
                     `, true);
+                } else if (section === 'promotions') {
+                    currentState = "promotions";
+                    loadPromotions();
                 } else {
                     alert(`Раздел "${section}" в разработке!`);
                 }
             }
-
+            async function loadPromotions() {
+                const promotions = await loadData('news-feed');
+                if (promotions) {
+                    const promotionItems = promotions.map(promotion => `
+                        <div class="promotion-item" onclick="window.open('${promotion.link}', '_blank')">
+                            <img src="${promotion.image}" alt="${promotion.title}">
+                            <h4>${promotion.title}</h4>
+                            <p>Нажмите, чтобы узнать больше</p>
+                        </div>
+                    `).join('');
+                    showContent(`<h3>Акции:</h3><div style="display: flex; flex-direction: column; gap: 10px;">${promotionItems}</div>`, true);
+                } else {
+                    showContent('<p>Не удалось загрузить акции. Попробуйте позже.</p>', false);
+                }
+            }
 
             function checkReviewCooldown() {
                 const lastTime = localStorage.getItem('lastReviewTime');
