@@ -147,8 +147,6 @@
                     showCities(currentRegion);
                 } else if (currentState === "storeDetails") {
                     showStores(currentCity, currentRegion);
-                } else if (currentState === "review" || currentState === "jobs" || currentState === "contacts") {
-                    showHome();
                 }
             }
 
@@ -158,10 +156,7 @@
                 if (regions) {
                     const buttons = regions.map(region =>
                         `<button data-action="city:${region}">${region}</button>`).join('');
-                    showContent(
-                    `<h3>Выберите область:</h3>
-                    ${buttons},
-                    `true);
+                    showContent(`<h3>Выберите область:</h3>${buttons}`, true);
                 }
             }
 
@@ -172,24 +167,18 @@
                 if (cities) {
                     const buttons = cities.map(city =>
                         `<button data-action="store:${city}:${region}">${city}</button>`).join('');
-                    showContent(
-                    `<h3>Города в области "${region}":</h3>
-                    ${buttons}
-                    `, true);
+                    showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
                 }
             }
 
             async function showStores(city, region) {
                 currentState = "stores";
                 currentCity = city;
-                const stores = await loadData`(stores/${region}/${city}`);
+                const stores = await loadData(`stores/${region}/${city}`);
                 if (stores) {
                     const buttons = stores.map(store =>
                         `<button data-action="detail:${store.name}">${store.name}</button>`).join('');
-                    showContent(
-                        `<h3>Магазины в городе "${city}":</h3>
-                        ${buttons} 
-                    `, true);
+                    showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
                 }
             }
 
@@ -203,13 +192,12 @@
                         <p><strong>Адрес:</strong> ${store.address}</p>
                         <p><strong>Режим работы:</strong> ${store.hours.replace(/\n/g, '<br>')}</p>
                         <button onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
-                   ` , true);
+                    `, true);
                 }
             }
 
             function showSection(section) {
                 if (section === 'contacts') {
-                    currentState = "contacts";
                     showContent(`
                         <h3>Свяжитесь с нами</h3>
                         <button onclick="copyPhoneNumber()">Позвонить: +375 29 225-13-34</button>
@@ -218,56 +206,13 @@
                         <button onclick="window.open('https://t.me/nekuri_by_brest', '_blank')">Telegram чат</button>
                         <button onclick="window.open('https://vk.com/nekuribrest', '_blank')">ВКонтакте</button>
                         <button onclick="window.open('https://www.tiktok.com/@nekuri.by', '_blank')">TikTok</button>
-                    `, true);
+                    `, false);
                 } else if (section === 'review') {
                     checkReviewCooldown();
-                } else if (section === 'jobs') {
-                    currentState = "jobs";
-                    showContent(`
-                        <div style="text-align: left; padding: 0 16px; font-size: 14px;">
-                            <h3>Продавец-консультант</h3>
-                            <p>Эта вакансия для тех, кто влюблен в наш продукт, кто любит процесс работы с покупателем и хочет развиваться в розничном бизнесе.</p>
-                            <h4>Обязанности:</h4>
-                            <ul>
-                                <li>Профессионально консультировать клиентов и успешно продавать электронные сигареты (аксессуары, комплектующие).</li>
-                                <li>Задавать стандарты лучшего клиентского сервиса в розничной сети.</li>
-                                <li>Предпродажная подготовка (проверка количества, комплектности, соответствия маркировки, внешнего вида).</li>
-                                <li>Расчет покупателей на кассе.</li>
-                                <li>Выкладка товара, ценники, маркировка.</li>
-                                <li>Участие в инвентаризациях.</li>
-                                <li>Поддержание чистоты и порядка в торговом зале.</li>
-                                <li>Соблюдение корпоративных стандартов.</li>
-                            </ul>
-                            <h4>Требования:</h4>
-                            <ul>
-                                <li>Грамотная речь, активность, вежливость, внимательность, доброжелательность, стрессоустойчивость, ответственность.</li>
-                                <li>Как плюс — знание кассовой дисциплины, умение работать с денежными средствами.</li>
-                                <li>Умение работать в команде, желание продавать, коммуникабельность, наличие лидерских качеств.</li>
-                            </ul>
-                            <p>Мы рады принять в наш дружный, молодой коллектив коллег, которые хотят двигаться вперед!</p>
-                            <h4>Условия работы:</h4>
-                            <ul>
-                                <li>Профессиональное обучение.</li>
-                                <li>Работа в интересном и дружелюбном коллективе.</li>
-                                <li>Оплата труда, зависящая от Вашей работы.</li>
-                            </ul>
-                            <p>Если всё изложенное выше Вам интересно, то мы ждём Ваших откликов!</p>
-                            <h3 style="margin-top: 20px;">Анкета кандидата</h3>
-                            <p>После рассмотрения резюме с Вами свяжется наш менеджер по подбору персонала.</p>
-                            <div class="form-container">
-                                <iframe src="https://forms.yandex.ru/u/68079eb7d046880cc459b018/?iframe=1"
-                                    frameborder="0"
-                                    name="ya-form-68079eb7d046880cc459b018"
-                                    width="100%"
-                                    height="480" style="border: none;"></iframe>
-                            </div>
-                        </div>
-                    `, true);
                 } else {
-                    alert(Раздел "${section}" в разработке!);
+                    alert(`Раздел "${section}" в разработке!`);
                 }
             }
-
 
             function checkReviewCooldown() {
                 const lastTime = localStorage.getItem('lastReviewTime');
@@ -289,7 +234,6 @@
             }
 
             function showReviewForm() {
-                currentState = "review";
                 showContent(`
                     <h3>Оцените качество обслуживания</h3>
                     <div id="stars" style="font-size: 32px;">
@@ -298,7 +242,7 @@
                     <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5" style="width: 90%; margin-top: 20px;"></textarea>
                     <button id="submit-review" style="margin-top: 15px;">Отправить</button>
                     <div id="toast" class="toast"></div>
-                `, true);
+                `, false);
                 window.reviewStars = 0;
             }
 
