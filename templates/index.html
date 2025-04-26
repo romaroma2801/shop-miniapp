@@ -23,12 +23,12 @@
     </div>
 
     <div class="menu-vertical" id="content">
-        <button onclick="showRegions()">Адреса магазинов</button>
-        <button onclick="showSection('catalog')">Каталог товаров</button>
-        <button onclick="showSection('review')">Оставить отзыв</button>
-        <button onclick="showSection('contacts')">Контакты</button>
-        <button onclick="showSection('jobs')">Вакансии</button>
-        <button onclick="showSection('promotions')">Акции</button>
+        <button data-action="regions">Адреса магазинов</button>
+        <button data-action="catalog">Каталог товаров</button>
+        <button data-action="review">Оставить отзыв</button>
+        <button data-action="contacts">Контакты</button>
+        <button data-action="jobs">Вакансии</button>
+        <button data-action="promotions">Акции</button>
     </div>
 
     <div class="footer-buttons">
@@ -47,8 +47,12 @@
     </div>
 
     <script>
+        let storeData = null
         document.addEventListener('DOMContentLoaded', () => {
             const setFullHeight = () => {
+            loadData('static/store_full.json').then(data => {
+                storeData = data;
+            }); 
                 document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
             };
             window.addEventListener('resize', setFullHeight);
@@ -66,7 +70,7 @@
                 document.body.innerHTML = "Ошибка: откройте через Telegram!";
                 return;
             }
-
+            
             let currentState = "home";
             let currentRegion = null;
             let currentCity = null;
@@ -88,6 +92,8 @@
                     } else if (action.startsWith('detail:')) {
                         showStoreDetails(action.split(':')[1]);
                     } else if (action === 'goHome') {
+                    else if (action === 'promotions') showPromotions();
+                    else if (action.startsWith('section:')) showSection(action.split(':')[1]);
                         goHome();
                     }
                 }
@@ -147,7 +153,7 @@
                     <button data-action="section:review">Оставить отзыв</button>
                     <button data-action="section:contacts">Контакты</button>
                     <button data-action="section:jobs">Вакансии</button>
-                    <button data-action="section:promotions">Акции</button>
+                    <button data-action="promotions">Акции</button>
                 `, false);
             }
 
@@ -167,39 +173,37 @@
 
             async function showRegions() {
                 currentState = "regions";
-                const regions = await loadData('regions');
-                if (regions) {
-                    const buttons = regions.map(region =>
-                        `<button data-action="city:${region}">${region}</button>`).join('');
-                    showContent(`<h3>Выберите область:</h3>${buttons}`, true);
-                }
+                if (!storeData) return;
+                const regions = Object.keys(storeData);
+                const buttons = regions.map(region =>
+                    `<button data-action="city:${region}">${region}</button>`).join('');
+                showContent(`<h3>Выберите область:</h3>${buttons}`, true);
             }
 
             async function showCities(region) {
                 currentState = "cities";
                 currentRegion = region;
-                const cities = await loadData(`cities/${region}`);
-                if (cities) {
-                    const buttons = cities.map(city =>
-                        `<button data-action="store:${city}:${region}">${city}</button>`).join('');
-                    showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
-                }
+                if (!storeData || !storeData[region]) return;
+                const cities = Object.keys(storeData[region]);
+                const buttons = cities.map(city =>
+                    `<button data-action="store:${city}:${region}">${city}</button>`).join('');
+                showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
             }
 
             async function showStores(city, region) {
                 currentState = "stores";
                 currentCity = city;
-                const stores = await loadData(`stores/${region}/${city}`);
-                if (stores) {
-                    const buttons = stores.map(store =>
-                        `<button data-action="detail:${store.name}">${store.name}</button>`).join('');
-                    showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
-                }
+                if (!storeData || !storeData[region] || !storeData[region][city]) return;
+                const stores = storeData[region][city];
+                const buttons = stores.map(store =>
+                    `<button data-action="detail:${store.name}">${store.name}</button>`).join('');
+                showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
             }
 
             async function showStoreDetails(storeName) {
                 currentState = "storeDetails";
-                const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
+                if (!storeData || !storeData[currentRegion] || !storeData[currentRegion][currentCity]) return;
+                const stores = storeData[currentRegion][currentCity];
                 const store = stores.find(s => s.name === storeName);
                 if (store) {
                     showContent(`
@@ -210,6 +214,7 @@
                     `, true);
                 }
             }
+
 
             function showSection(section) {
                 if (section === 'contacts') {
@@ -269,25 +274,25 @@
                     `, true);
                 } else if (section === 'promotions') {
                     currentState = "promotions";
-                    loadPromotions();
+                    showPromotions();
                 } else {
                     alert(`Раздел "${section}" в разработке!`);
                 }
             }
             async function showPromotions() {
                 currentState = "promotions";
-                const promotions = await loadData('/api/news-feed.php'); // Загружаем акции с вашего API
+                const promotions = await loadData('/api/news-feed.php');
                 if (promotions) {
-                    const promotionItems = promotions.map(promotion => `
-                        <div class="promotion-item" onclick="window.open('${promotion.link}', '_blank')">
-                            <img src="${promotion.image}" alt="${promotion.title}">
-                            <h4>${promotion.title}</h4>
-                            <p>Нажмите, чтобы узнать больше</p>
+                    const cards = promotions.map(promo => `
+                        <div class="promo-card">
+                            <img src="${promo.image}" alt="${promo.title}" style="width:100%; border-radius: 12px;">
+                            <h4>${promo.title}</h4>
+                            <button onclick="window.open('${promo.link}', '_blank')">Подробнее</button>
                         </div>
                     `).join('');
-                    showContent(`<h3>Акции:</h3><div style="display: flex; flex-direction: column; gap: 10px;">${promotionItems}</div>`, true);
+                    showContent(`<h3>Акции и новости:</h3>${cards}`, true);
                 } else {
-                    showContent('<p>Не удалось загрузить акции. Попробуйте позже.</p>', false);
+                    showContent(`<h3>Не удалось загрузить акции</h3>`, true);
                 }
             }
 
