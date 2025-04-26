@@ -49,7 +49,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const setFullHeight = () => {
-                document.documentElement.style.setProperty('--vh', ${window.innerHeight * 0.01}px);
+                document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
             };
             window.addEventListener('resize', setFullHeight);
             window.addEventListener('load', setFullHeight);
@@ -158,7 +158,10 @@
                 if (regions) {
                     const buttons = regions.map(region =>
                         <button data-action="city:${region}">${region}</button>).join('');
-                    showContent(<h3>Выберите область:</h3>${buttons}, true);
+                    showContent(
+                    `<h3>Выберите область:</h3>
+                    ${buttons},
+                    `true);
                 }
             }
 
@@ -169,7 +172,10 @@
                 if (cities) {
                     const buttons = cities.map(city =>
                         <button data-action="store:${city}:${region}">${city}</button>).join('');
-                    showContent(<h3>Города в области "${region}":</h3>${buttons}, true);
+                    showContent(
+                    `<h3>Города в области "${region}":</h3>
+                    ${buttons}
+                    `, true);
                 }
             }
 
@@ -180,7 +186,10 @@
                 if (stores) {
                     const buttons = stores.map(store =>
                         <button data-action="detail:${store.name}">${store.name}</button>).join('');
-                    showContent(<h3>Магазины в городе "${city}":</h3>${buttons}, true);
+                    showContent(
+                        `<h3>Магазины в городе "${city}":</h3>
+                        ${buttons}, 
+                        `true);
                 }
             }
 
@@ -189,19 +198,19 @@
                 const stores = await loadData(stores/${currentRegion}/${currentCity});
                 const store = stores.find(s => s.name === storeName);
                 if (store) {
-                    showContent(
+                    showContent(`
                         <h3>${store.name}</h3>
                         <p><strong>Адрес:</strong> ${store.address}</p>
                         <p><strong>Режим работы:</strong> ${store.hours.replace(/\n/g, '<br>')}</p>
                         <button onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
-                    , true);
+                   ` , true);
                 }
             }
 
             function showSection(section) {
                 if (section === 'contacts') {
                     currentState = "contacts";
-                    showContent(
+                    showContent(`
                         <h3>Свяжитесь с нами</h3>
                         <button onclick="copyPhoneNumber()">Позвонить: +375 29 225-13-34</button>
                         <button onclick="window.open('https://www.instagram.com/nekuri.by/', '_blank')">Instagram</button>
@@ -209,12 +218,12 @@
                         <button onclick="window.open('https://t.me/nekuri_by_brest', '_blank')">Telegram чат</button>
                         <button onclick="window.open('https://vk.com/nekuribrest', '_blank')">ВКонтакте</button>
                         <button onclick="window.open('https://www.tiktok.com/@nekuri.by', '_blank')">TikTok</button>
-                    , true);
+                    `, true);
                 } else if (section === 'review') {
                     checkReviewCooldown();
                 } else if (section === 'jobs') {
                     currentState = "jobs";
-                    showContent(
+                    showContent(`
                         <div style="text-align: left; padding: 0 16px; font-size: 14px;">
                             <h3>Продавец-консультант</h3>
                             <p>Эта вакансия для тех, кто влюблен в наш продукт, кто любит процесс работы с покупателем и хочет развиваться в розничном бизнесе.</p>
@@ -253,7 +262,7 @@
                                     height="480" style="border: none;"></iframe>
                             </div>
                         </div>
-                    , true);
+                    `, true);
                 } else {
                     alert(Раздел "${section}" в разработке!);
                 }
@@ -269,10 +278,10 @@
                     if (remaining > 0) {
                         const hours = Math.floor(remaining / (60 * 60 * 1000));
                         const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-                        showContent(
+                        showContent(`
                             <p>⚠️ Вы уже отправляли отзыв за последние 24 часа.</p>
                             <p>⌛️ До следующей возможности оставить отзыв осталось:<br><strong>${hours} ч ${minutes} мин</strong>.</p>
-                        , false);
+                        `, false);
                         return;
                     }
                 }
@@ -281,7 +290,7 @@
 
             function showReviewForm() {
                 currentState = "review";
-                showContent(
+                showContent(`
                     <h3>Оцените качество обслуживания</h3>
                     <div id="stars" style="font-size: 32px;">
                         ${[1, 2, 3, 4, 5].map(i => <span class="star" data-stars="${i}" id="star${i}">⭐</span>).join('')}
@@ -289,7 +298,7 @@
                     <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5" style="width: 90%; margin-top: 20px;"></textarea>
                     <button id="submit-review" style="margin-top: 15px;">Отправить</button>
                     <div id="toast" class="toast"></div>
-                , true);
+                `, true);
                 window.reviewStars = 0;
             }
 
@@ -319,11 +328,11 @@
                 }
                 sendReviewToTelegram(reviewStars, text);
                 localStorage.setItem('lastReviewTime', Date.now().toString());
-                showContent(
+                showContent(`
                     <p>🙏 Спасибо за оставленный отзыв!</p>
                     <p>Нам важно ваше мнение 😊</p>
                     <button data-action="goHome">Главное меню</button>
-                , false);
+                `, false);
             }
 
             function sendReviewToTelegram(stars, text) {
