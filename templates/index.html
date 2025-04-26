@@ -147,6 +147,8 @@
                     showCities(currentRegion);
                 } else if (currentState === "storeDetails") {
                     showStores(currentCity, currentRegion);
+                } else if (currentState === "review" || currentState === "jobs" || currentState === "contacts") {
+                    showHome();
                 }
             }
 
@@ -206,7 +208,8 @@
                         <button onclick="window.open('https://t.me/nekuri_by_brest', '_blank')">Telegram чат</button>
                         <button onclick="window.open('https://vk.com/nekuribrest', '_blank')">ВКонтакте</button>
                         <button onclick="window.open('https://www.tiktok.com/@nekuri.by', '_blank')">TikTok</button>
-                    `, false);
+                    currentState = "contacts";
+                    `, true);
                 } else if (section === 'review') {
                     checkReviewCooldown();
                 } else if (section === 'jobs') {
@@ -249,7 +252,8 @@
                                     height="480" style="border: none;"></iframe>
                             </div>
                         </div>
-                    `, false);
+                    currentState = "jobs";
+                    `, true);
                 } else {
                     alert(`Раздел "${section}" в разработке!`);
                 }
@@ -284,7 +288,8 @@
                     <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5" style="width: 90%; margin-top: 20px;"></textarea>
                     <button id="submit-review" style="margin-top: 15px;">Отправить</button>
                     <div id="toast" class="toast"></div>
-                `, false);
+                currentState = "review";
+                `, true);
                 window.reviewStars = 0;
             }
 
