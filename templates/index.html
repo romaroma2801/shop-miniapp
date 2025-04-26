@@ -274,8 +274,9 @@
                     alert(`Раздел "${section}" в разработке!`);
                 }
             }
-            async function loadPromotions() {
-                const promotions = await loadData('news-feed');
+            async function showPromotions() {
+                currentState = "promotions";
+                const promotions = await loadData('/api/news-feed.php'); // Загружаем акции с вашего API
                 if (promotions) {
                     const promotionItems = promotions.map(promotion => `
                         <div class="promotion-item" onclick="window.open('${promotion.link}', '_blank')">
