@@ -200,6 +200,7 @@
 
             function showSection(section) {
                 if (section === 'contacts') {
+                    currentState = "contacts";
                     showContent(
                         <h3>Свяжитесь с нами</h3>
                         <button onclick="copyPhoneNumber()">Позвонить: +375 29 225-13-34</button>
@@ -208,11 +209,11 @@
                         <button onclick="window.open('https://t.me/nekuri_by_brest', '_blank')">Telegram чат</button>
                         <button onclick="window.open('https://vk.com/nekuribrest', '_blank')">ВКонтакте</button>
                         <button onclick="window.open('https://www.tiktok.com/@nekuri.by', '_blank')">TikTok</button>
-                    currentState = "contacts";
                     , true);
                 } else if (section === 'review') {
                     checkReviewCooldown();
                 } else if (section === 'jobs') {
+                    currentState = "jobs";
                     showContent(
                         <div style="text-align: left; padding: 0 16px; font-size: 14px;">
                             <h3>Продавец-консультант</h3>
@@ -252,7 +253,6 @@
                                     height="480" style="border: none;"></iframe>
                             </div>
                         </div>
-                    currentState = "jobs";
                     , true);
                 } else {
                     alert(Раздел "${section}" в разработке!);
@@ -280,6 +280,7 @@
             }
 
             function showReviewForm() {
+                currentState = "review";
                 showContent(
                     <h3>Оцените качество обслуживания</h3>
                     <div id="stars" style="font-size: 32px;">
@@ -288,7 +289,6 @@
                     <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5" style="width: 90%; margin-top: 20px;"></textarea>
                     <button id="submit-review" style="margin-top: 15px;">Отправить</button>
                     <div id="toast" class="toast"></div>
-                currentState = "review";
                 , true);
                 window.reviewStars = 0;
             }
