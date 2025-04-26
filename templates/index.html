@@ -105,7 +105,7 @@
 
             async function loadData(url) {
                 try {
-                    const response = await fetch(/api/${url});
+                    const response = await fetch(`/api/${url}`);
                     if (!response.ok) throw new Error("Ошибка загрузки данных");
                     return await response.json();
                 } catch (error) {
@@ -128,14 +128,14 @@
 
             function showHome() {
                 currentState = "home";
-                showContent(
+                showContent(`
                     <button data-action="regions">Адреса магазинов</button>
                     <button data-action="section:catalog">Каталог товаров</button>
                     <button data-action="section:review">Оставить отзыв</button>
                     <button data-action="section:contacts">Контакты</button>
                     <button data-action="section:jobs">Вакансии</button>
                     <button data-action="section:promotions">Акции</button>
-                , false);
+                `, false);
             }
 
             function goBack() {
@@ -296,7 +296,7 @@
             function selectStars(count) {
                 reviewStars = count;
                 for (let i = 1; i <= 5; i++) {
-                    const el = document.getElementById(star${i});
+                    const el = document.getElementById(`star${i}`);
                     if (i <= count) {
                         el.textContent = '🌟';
                         el.classList.add('pop');
@@ -328,7 +328,7 @@
 
             function sendReviewToTelegram(stars, text) {
                 const username = Telegram.WebApp.initDataUnsafe?.user?.username || 'Без username';
-                const message = ⭐ Оценка: ${stars}/5\n✍️ Отзыв: ${text}\n👤 Пользователь: @${username};
+                const message = `⭐ Оценка: ${stars}/5\n✍️ Отзыв: ${text}\n👤 Пользователь: @${username}`;
                 fetch('https://api.telegram.org/bot7210822073:AAFM7PAj5D9PEJrvwArF8rSaU4FqsyT-3ns/sendMessage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
