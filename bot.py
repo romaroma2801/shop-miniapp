@@ -14,17 +14,38 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_main_menu(update)
         return
     
-    # Обработка deep links
-    if args[0].startswith('webapp_auth_'):
-        # Пользователь пришел из WebApp для авторизации
-        return_url = unquote(args[0][12:])
-        await handle_webapp_auth(update, return_url)
-    elif args[0].startswith('request_phone_'):
-        # Запрос номера телефона
-        return_url = unquote(args[0][14:])
-        await request_phone_number(update, return_url)
-    else:
-        await show_main_menu(update)
+    if args[0].startswith('complete_profile_'):
+        return_url = unquote(args[0][16:])
+        await handle_complete_profile(update, return_url)
+    # ... остальные обработчики
+
+async def handle_complete_profile(update: Update, return_url: str):
+    keyboard = [
+        [KeyboardButton("📱 Поделиться номером", request_contact=True)],
+        [KeyboardButton("🛍️ Вернуться в магазин", web_app=WebAppInfo(url=return_url or WEB_APP_URL))]
+    ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    
+    await update.message.reply_text(
+        "Пожалуйста, предоставьте недостающие данные:\n"
+        "1. Нажмите 'Поделиться номером' для отправки телефона\n"
+        "2. Или просто напишите свое имя",
+        reply_markup=reply_markup
+    )
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Обработка текстового сообщения с именем
+    if update.message.text and not update.message.text.startswith('/'):
+        user = update.effective_user
+        user_data = {
+            "id": user.id,
+            "first_name": update.message.text,  # Используем текст сообщения как имя
+            "last_name": user.last_name or "",
+            "username": user.username or "не указан",
+            "phone": "не указан"
+        }
+        
+        await save_user_data(update, user_data)
 
 async def handle_webapp_auth(update: Update, return_url: str):
     user = update.effective_user
@@ -56,29 +77,29 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     contact = update.message.contact
     user = update.effective_user
     
-    # Подготавливаем данные для отправки
     user_data = {
         "id": user.id,
-        "first_name": user.first_name,
+        "first_name": user.first_name or contact.first_name or "",
         "last_name": user.last_name or "",
         "username": user.username or "не указан",
         "phone": contact.phone_number,
-        "auth_date": update.message.date.timestamp()
     }
     
-    # Отправляем данные на сервер
+    await save_user_data(update, user_data)
+
+async def save_user_data(update: Update, user_data: dict):
     try:
         response = requests.post(API_URL, json=user_data)
         if response.status_code == 200:
-            # Формируем кнопку для возврата в WebApp
             keyboard = [
                 [KeyboardButton("🛍️ Вернуться в магазин", web_app=WebAppInfo(url=WEB_APP_URL))]
             ]
             reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
             
             await update.message.reply_text(
-                "✅ Вы успешно авторизованы!\n"
-                f"Ваш номер: {contact.phone_number}\n"
+                "✅ Ваши данные успешно сохранены!\n"
+                f"Имя: {user_data['first_name']}\n"
+                f"Телефон: {user_data.get('phone', 'не указан')}\n"
                 "Теперь вы можете вернуться в магазин:",
                 reply_markup=reply_markup
             )
