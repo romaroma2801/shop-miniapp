@@ -534,29 +534,11 @@
             }
 
             window.requestAdditionalAuth = function() {
-                console.log("Кнопка 'Заполнить недостающие данные' нажата");
-    
                 if (window.Telegram?.WebApp) {
                     const tg = Telegram.WebApp;
-                    const user = tg.initDataUnsafe?.user;
-        
-                    if (user && user.phone_number) {
-                        // Если есть номер телефона в данных Telegram
-                        console.log("Используем данные из Telegram WebApp");
-                        updateUserData({
-                            id: user.id,
-                            first_name: user.first_name || '',
-                            last_name: user.last_name || '',
-                            username: user.username || 'не указан',
-                            phone: user.phone_number || 'не указан'
-                        });
-                    } else {
-                        // Открываем бота для доп. авторизации
-                        console.log("Открываем бота для доп. авторизации");
-                        tg.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=complete_profile');
-                    }
+                    // Добавляем параметр для отслеживания источника
+                    tg.openTelegramLink(`https://t.me/Shop_NEKURIBY_bot?start=complete_profile_${Date.now()}`);
                 } else {
-                    console.log("WebApp не доступен");
                     showToast("Откройте в Telegram для заполнения данных");
                 }
             };
