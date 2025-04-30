@@ -60,36 +60,40 @@ def get_promotions():
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
     try:
-        print("[SERVER] Получен запрос на /api/save-user")
-        auth_data = request.json
-        print("[SERVER] Данные:", auth_data)
+        data = request.json
+        required_fields = ['id', 'first_name', 'phone']
         
-        if not auth_data or 'id' not in auth_data:
-            return jsonify({"status": "error", "message": "Invalid data"}), 400
-        
-        # Сохраняем в файл
-        users = []
-        if os.path.exists(USER_DATA_PATH):
-            with open(USER_DATA_PATH, 'r') as f:
-                users = json.load(f)
-        
-        users.append(auth_data)
-        
-        with open(USER_DATA_PATH, 'w') as f:
+        if not all(field in data for field in required_fields):
+            return jsonify({"status": "error", "message": "Недостаточно данных"}), 400
+
+        # Формат для сохранения
+        user_data = {
+            "user_id": data['id'],
+            "first_name": data['first_name'],
+            "last_name": data.get('last_name', ''),
+            "username": data.get('username', ''),
+            "phone": data['phone'],  # Обязательное поле
+            "auth_date": data.get('auth_date'),
+            "registration_date": datetime.now().isoformat()
+        }
+
+        # Логика сохранения в файл/БД
+        with open('users.json', 'r+') as f:
+            users = json.load(f)
+            users.append(user_data)
+            f.seek(0)
             json.dump(users, f, indent=2)
         
-        print("[SERVER] Пользователь сохранен")
         return jsonify({
             "status": "success",
             "user": {
-                "id": auth_data['id'],
-                "name": f"{auth_data.get('first_name', '')} {auth_data.get('last_name', '')}".strip(),
-                "username": auth_data.get('username')
+                "id": user_data['user_id'],
+                "name": f"{user_data['first_name']} {user_data['last_name']}".strip(),
+                "phone": user_data['phone']
             }
         })
-    
+
     except Exception as e:
-        print("[SERVER ERROR]", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
