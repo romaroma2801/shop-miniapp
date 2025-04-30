@@ -6,42 +6,26 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "7210822073:AAFM7PAj5D9PEJrvwArF8rS
 WEB_APP_URL = os.getenv("WEB_APP_URL", "https://shop-miniapp.onrender.com")
 
 async def start(update: Update, context):
-    # Кнопка для авторизации
-    auth_button = KeyboardButton(
-        "🔑 Авторизоваться", 
-        web_app=WebAppInfo(url=f"{WEB_APP_URL}/auth")
+    keyboard = ReplyKeyboardMarkup(
+        [[KeyboardButton("📱 Отправить номер", request_contact=True)]],
+        resize_keyboard=True
     )
-    
-    # Кнопка для отправки номера
-    phone_button = KeyboardButton(
-        "📱 Отправить номер", 
-        request_contact=True
-    )
-    
-    reply_markup = ReplyKeyboardMarkup(
-        [[auth_button], [phone_button]],
-        resize_keyboard=True,
-        one_time_keyboard=True
-    )
-    
     await update.message.reply_text(
-        "Выберите способ авторизации:",
-        reply_markup=reply_markup
+        "Нажмите кнопку, чтобы поделиться номером:",
+        reply_markup=keyboard
     )
 
 async def handle_contact(update: Update, context):
-    contact = update.message.contact
-    await update.message.reply_text(
-        f"Спасибо, {contact.first_name}! Номер сохранён.",
-        reply_markup=ReplyKeyboardRemove()
-    )
-    # Здесь можно сохранить номер в базу
+    phone = update.message.contact.phone_number
+    await update.message.reply_text(f"Спасибо! Ваш номер {phone} сохранён.")
 
-def setup_handlers(app):
+def main():
+    app = Application.builder().token(TELEGRAM_TOKEN).build()
+    
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
+    
+    app.run_polling()
 
 if __name__ == '__main__':
-    app = Application.builder().token(TELEGRAM_TOKEN).build()
-    setup_handlers(app)
-    app.run_polling()
+    main()
