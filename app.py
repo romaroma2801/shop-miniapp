@@ -60,31 +60,33 @@ def get_promotions():
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
     try:
-        user_data = request.json
-        if not user_data or 'id' not in user_data:
+        new_data = request.json
+        if not new_data or 'id' not in new_data:
             return jsonify({"status": "error", "message": "Invalid data"}), 400
         
-        # Проверяем и создаем файл users.json если его нет
-        if not os.path.exists(USER_DATA_PATH):
-            with open(USER_DATA_PATH, 'w') as f:
-                json.dump([], f)
-        
-        # Читаем текущих пользователей
-        try:
+        # Загружаем текущих пользователей
+        users = []
+        if os.path.exists(USER_DATA_PATH):
             with open(USER_DATA_PATH, 'r') as f:
                 users = json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            users = []
         
         # Ищем пользователя
-        user_index = next((i for i, u in enumerate(users) if u.get('id') == user_data['id']), None)
+        user_index = next((i for i, u in enumerate(users) if u.get('id') == new_data['id']), None)
         
         if user_index is not None:
-            # Обновляем существующего пользователя
-            users[user_index] = {**users[user_index], **user_data}
+            # Обновляем только те поля, которые есть в new_data
+            for key, value in new_data.items():
+                if value and value != 'не указан':
+                    users[user_index][key] = value
         else:
             # Добавляем нового пользователя
-            users.append(user_data)
+            users.append({
+                "id": new_data['id'],
+                "first_name": new_data.get('first_name', 'не указано'),
+                "last_name": new_data.get('last_name', ''),
+                "username": new_data.get('username', 'не указан'),
+                "phone": new_data.get('phone', 'не указан')
+            })
         
         # Сохраняем
         with open(USER_DATA_PATH, 'w') as f:
@@ -92,13 +94,7 @@ def save_user():
         
         return jsonify({
             "status": "success",
-            "user": {
-                "id": user_data['id'],
-                "first_name": user_data.get('first_name', ''),
-                "last_name": user_data.get('last_name', ''),
-                "username": user_data.get('username', 'не указан'),
-                "phone": user_data.get('phone', 'не указан')
-            }
+            "user": users[user_index if user_index is not None else -1]
         })
     
     except Exception as e:
