@@ -463,93 +463,82 @@
             }
 
             async function authWithTelegram() {
-                console.log("[DEBUG] Инициирована авторизация через Telegram");
+                console.log("[DEBUG] Функция authWithTelegram вызвана");
     
                 if (!window.Telegram?.WebApp) {
-                    showToast("Ошибка: Откройте приложение в Telegram");
+                    showToast("Ошибка: WebApp не инициализирован");
                     return;
                 }
 
+                // Проверяем данные пользователя
                 const user = Telegram.WebApp.initDataUnsafe?.user;
                 if (!user) {
-                    // Если нет данных пользователя, открываем бота для авторизации
-                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=auth');
+                    console.log("[DEBUG] Нет данных пользователя, открываем бота");
+                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=webapp_auth');
                     return;
                 }
 
-                // Проверяем наличие номера телефона
-                if (!user.phone_number) {
-                    // Если номера нет, предлагаем альтернативный способ
-                    showContent(`
-                        <h3>Авторизация</h3>
-                        <p>Для полного доступа поделитесь номером телефона</p>
-                        <button onclick="sharePhoneNumber()">Поделиться номером</button>
-                        <button data-action="goHome">Отмена</button>
-                    `, true);
-                    return;
-                }
-
-                // Если номер есть, продолжаем авторизацию
+                console.log("[DEBUG] Данные пользователя:", user);
+    
                 try {
+                    // Показываем лоадер
+                    showContent("<p>Идёт авторизация...</p>", true);
+        
                     const response = await fetch('/api/save-user', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                         body: JSON.stringify({
                             id: user.id,
                             first_name: user.first_name,
                             last_name: user.last_name,
                             username: user.username,
-                            phone: user.phone_number,
                             auth_date: Math.floor(Date.now() / 1000)
                         })
                     });
 
-                    if (!response.ok) throw new Error("Ошибка сервера");
-        
+                    console.log("[DEBUG] Ответ сервера:", response);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
                     const data = await response.json();
+                console.log("[DEBUG] Данные ответа:", data);
+
                     if (data.status === "success") {
                         localStorage.setItem('tg_user', JSON.stringify(data.user));
                         showWelcomeMessage(data.user);
                     } else {
-                        throw new Error(data.message || "Ошибка авторизации");
+                        throw new Error(data.message || "Неизвестная ошибка сервера");
                     }
                 } catch (error) {
                     console.error("[ERROR] Ошибка авторизации:", error);
-                    showToast(`Ошибка: ${error.message}`);
+                    showToast(`Ошибка авторизации: ${error.message}`);
+                    showContent(`
+                        <button onclick="authWithTelegram()">Повторить попытку</button>
+                        <button data-action="goHome">На главную</button>
+                    `, true);
                 }
             }
 
-            function sharePhoneNumber() {
-                if (Telegram.WebApp.showConfirm) {
-                    Telegram.WebApp.showConfirm(
-                        "Разрешить доступ к номеру телефона?",
-                        (confirmed) => {
-                            if (confirmed) {
-                                // Открываем бота с параметром для запроса номера
-                                Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=request_phone');
-                            }
-                        }
-                    );
-                } else {
-                    // Альтернатива для старых версий
-                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=request_phone');
-                }
-            }
-
-            function validatePhoneNumber(phone) {
-                const regex = /^\+?[0-9]{10,15}$/;
-                return regex.test(phone);
-            }
             function isAuthenticated() {
                 return localStorage.getItem('tg_user') !== null;
             }
 
-            function showWelcomeMessage(user) {
+            function showWelcomeMessage() {
+                const user = JSON.parse(localStorage.getItem('tg_user'));
+                const username = user.first_name || 'Пользователь';
+    
                 showContent(`
-                    <div class="profile">
-                        <h3>Добро пожаловать, ${user.first_name || 'Пользователь'}!</h3>
-                        ${user.phone ? `<p>Ваш номер: ${user.phone}</p>` : ''}
-                        <button data-action="goHome">Продолжить</button>
+                    <div style="text-align: center;">
+                        <h3>Добро пожаловать, ${username}!</h3>
+                        <p>В данный момент личный кабинет находится в разработке.</p>
+                        <p>Спасибо за авторизацию! ❤️</p>
+                        <p>Ваш юзернейм: @${user.username}</p>
+                        ${user.phone !== 'не указан' ? `<p>Телефон: ${user.phone}</p>` : ''}
+                        <button data-action="goHome" style="margin-top: 20px;">OK</button>
                     </div>
                 `, true);
             }
