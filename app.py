@@ -67,24 +67,38 @@ def save_user():
         if not auth_data or 'id' not in auth_data:
             return jsonify({"status": "error", "message": "Invalid data"}), 400
         
-        # Сохраняем в файл
+        # Проверяем, существует ли файл
+        if not os.path.exists(USER_DATA_PATH):
+            with open(USER_DATA_PATH, 'w') as f:
+                json.dump([], f)
+        
+        # Читаем текущих пользователей
         users = []
-        if os.path.exists(USER_DATA_PATH):
+        try:
             with open(USER_DATA_PATH, 'r') as f:
                 users = json.load(f)
+        except json.JSONDecodeError:
+            users = []
         
-        users.append(auth_data)
+        # Проверяем, есть ли пользователь уже в базе
+        user_exists = any(user.get('id') == auth_data['id'] for user in users)
         
-        with open(USER_DATA_PATH, 'w') as f:
-            json.dump(users, f, indent=2)
+        if not user_exists:
+            users.append(auth_data)
+            with open(USER_DATA_PATH, 'w') as f:
+                json.dump(users, f, indent=2)
+            print(f"[SERVER] Пользователь {auth_data['id']} сохранён")
+        else:
+            print(f"[SERVER] Пользователь {auth_data['id']} уже существует")
         
-        print("[SERVER] Пользователь сохранен")
         return jsonify({
             "status": "success",
             "user": {
                 "id": auth_data['id'],
-                "name": f"{auth_data.get('first_name', '')} {auth_data.get('last_name', '')}".strip(),
-                "username": auth_data.get('username')
+                "first_name": auth_data.get('first_name', ''),
+                "last_name": auth_data.get('last_name', ''),
+                "username": auth_data.get('username', 'не указан'),
+                "phone": auth_data.get('phone', 'не указан')
             }
         })
     
