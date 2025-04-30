@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request, make_response
 from flask_cors import CORS
 from bot import application
 from telegram import Update
-from bot import run_bot, Application
+from bot import run_bot
 import os
 import requests
 import json
