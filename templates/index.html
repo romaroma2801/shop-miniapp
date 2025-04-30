@@ -533,26 +533,47 @@
                 return localStorage.getItem('tg_user') !== null;
             }
 
-            function showWelcomeMessage() {
-                const user = JSON.parse(localStorage.getItem('tg_user'));
-                if (!user) {
-                    showHome();
-                    return;
+            window.requestAdditionalAuth = function() {
+                console.log("Кнопка 'Заполнить недостающие данные' нажата");
+    
+                if (window.Telegram?.WebApp) {
+                    const tg = Telegram.WebApp;
+                    const user = tg.initDataUnsafe?.user;
+        
+                    if (user && user.phone_number) {
+                        // Если есть номер телефона в данных Telegram
+                        console.log("Используем данные из Telegram WebApp");
+                        updateUserData({
+                            id: user.id,
+                            first_name: user.first_name || '',
+                            last_name: user.last_name || '',
+                            username: user.username || 'не указан',
+                            phone: user.phone_number || 'не указан'
+                        });
+                    } else {
+                        // Открываем бота для доп. авторизации
+                        console.log("Открываем бота для доп. авторизации");
+                        tg.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=complete_profile');
+                    }
+                } else {
+                    console.log("WebApp не доступен");
+                    showToast("Откройте в Telegram для заполнения данных");
                 }
+            };
+
+            // Обновляем функцию showWelcomeMessage
+            function showWelcomeMessage() {
+                const user = JSON.parse(localStorage.getItem('tg_user')) || {};
+                console.log("Текущие данные пользователя:", user);
 
                 const missingFields = [];
-                if (!user.first_name) missingFields.push('имя');
+                if (!user.first_name || user.first_name === 'не указано') missingFields.push('имя');
                 if (!user.phone || user.phone === 'не указан') missingFields.push('номер телефона');
-
-                const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'не указано';
-                const username = user.username ? `@${user.username}` : 'не указан';
-                const phone = user.phone && user.phone !== 'не указан' ? user.phone : 'не указан';
 
                 let additionalAuthButton = '';
                 if (missingFields.length > 0) {
                     additionalAuthButton = `
-                        <button onclick="requestAdditionalAuth()" 
-                                style="margin-top: 15px; background: #ff0000; color: white; border: none; padding: 10px 15px; border-radius: 8px;">
+                        <button class="auth-fill-button" onclick="requestAdditionalAuth()">
                             🔒 Заполнить недостающие данные (${missingFields.join(', ')})
                         </button>
                     `;
@@ -560,22 +581,50 @@
 
                 showContent(`
                     <div style="text-align: center; padding: 20px;">
-                        <h3>Добро пожаловать, ${name}!</h3>
+                        <h3>Добро пожаловать, ${user.first_name || 'Пользователь'}!</h3>
                         <div style="margin: 20px 0; padding: 15px; background: #f8f8f8; border-radius: 10px;">
                             <p><strong>Ваши данные:</strong></p>
-                            <p>👤 Имя: ${name}</p>
-                            <p>📱 Телефон: ${phone}</p>
-                            <p>🔗 Юзернейм: ${username}</p>
+                            <p>👤 Имя: ${user.first_name || 'не указано'}</p>
+                            <p>📱 Телефон: ${user.phone || 'не указан'}</p>
+                            <p>🔗 Юзернейм: ${user.username ? '@' + user.username : 'не указан'}</p>
                         </div>
                         <p>Личный кабинет находится в разработке.</p>
                         ${additionalAuthButton}
-                        <button data-action="goHome" 
+                        <button onclick="goHome()" 
                                 style="margin-top: 15px; padding: 10px 15px; background: #333; color: white; border: none; border-radius: 8px;">
                             На главную
                         </button>
                     </div>
                 `, true);
             }
+
+            // Добавляем функцию updateUserData в глобальную область
+            window.updateUserData = async function(userData) {
+                try {
+                    showContent("<p>Обновление данных...</p>", true);
+        
+                    const response = await fetch('/api/save-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    });
+
+                    if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+
+                    const data = await response.json();
+                    if (data.status === "success") {
+                        localStorage.setItem('tg_user', JSON.stringify(data.user));
+                        showToast("✅ Данные успешно обновлены!");
+                        showWelcomeMessage();
+                    } else {
+                        throw new Error(data.message || "Неизвестная ошибка");
+                    }
+                } catch (error) {
+                    console.error("Ошибка обновления данных:", error);
+                    showToast(`Ошибка: ${error.message}`);
+                    showWelcomeMessage();
+                }
+            };
             function requestAdditionalAuth() {
                 if (window.Telegram?.WebApp) {
                     const tg = Telegram.WebApp;
