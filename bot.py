@@ -1,6 +1,8 @@
 from telegram import Update, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import os
+from telegram.ext import Application
+from telegram.ext.webhook import WebhookHandler
 import requests
 import logging
 from urllib.parse import unquote
@@ -193,19 +195,22 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message:
         await update.message.reply_text("Произошла ошибка. Пожалуйста, попробуйте позже.")
 
+WEBHOOK_URL = os.getenv("https://shop-miniapp.onrender.com")  # Укажи свой домен, например https://your-app.onrender.com
+
 def main():
-    """Запуск бота"""
-    try:
-        application = Application.builder().token(TELEGRAM_TOKEN).build()
-        
-        # Регистрируем обработчики
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(MessageHandler(filters.CONTACT, handle_contact))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        application.add_error_handler(error_handler)
-        
-        logger.info("Бот запущен")
-        application.run_polling()
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
+
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.CONTACT, handle_contact))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_error_handler(error_handler)
+
+    # Важно: запускаем webhook
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        webhook_url=WEBHOOK_URL + "/webhook"
+    )
     except Exception as e:
         logger.error(f"Ошибка при запуске бота: {str(e)}")
 
