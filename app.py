@@ -1,5 +1,8 @@
 from flask import Flask, jsonify, render_template, request, make_response
 from flask_cors import CORS
+from bot import application
+from telegram import Update
+from bot import run_bot, Application
 import os
 import requests
 import json
@@ -18,7 +21,12 @@ with open('store_full.json', 'r', encoding='utf-8') as file:
     STORE_DATA = json.load(file)
     
 SHOP_API_KEY = os.getenv("SHOP_API_KEY", "WWH15wOAGd0PwdBxGLc5nr2X0YGg0ALqXzbRUmpUoyqcpyXNs1RcyL1Hh1XUAKgbd4vmSKfSIrhA4lF4bdCais1F6WziIbcFBjmpzbCYst0Pz11Dyg0wvUrABdKPRlWz4Bd5ZNQD7wd8tNcJALBWQKmCi1kLcUtITtJaJLvAK2zb6bAs4bcxs6cWckd7LQdidT52hLU0xhZm3HXoSa3IrILHba0rSTwnqyCTe7DaPVlbssCUiSmUnJhHbtEMYySG")
-
+@app.route('/webhook', methods=["POST"])
+def telegram_webhook():
+    update = Update.de_json(request.get_json(force=True), Application.builder().token(os.getenv("TELEGRAM_TOKEN")).build().bot)
+    Application.builder().token(os.getenv("TELEGRAM_TOKEN")).build().update_queue.put_nowait(update)
+    return "ok", 200
+    
 @app.before_request
 def log_request():
     print(f"Request: {request.method} {request.url}")
