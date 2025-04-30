@@ -281,3 +281,23 @@ p {
     font-size: 16px;
 }
 
+.auth-fill-button {
+    margin-top: 15px;
+    background: #ff0000;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    width: 90%;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.auth-fill-button:hover {
+    background: #e60000;
+}
+
+.auth-fill-button:active {
+    transform: scale(0.98);
+}
