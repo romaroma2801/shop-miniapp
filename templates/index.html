@@ -607,27 +607,19 @@
                     showWelcomeMessage();
                 }
             };
+            // Заменяем requestPhoneNumber на requestAdditionalAuth
             function requestAdditionalAuth() {
+                console.log("Запрос дополнительной авторизации");
                 if (window.Telegram?.WebApp) {
                     const tg = Telegram.WebApp;
-                    const user = tg.initDataUnsafe?.user;
-        
-                    if (user) {
-                        // Если есть доступ к данным Telegram - обновляем информацию
-                        updateUserData({
-                            id: user.id,
-                            first_name: user.first_name || '',
-                            last_name: user.last_name || '',
-                            username: user.username || 'не указан',
-                            phone: user.phone_number || 'не указан'
-                        });
-                    } else {
-                        // Если данных нет - открываем бота для доп. авторизации
-                        tg.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=complete_profile_' + encodeURIComponent(window.location.href));
-                    }
+                    tg.openTelegramLink(`https://t.me/Shop_NEKURIBY_bot?start=complete_profile_${Date.now()}`);
                 } else {
                     showToast("Откройте в Telegram для заполнения данных");
-                }
+                }            
+            }
+
+            // Добавляем в глобальную область видимости
+            window.requestAdditionalAuth = requestAdditionalAuth;
             }
 
             async function updateUserData(userData) {
