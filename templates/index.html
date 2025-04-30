@@ -531,23 +531,20 @@
                     }
                 });
             }
-
+            function validatePhoneNumber(phone) {
+                const regex = /^\+?[0-9]{10,15}$/;
+                return regex.test(phone);
+            }
             function isAuthenticated() {
                 return localStorage.getItem('tg_user') !== null;
             }
 
-            function showWelcomeMessage() {
-                const user = JSON.parse(localStorage.getItem('tg_user'));
-                const username = user.first_name || 'Пользователь';
-    
+            function showWelcomeMessage(user) {
                 showContent(`
-                    <div style="text-align: center;">
-                        <h3>Добро пожаловать, ${username}!</h3>
-                        <p>В данный момент личный кабинет находится в разработке.</p>
-                        <p>Спасибо за авторизацию! ❤️</p>
-                        <p>Ваш юзернейм: @${user.username}</p>
-                        ${user.phone !== 'не указан' ? `<p>Телефон: ${user.phone}</p>` : ''}
-                        <button data-action="goHome" style="margin-top: 20px;">OK</button>
+                    <div class="profile">
+                        <h3>Добро пожаловать, ${user.first_name || 'Пользователь'}!</h3>
+                        ${user.phone ? `<p>Ваш номер: ${user.phone}</p>` : ''}
+                        <button data-action="goHome">Продолжить</button>
                     </div>
                 `, true);
             }
