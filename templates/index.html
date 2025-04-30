@@ -147,7 +147,8 @@
                     showCities(currentRegion);
                 } else if (currentState === "storeDetails") {
                     showStores(currentCity, currentRegion);
-                } else if (currentState === "review" || currentState === "jobs" || currentState === "contacts") {
+                } else if (currentState === "review" || currentState === "jobs" || 
+                           currentState === "contacts" || currentState === "promotions") {
                     showHome();
                 }
             }
@@ -383,22 +384,19 @@
             }
 
             function renderPromotions(promotions) {
-                if (promotions && promotions.length > 0) {
-                    const promotionsHTML = promotions.map(promo => `
-                        <div class="promotion-item" onclick="window.open('${promo.link}', '_blank')">
-                            <img src="${promo.image}" alt="${promo.title}">
-                            <h4>${promo.title}</h4>
-                            <p>${promo.description}</p>
-                        </div>
-                    `).join('');
-        
-                    showContent(`
-                        <h3>Актуальные акции</h3>
-                        ${promotionsHTML}
-                    `, true);
-                } else {
-                    showContent(`<p>На данный момент акций нет</p>`, true);
-                }
+                const promotionsHTML = promotions.map(promo => `
+                    <div class="promotion-item" onclick="window.open('${promo.link}', '_blank')">
+                        <img src="${promo.image}" alt="${promo.title}" onerror="this.onerror=null;this.src='/static/no-image.png'">
+                        <h4>${promo.title}</h4>
+                        ${promo.description ? `<p>${promo.description}</p>` : ''}
+                    </div>
+                `).join('');
+    
+                showContent(`
+                    <h3>Актуальные акции</h3>
+                    ${promotionsHTML}
+                `, true);
+            }
             }
             function goHome() {
                 showHome();
