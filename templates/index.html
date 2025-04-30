@@ -349,13 +349,19 @@
                 });
             }
 
-            function showToast(message) {
+            function showToast(message, duration = 2000) {
                 const toast = document.getElementById('toast');
+                if (!toast) {
+                    console.error("Toast element not found!");
+                    return;
+                }
+    
                 toast.textContent = message;
                 toast.classList.add('show');
+    
                 setTimeout(() => {
                     toast.classList.remove('show');
-                }, 2000);
+                }, duration);
             }
 
             async function showPromotions() {
