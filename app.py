@@ -36,6 +36,13 @@ def get_cities(region):
 def get_stores(region, city):
     stores = STORE_DATA.get(region, {}).get(city, [])
     return jsonify(stores)
-
+@app.route('/api/promotions', methods=['GET'])
+def get_promotions():
+    try:
+        response = requests.get('https://nekuri.by/api/news-feed.php')
+        response.raise_for_status()
+        return jsonify(response.json())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
