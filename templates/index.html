@@ -462,43 +462,65 @@
                 }
             }
 
-            function authWithTelegram() {
-                console.log("Функция authWithTelegram вызвана");
-                if (!Telegram.WebApp.initData) {
-                    showToast("Ошибка: данные Telegram не получены");
+            async function authWithTelegram() {
+                console.log("[DEBUG] Функция authWithTelegram вызвана");
+    
+                if (!window.Telegram?.WebApp) {
+                    showToast("Ошибка: WebApp не инициализирован");
                     return;
                 }
 
-                // Показываем индикатор загрузки
-                const contentDiv = document.getElementById('content');
-                contentDiv.innerHTML = '<p>Идет авторизация...</p>';
+                // Проверяем данные пользователя
+                const user = Telegram.WebApp.initDataUnsafe?.user;
+                if (!user) {
+                    console.log("[DEBUG] Нет данных пользователя, открываем бота");
+                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=webapp_auth');
+                    return;
+                }
 
-                // Отправляем ВСЕ данные Telegram для проверки на сервере
-                fetch('/api/save-user', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(Telegram.WebApp.initDataUnsafe)
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error("Ошибка сервера");
-                    return response.json();
-                })
-                .then(data => {
+                console.log("[DEBUG] Данные пользователя:", user);
+    
+                try {
+                    // Показываем лоадер
+                    showContent("<p>Идёт авторизация...</p>", true);
+        
+                    const response = await fetch('/api/save-user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: user.id,
+                            first_name: user.first_name,
+                            last_name: user.last_name,
+                            username: user.username,
+                            auth_date: Math.floor(Date.now() / 1000)
+                        })
+                    });
+
+                    console.log("[DEBUG] Ответ сервера:", response);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                console.log("[DEBUG] Данные ответа:", data);
+
                     if (data.status === "success") {
                         localStorage.setItem('tg_user', JSON.stringify(data.user));
                         showWelcomeMessage(data.user);
                     } else {
-                        throw new Error(data.error || "Неизвестная ошибка");
+                        throw new Error(data.message || "Неизвестная ошибка сервера");
                     }
-                })
-                .catch(error => {
-                    console.error("Auth error:", error);
+                } catch (error) {
+                    console.error("[ERROR] Ошибка авторизации:", error);
+                    showToast(`Ошибка авторизации: ${error.message}`);
                     showContent(`
-                        <p>Ошибка авторизации: ${error.message}</p>
-                        <button onclick="auth()">Повторить</button>
+                        <button onclick="authWithTelegram()">Повторить попытку</button>
                         <button data-action="goHome">На главную</button>
                     `, true);
-                });
+                }
             }
 
             function isAuthenticated() {
