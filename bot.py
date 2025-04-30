@@ -17,16 +17,15 @@ WEB_APP_URL = os.getenv("WEB_APP_URL")
 API_URL = os.getenv("API_URL", "http://localhost:5000/api/save-user")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /start с параметрами"""
     logger.info(f"Получена команда start с аргументами: {context.args}")
     
-    # Разбираем аргументы команды
     args = context.args
     if not args:
         await show_main_menu(update)
         return
     
-    if args[0] == 'complete_profile':
+    # Обрабатываем все варианты complete_profile
+    if any(arg.startswith('complete_profile') for arg in args):
         await handle_complete_profile(update)
     else:
         await show_main_menu(update)
