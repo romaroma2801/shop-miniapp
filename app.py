@@ -50,42 +50,48 @@ def get_promotions():
 from flask import request, make_response
 import uuid
 
-# Добавьте после существующих роутов
-@app.route('/api/auth/telegram', methods=['POST'])
+@app.route('/api/save-user', methods=['POST'])  # Изменили endpoint
 def handle_telegram_auth():
     try:
         auth_data = request.json
-        required_fields = ['id', 'first_name', 'auth_date', 'hash']
         
-        if not all(field in auth_data for field in required_fields):
-            return jsonify({"error": "Invalid data"}), 400
-        
-        # Здесь должна быть проверка хэша (пропущено для упрощения)
-        # Реальная реализация: https://core.telegram.org/widgets/login#checking-authorization
-        
-        # Сохраняем пользователя
+        # Проверяем обязательные поля
+        if not all(k in auth_data for k in ['id', 'first_name', 'auth_date']):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # В реальном проекте ДОЛЖНА быть проверка хэша!
+        # Пример: https://gist.github.com/vysheng/1159639
+
         user_data = {
             "user_id": auth_data['id'],
             "username": auth_data.get('username'),
             "first_name": auth_data.get('first_name'),
             "last_name": auth_data.get('last_name'),
-            "auth_date": auth_data['auth_date'],
+            "phone": auth_data.get('phone_number', 'не указан'),
+            "auth_date": auth_data.get('auth_date'),
             "session_id": str(uuid.uuid4())
         }
-        
-        # Сохраняем в файл (в реальном проекте - база данных)
+
+        # Сохранение в users.json
         try:
             with open('users.json', 'r+') as f:
                 users = json.load(f)
                 users.append(user_data)
                 f.seek(0)
-                json.dump(users, f, indent=2)
+                json.dump(users, f, indent=2, ensure_ascii=False)
         except FileNotFoundError:
             with open('users.json', 'w') as f:
-                json.dump([user_data], f, indent=2)
-        
-        return jsonify({"status": "success", "session_id": user_data['session_id']})
-        
+                json.dump([user_data], f, indent=2, ensure_ascii=False)
+
+        return jsonify({
+            "status": "success",
+            "user": {
+                "id": user_data['user_id'],
+                "name": f"{user_data['first_name']} {user_data.get('last_name', '')}".strip(),
+                "username": user_data['username']
+            }
+        })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 if __name__ == '__main__':
