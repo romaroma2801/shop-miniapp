@@ -60,31 +60,37 @@ def get_promotions():
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
     try:
+        print("[SERVER] Получен запрос на /api/save-user")
         auth_data = request.json
+        print("[SERVER] Данные:", auth_data)
+        
         if not auth_data or 'id' not in auth_data:
-            return jsonify({"error": "Invalid data"}), 400
+            return jsonify({"status": "error", "message": "Invalid data"}), 400
         
-        # Читаем существующих пользователей
-        with open(USER_DATA_PATH, 'r') as f:
-            users = json.load(f)
+        # Сохраняем в файл
+        users = []
+        if os.path.exists(USER_DATA_PATH):
+            with open(USER_DATA_PATH, 'r') as f:
+                users = json.load(f)
         
-        # Добавляем нового пользователя
-        users.append({
-            "id": auth_data['id'],
-            "username": auth_data.get('username'),
-            "first_name": auth_data.get('first_name'),
-            "last_name": auth_data.get('last_name'),
-            "auth_date": auth_data.get('auth_date')
-        })
+        users.append(auth_data)
         
-        # Сохраняем обратно
         with open(USER_DATA_PATH, 'w') as f:
             json.dump(users, f, indent=2)
-            
-        return jsonify({"status": "success"})
+        
+        print("[SERVER] Пользователь сохранен")
+        return jsonify({
+            "status": "success",
+            "user": {
+                "id": auth_data['id'],
+                "name": f"{auth_data.get('first_name', '')} {auth_data.get('last_name', '')}".strip(),
+                "username": auth_data.get('username')
+            }
+        })
     
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("[SERVER ERROR]", str(e))
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
