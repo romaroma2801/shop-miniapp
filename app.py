@@ -50,49 +50,34 @@ def get_promotions():
 from flask import request, make_response
 import uuid
 
-@app.route('/api/save-user', methods=['POST'])  # Изменили endpoint
-def handle_telegram_auth():
+@app.route('/api/save-user', methods=['POST'])
+def save_user():
     try:
         auth_data = request.json
+        print("Получены данные:", auth_data)  # Логируем входящие данные
         
-        # Проверяем обязательные поля
-        if not all(k in auth_data for k in ['id', 'first_name', 'auth_date']):
-            return jsonify({"error": "Missing required fields"}), 400
-
-        # В реальном проекте ДОЛЖНА быть проверка хэша!
-        # Пример: https://gist.github.com/vysheng/1159639
-
-        user_data = {
-            "user_id": auth_data['id'],
-            "username": auth_data.get('username'),
-            "first_name": auth_data.get('first_name'),
-            "last_name": auth_data.get('last_name'),
-            "phone": auth_data.get('phone_number', 'не указан'),
-            "auth_date": auth_data.get('auth_date'),
-            "session_id": str(uuid.uuid4())
-        }
-
-        # Сохранение в users.json
-        try:
-            with open('users.json', 'r+') as f:
-                users = json.load(f)
-                users.append(user_data)
-                f.seek(0)
-                json.dump(users, f, indent=2, ensure_ascii=False)
-        except FileNotFoundError:
-            with open('users.json', 'w') as f:
-                json.dump([user_data], f, indent=2, ensure_ascii=False)
-
+        # Простейшая проверка данных
+        if not auth_data or 'id' not in auth_data:
+            return jsonify({"status": "error", "message": "Invalid data"}), 400
+            
+        # Сохраняем данные (упрощённо)
+        with open('users.json', 'a') as f:
+            f.write(json.dumps(auth_data) + '\n')
+            
         return jsonify({
             "status": "success",
             "user": {
-                "id": user_data['user_id'],
-                "name": f"{user_data['first_name']} {user_data.get('last_name', '')}".strip(),
-                "username": user_data['username']
+                "id": auth_data['id'],
+                "name": auth_data.get('first_name', 'User')
             }
         })
-
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("Ошибка:", str(e))  # Логируем ошибки
+        return jsonify({"status": "error", "message": str(e)}), 500
+    @app.before_request
+def log_request():
+    print(f"Request: {request.method} {request.url}")
+    print(f"Headers: {request.headers}")
+    print(f"Body: {request.get_data()}")
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
