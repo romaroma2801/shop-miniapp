@@ -437,89 +437,95 @@
                 showHome();
             }
 
-            function auth() {
-                console.log("Кнопка авторизации нажата");
-                console.log("Telegram.WebApp:", Telegram?.WebApp);
-                console.log("initData:", Telegram?.WebApp?.initData);
-    
+            async function auth() {
                 if (isAuthenticated()) {
-                    console.log("Уже авторизован");
                     showWelcomeMessage();
                     return;
                 }
 
                 if (window.Telegram?.WebApp) {
-                    console.log("Есть доступ к Telegram WebApp");
-                    showContent(`
-                        <h3>Авторизация</h3>
-                        <button onclick="console.log('Кнопка в Telegram нажата'); authWithTelegram()">
-                            Войти через Telegram
-                        </button>
-                    `, true);
+                    // Пытаемся авторизовать через имеющиеся данные WebApp
+                    await authWithTelegram();
                 } else {
-                    console.log("Открыто не в Telegram");
                     alert("Для авторизации откройте в Telegram");
                 }
             }
 
             async function authWithTelegram() {
-                console.log("[DEBUG] Функция authWithTelegram вызвана");
-    
-                if (!window.Telegram?.WebApp) {
+                const tg = window.Telegram?.WebApp;
+                if (!tg) {
                     showToast("Ошибка: WebApp не инициализирован");
                     return;
                 }
 
-                // Проверяем данные пользователя
-                const user = Telegram.WebApp.initDataUnsafe?.user;
-                if (!user) {
-                    console.log("[DEBUG] Нет данных пользователя, открываем бота");
-                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=webapp_auth');
-                    return;
-                }
-
-                console.log("[DEBUG] Данные пользователя:", user);
+                // Проверяем, есть ли данные пользователя
+                const user = tg.initDataUnsafe?.user;
     
-                try {
-                    // Показываем лоадер
-                    showContent("<p>Идёт авторизация...</p>", true);
-        
-                    const response = await fetch('/api/save-user', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            id: user.id,
-                            first_name: user.first_name,
-                            last_name: user.last_name,
-                            username: user.username,
-                            auth_date: Math.floor(Date.now() / 1000)
-                        })
-                    });
+                if (user) {
+                    // Есть данные пользователя - пробуем авторизовать
+                    try {
+                        showContent("<p>Идёт авторизация...</p>", true);
+            
+                        // Отправляем данные на сервер
+                        const response = await fetch('/api/save-user', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                id: user.id,
+                                first_name: user.first_name,
+                                last_name: user.last_name || '',
+                                username: user.username || 'не указан',
+                                phone: user.phone_number || 'не указан',
+                                auth_date: Math.floor(Date.now() / 1000)
+                            })
+                        });
 
-                    console.log("[DEBUG] Ответ сервера:", response);
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        const data = await response.json();
+            
+                        if (data.status === "success") {
+                            // Сохраняем пользователя
+                            localStorage.setItem('tg_user', JSON.stringify(data.user));
+                
+                            // Проверяем, есть ли номер телефона
+                            if (!data.user.phone || data.user.phone === 'не указан') {
+                                // Запрашиваем номер через бота
+                                showContent(`
+                                    <div class="auth-popup">
+                                        <h3>Требуется номер телефона</h3>
+                                        <p>Для полного доступа необходимо предоставить номер телефона.</p>
+                                        <button onclick="requestPhoneNumber()">Предоставить номер</button>
+                                        <button data-action="goHome">Позже</button>
+                                    </div>
+                                `, true);
+                            } else {
+                                // Все данные есть - показываем приветствие
+                                showWelcomeMessage(data.user);
+                            }
+                        } else {
+                            throw new Error(data.message || "Неизвестная ошибка сервера");
+                        }
+                    } catch (error) {
+                        console.error("Ошибка авторизации:", error);
+                        showToast(`Ошибка: ${error.message}`);
+                        showContent(`
+                            <button onclick="authWithTelegram()">Повторить</button>
+                            <button data-action="goHome">На главную</button>
+                        `, true);
                     }
+                } else {
+                    // Нет данных пользователя - открываем бота для авторизации
+                    tg.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=webapp_auth_' + encodeURIComponent(window.location.href));
+                }
+            }
 
-                    const data = await response.json();
-                console.log("[DEBUG] Данные ответа:", data);
-
-                    if (data.status === "success") {
-                        localStorage.setItem('tg_user', JSON.stringify(data.user));
-                        showWelcomeMessage(data.user);
-                    } else {
-                        throw new Error(data.message || "Неизвестная ошибка сервера");
-                    }
-                } catch (error) {
-                    console.error("[ERROR] Ошибка авторизации:", error);
-                    showToast(`Ошибка авторизации: ${error.message}`);
-                    showContent(`
-                        <button onclick="authWithTelegram()">Повторить попытку</button>
-                        <button data-action="goHome">На главную</button>
-                    `, true);
+            function requestPhoneNumber() {
+                if (window.Telegram?.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    tg.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=request_phone_' + encodeURIComponent(window.location.href));
+                } else {
+                    showToast("Откройте в Telegram для авторизации");
                 }
             }
 
@@ -527,18 +533,29 @@
                 return localStorage.getItem('tg_user') !== null;
             }
 
-            function showWelcomeMessage() {
-                const user = JSON.parse(localStorage.getItem('tg_user'));
-                const username = user.first_name || 'Пользователь';
-    
+            function showWelcomeMessage(userData = null) {
+                const user = userData || JSON.parse(localStorage.getItem('tg_user'));
+                if (!user) {
+                    showHome();
+                    return;
+                }
+
+                const name = [user.first_name, user.last_name].filter(Boolean).join(' ');
+                const username = user.username ? `@${user.username}` : 'не указан';
+                const phone = user.phone ? user.phone : 'не указан';
+
                 showContent(`
-                    <div style="text-align: center;">
-                        <h3>Добро пожаловать, ${username}!</h3>
-                        <p>В данный момент личный кабинет находится в разработке.</p>
-                        <p>Спасибо за авторизацию! ❤️</p>
-                        <p>Ваш юзернейм: @${user.username}</p>
-                        ${user.phone !== 'не указан' ? `<p>Телефон: ${user.phone}</p>` : ''}
-                        <button data-action="goHome" style="margin-top: 20px;">OK</button>
+                    <div style="text-align: center; padding: 20px;">
+                        <h3>Добро пожаловать, ${name || 'Пользователь'}!</h3>
+                        <div style="margin: 20px 0; padding: 15px; background: #f8f8f8; border-radius: 10px;">
+                            <p><strong>Ваши данные:</strong></p>
+                            <p>👤 Имя: ${name || 'не указано'}</p>
+                            <p>📱 Телефон: ${phone}</p>
+                            <p>🔗 Юзернейм: ${username}</p>
+                        </div>
+                        <p>Личный кабинет находится в разработке.</p>
+                        <p>Спасибо за регистрацию! ❤️</p>
+                        <button data-action="goHome" style="margin-top: 20px; padding: 12px 24px; background: #ff0000; color: white; border: none; border-radius: 8px;">OK</button>
                     </div>
                 `, true);
             }
