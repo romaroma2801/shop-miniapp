@@ -432,27 +432,32 @@
             }
 
             function auth() {
+                console.log("Кнопка авторизации нажата");
+                console.log("Telegram.WebApp:", Telegram?.WebApp);
+                console.log("initData:", Telegram?.WebApp?.initData);
+    
                 if (isAuthenticated()) {
+                    console.log("Уже авторизован");
                     showWelcomeMessage();
                     return;
                 }
 
                 if (window.Telegram?.WebApp) {
+                    console.log("Есть доступ к Telegram WebApp");
                     showContent(`
                         <h3>Авторизация</h3>
-                        <button onclick="authWithTelegram()" style="background: #0088cc; color: white;">
+                        <button onclick="console.log('Кнопка в Telegram нажата'); authWithTelegram()">
                             Войти через Telegram
                         </button>
-                        <p style="font-size: 12px; margin-top: 10px;">
-                            Мы получим ваш номер телефона и имя из Telegram
-                        </p>
                     `, true);
                 } else {
-                    alert("Для авторизации откройте приложение в Telegram");
+                    console.log("Открыто не в Telegram");
+                    alert("Для авторизации откройте в Telegram");
                 }
             }
 
             function authWithTelegram() {
+                console.log("Функция authWithTelegram вызвана");
                 if (!Telegram.WebApp.initData) {
                     showToast("Ошибка: данные Telegram не получены");
                     return;
@@ -517,9 +522,13 @@
             window.showHome = showHome;
             window.goHome = goHome;
             window.auth = auth;
+            window.authWithTelegram = authWithTelegram;
+            window.showWelcomeMessage = showWelcomeMessage;
+            window.isAuthenticated = isAuthenticated;
             window.openCart = openCart;
             window.goBack = goBack;
             window.showSection = showSection;
+            
         });
     </script>
 
