@@ -655,14 +655,25 @@
             window.showHome = showHome;
             window.goHome = goHome;
             window.auth = auth;
-            window.authWithTelegram = authWithTelegram;
             window.showWelcomeMessage = showWelcomeMessage;
             window.isAuthenticated = isAuthenticated;
             window.openCart = openCart;
             window.goBack = goBack;
             window.showSection = showSection;
+            window.showRegions = showRegions;
+            window.showCities = showCities;
+            window.showStores = showStores;
+            window.showStoreDetails = showStoreDetails;
+            window.authWithTelegram = authWithTelegram;
+            window.requestAdditionalAuth = requestAdditionalAuth;
+            window.requestPhoneNumber = requestPhoneNumber;
+            window.copyPhoneNumber = function() {
+                const phone = "+375 29 225-13-34";
+                navigator.clipboard.writeText(phone)
+                    .then(() => showToast("Номер скопирован!"))
+                    .catch(() => showToast("Не удалось скопировать номер"));
             
-        });
+            });
     </script>
 
 </body>
