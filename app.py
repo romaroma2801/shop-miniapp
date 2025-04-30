@@ -60,50 +60,48 @@ def get_promotions():
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
     try:
-        print("[SERVER] Получен запрос на /api/save-user")
-        auth_data = request.json
-        print("[SERVER] Данные:", auth_data)
-        
-        if not auth_data or 'id' not in auth_data:
+        user_data = request.json
+        if not user_data or 'id' not in user_data:
             return jsonify({"status": "error", "message": "Invalid data"}), 400
         
-        # Проверяем, существует ли файл
+        # Проверяем и создаем файл users.json если его нет
         if not os.path.exists(USER_DATA_PATH):
             with open(USER_DATA_PATH, 'w') as f:
                 json.dump([], f)
         
         # Читаем текущих пользователей
-        users = []
         try:
             with open(USER_DATA_PATH, 'r') as f:
                 users = json.load(f)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, FileNotFoundError):
             users = []
         
-        # Проверяем, есть ли пользователь уже в базе
-        user_exists = any(user.get('id') == auth_data['id'] for user in users)
+        # Ищем пользователя
+        user_index = next((i for i, u in enumerate(users) if u.get('id') == user_data['id']), None)
         
-        if not user_exists:
-            users.append(auth_data)
-            with open(USER_DATA_PATH, 'w') as f:
-                json.dump(users, f, indent=2)
-            print(f"[SERVER] Пользователь {auth_data['id']} сохранён")
+        if user_index is not None:
+            # Обновляем существующего пользователя
+            users[user_index] = {**users[user_index], **user_data}
         else:
-            print(f"[SERVER] Пользователь {auth_data['id']} уже существует")
+            # Добавляем нового пользователя
+            users.append(user_data)
+        
+        # Сохраняем
+        with open(USER_DATA_PATH, 'w') as f:
+            json.dump(users, f, indent=2)
         
         return jsonify({
             "status": "success",
             "user": {
-                "id": auth_data['id'],
-                "first_name": auth_data.get('first_name', ''),
-                "last_name": auth_data.get('last_name', ''),
-                "username": auth_data.get('username', 'не указан'),
-                "phone": auth_data.get('phone', 'не указан')
+                "id": user_data['id'],
+                "first_name": user_data.get('first_name', ''),
+                "last_name": user_data.get('last_name', ''),
+                "username": user_data.get('username', 'не указан'),
+                "phone": user_data.get('phone', 'не указан')
             }
         })
     
     except Exception as e:
-        print("[SERVER ERROR]", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
