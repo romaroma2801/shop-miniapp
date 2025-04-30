@@ -453,38 +453,40 @@
             }
 
             function authWithTelegram() {
-                const user = Telegram.WebApp.initDataUnsafe.user;
-                if (!user) {
-                    Telegram.WebApp.openTelegramLink('https://t.me/your_bot?start=webapp_auth');
+                if (!Telegram.WebApp.initData) {
+                    showToast("Ошибка: данные Telegram не получены");
                     return;
                 }
 
-                // Подготовка данных для сохранения
-                const userData = {
-                    id: user.id,
-                    username: user.username || 'не указан',
-                    first_name: user.first_name || '',
-                    last_name: user.last_name || '',
-                    phone: Telegram.WebApp.initDataUnsafe.user.phone_number || 'не указан',
-                    auth_date: Math.floor(Date.now() / 1000)
-                };
+                // Показываем индикатор загрузки
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = '<p>Идет авторизация...</p>';
 
-                // Отправка на сервер
+                // Отправляем ВСЕ данные Telegram для проверки на сервере
                 fetch('/api/save-user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(userData)
+                    body: JSON.stringify(Telegram.WebApp.initDataUnsafe)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error("Ошибка сервера");
+                    return response.json();
+                })
                 .then(data => {
                     if (data.status === "success") {
-                        localStorage.setItem('tg_user', JSON.stringify(userData));
-                        showWelcomeMessage();
+                        localStorage.setItem('tg_user', JSON.stringify(data.user));
+                        showWelcomeMessage(data.user);
+                    } else {
+                        throw new Error(data.error || "Неизвестная ошибка");
                     }
                 })
                 .catch(error => {
-                    console.error("Ошибка сохранения:", error);
-                    showToast("Ошибка авторизации");
+                    console.error("Auth error:", error);
+                    showContent(`
+                        <p>Ошибка авторизации: ${error.message}</p>
+                        <button onclick="auth()">Повторить</button>
+                        <button data-action="goHome">На главную</button>
+                    `, true);
                 });
             }
 
