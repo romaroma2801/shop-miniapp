@@ -463,64 +463,73 @@
             }
 
             async function authWithTelegram() {
-                console.log("[DEBUG] Функция authWithTelegram вызвана");
+                console.log("[DEBUG] Инициирована авторизация через Telegram");
     
                 if (!window.Telegram?.WebApp) {
-                    showToast("Ошибка: WebApp не инициализирован");
+                    showToast("Ошибка: Откройте приложение в Telegram");
                     return;
                 }
 
-                // Проверяем данные пользователя
-                const user = Telegram.WebApp.initDataUnsafe?.user;
-                if (!user) {
-                    console.log("[DEBUG] Нет данных пользователя, открываем бота");
-                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=webapp_auth');
-                    return;
-                }
-
-                console.log("[DEBUG] Данные пользователя:", user);
-    
+                // Запрашиваем номер телефона
                 try {
-                    // Показываем лоадер
-                    showContent("<p>Идёт авторизация...</p>", true);
+                    const phone = await requestPhoneNumber();
+                    console.log("[DEBUG] Получен номер:", phone);
         
+                    const user = Telegram.WebApp.initDataUnsafe?.user;
+                    if (!user) {
+                        showToast("Ошибка: Данные пользователя не получены");
+                        return;
+                    }
+
+                    // Отправляем данные на сервер
                     const response = await fetch('/api/save-user', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             id: user.id,
                             first_name: user.first_name,
                             last_name: user.last_name,
                             username: user.username,
+                            phone: phone, // Добавляем номер телефона
                             auth_date: Math.floor(Date.now() / 1000)
                         })
                     });
 
-                    console.log("[DEBUG] Ответ сервера:", response);
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                console.log("[DEBUG] Данные ответа:", data);
-
-                    if (data.status === "success") {
-                        localStorage.setItem('tg_user', JSON.stringify(data.user));
-                        showWelcomeMessage(data.user);
-                    } else {
-                        throw new Error(data.message || "Неизвестная ошибка сервера");
-                    }
+                    // Обработка ответа...
                 } catch (error) {
                     console.error("[ERROR] Ошибка авторизации:", error);
-                    showToast(`Ошибка авторизации: ${error.message}`);
-                    showContent(`
-                        <button onclick="authWithTelegram()">Повторить попытку</button>
-                        <button data-action="goHome">На главную</button>
-                    `, true);
+                    showToast(`Ошибка: ${error.message}`);
                 }
+            }
+
+            function requestPhoneNumber() {
+                return new Promise((resolve, reject) => {
+                    if (Telegram.WebApp.showPopup) {
+                        Telegram.WebApp.showPopup({
+                            title: 'Доступ к номеру телефона',
+                            message: 'Разрешить доступ к вашему номеру телефона?',
+                            buttons: [{
+                                id: 'accept',
+                                type: 'ok',
+                                text: 'Разрешить'
+                            }, {
+                                type: 'cancel'
+                            }]
+                        }, (buttonId) => {
+                            if (buttonId === 'accept') {
+                                if (Telegram.WebApp.initDataUnsafe.user?.phone_number) {
+                                    resolve(Telegram.WebApp.initDataUnsafe.user.phone_number);
+                                } else {
+                                    reject(new Error("Номер телефона не доступен"));
+                                }
+                            } else {
+                                reject(new Error("Доступ к номеру отклонен"));
+                            }
+                        });
+                    } else {
+                        reject(new Error("Функция showPopup не доступна"));
+                    }
+                });
             }
 
             function isAuthenticated() {
