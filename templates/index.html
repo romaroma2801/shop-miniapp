@@ -304,7 +304,7 @@
             }
 
             function selectStars(count) {
-                reviewStars = count;
+                window.reviewStars = count;
                 for (let i = 1; i <= 5; i++) {
                     const el = document.getElementById(`star${i}`);
                     if (i <= count) {
@@ -319,10 +319,11 @@
 
             function submitReview() {
                 const text = document.getElementById('reviewText').value.trim();
-                if (reviewStars === 0) {
-                    showToast("Пожалуйста, выберите оценку");
-                    return;
+                if (window.reviewStars === 0) {
+                showToast("Пожалуйста, выберите оценку");
+                return;
                 }
+
                 if (text.length < 3) {
                     showToast("Пожалуйста, напишите отзыв");
                     return;
