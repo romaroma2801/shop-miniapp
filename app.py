@@ -3,6 +3,8 @@ from flask_cors import CORS
 import os
 import requests
 import json
+from flask import request, make_response
+import uuid
 
 app = Flask(__name__)
 CORS(app, origins=[os.getenv("TELEGRAM_WEB_APP_URL")])
@@ -42,6 +44,48 @@ def get_promotions():
         response = requests.get('https://nekuri.by/api/news-feed.php')
         response.raise_for_status()
         return jsonify(response.json())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+# Добавьте в начало файла
+from flask import request, make_response
+import uuid
+
+# Добавьте после существующих роутов
+@app.route('/api/auth/telegram', methods=['POST'])
+def handle_telegram_auth():
+    try:
+        auth_data = request.json
+        required_fields = ['id', 'first_name', 'auth_date', 'hash']
+        
+        if not all(field in auth_data for field in required_fields):
+            return jsonify({"error": "Invalid data"}), 400
+        
+        # Здесь должна быть проверка хэша (пропущено для упрощения)
+        # Реальная реализация: https://core.telegram.org/widgets/login#checking-authorization
+        
+        # Сохраняем пользователя
+        user_data = {
+            "user_id": auth_data['id'],
+            "username": auth_data.get('username'),
+            "first_name": auth_data.get('first_name'),
+            "last_name": auth_data.get('last_name'),
+            "auth_date": auth_data['auth_date'],
+            "session_id": str(uuid.uuid4())
+        }
+        
+        # Сохраняем в файл (в реальном проекте - база данных)
+        try:
+            with open('users.json', 'r+') as f:
+                users = json.load(f)
+                users.append(user_data)
+                f.seek(0)
+                json.dump(users, f, indent=2)
+        except FileNotFoundError:
+            with open('users.json', 'w') as f:
+                json.dump([user_data], f, indent=2)
+        
+        return jsonify({"status": "success", "session_id": user_data['session_id']})
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 if __name__ == '__main__':
