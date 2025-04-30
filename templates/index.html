@@ -520,28 +520,9 @@
                 }
             }
 
-            function requestPhoneNumber() {
-                if (window.Telegram?.WebApp) {
-                    const tg = window.Telegram.WebApp;
-                    tg.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=request_phone_' + encodeURIComponent(window.location.href));
-                } else {
-                    showToast("Откройте в Telegram для авторизации");
-                }
-            }
-
             function isAuthenticated() {
                 return localStorage.getItem('tg_user') !== null;
             }
-
-            window.requestAdditionalAuth = function() {
-                if (window.Telegram?.WebApp) {
-                    const tg = Telegram.WebApp;
-                    // Добавляем параметр для отслеживания источника
-                    tg.openTelegramLink(`https://t.me/Shop_NEKURIBY_bot?start=complete_profile_${Date.now()}`);
-                } else {
-                    showToast("Откройте в Telegram для заполнения данных");
-                }
-            };
 
             // Обновляем функцию showWelcomeMessage
             function showWelcomeMessage() {
@@ -579,34 +560,6 @@
                     </div>
                 `, true);
             }
-
-            // Добавляем функцию updateUserData в глобальную область
-            window.updateUserData = async function(userData) {
-                try {
-                    showContent("<p>Обновление данных...</p>", true);
-        
-                    const response = await fetch('/api/save-user', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(userData)
-                    });
-
-                    if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
-
-                    const data = await response.json();
-                    if (data.status === "success") {
-                        localStorage.setItem('tg_user', JSON.stringify(data.user));
-                        showToast("✅ Данные успешно обновлены!");
-                        showWelcomeMessage();
-                    } else {
-                        throw new Error(data.message || "Неизвестная ошибка");
-                    }
-                } catch (error) {
-                    console.error("Ошибка обновления данных:", error);
-                    showToast(`Ошибка: ${error.message}`);
-                    showWelcomeMessage();
-                }
-            };
             // Заменяем requestPhoneNumber на requestAdditionalAuth
             function requestAdditionalAuth() {
                 console.log("Запрос дополнительной авторизации");
@@ -616,10 +569,6 @@
                 } else {
                     showToast("Откройте в Telegram для заполнения данных");
                 }            
-            }
-
-            // Добавляем в глобальную область видимости
-            window.requestAdditionalAuth = requestAdditionalAuth;
             }
 
             async function updateUserData(userData) {
@@ -652,9 +601,11 @@
                 alert("Функция корзины в разработке!");
             }
 
+            // Экспорт всех функций в глобальную область видимости
             window.showHome = showHome;
             window.goHome = goHome;
             window.auth = auth;
+            window.authWithTelegram = authWithTelegram;
             window.showWelcomeMessage = showWelcomeMessage;
             window.isAuthenticated = isAuthenticated;
             window.openCart = openCart;
@@ -664,7 +615,6 @@
             window.showCities = showCities;
             window.showStores = showStores;
             window.showStoreDetails = showStoreDetails;
-            window.authWithTelegram = authWithTelegram;
             window.requestAdditionalAuth = requestAdditionalAuth;
             window.requestPhoneNumber = requestPhoneNumber;
             window.copyPhoneNumber = function() {
@@ -672,6 +622,7 @@
                 navigator.clipboard.writeText(phone)
                     .then(() => showToast("Номер скопирован!"))
                     .catch(() => showToast("Не удалось скопировать номер"));
+            };
             
         });
     </script>
