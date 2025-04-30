@@ -432,7 +432,80 @@
             }
 
             function auth() {
-                alert("Функция авторизации в разработке!");
+                if (isAuthenticated()) {
+                    showWelcomeMessage();
+                    return;
+                }
+
+                if (window.Telegram?.WebApp) {
+                    showContent(`
+                        <h3>Авторизация</h3>
+                        <button onclick="authWithTelegram()" style="background: #0088cc; color: white;">
+                            Войти через Telegram
+                        </button>
+                        <p style="font-size: 12px; margin-top: 10px;">
+                            Мы получим ваш номер телефона и имя из Telegram
+                        </p>
+                    `, true);
+                } else {
+                    alert("Для авторизации откройте приложение в Telegram");
+                }
+            }
+
+            function authWithTelegram() {
+                const user = Telegram.WebApp.initDataUnsafe.user;
+                if (!user) {
+                    Telegram.WebApp.openTelegramLink('https://t.me/your_bot?start=webapp_auth');
+                    return;
+                }
+
+                // Подготовка данных для сохранения
+                const userData = {
+                    id: user.id,
+                    username: user.username || 'не указан',
+                    first_name: user.first_name || '',
+                    last_name: user.last_name || '',
+                    phone: Telegram.WebApp.initDataUnsafe.user.phone_number || 'не указан',
+                    auth_date: Math.floor(Date.now() / 1000)
+                };
+
+                // Отправка на сервер
+                fetch('/api/save-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        localStorage.setItem('tg_user', JSON.stringify(userData));
+                        showWelcomeMessage();
+                    }
+                })
+                .catch(error => {
+                    console.error("Ошибка сохранения:", error);
+                    showToast("Ошибка авторизации");
+                });
+            }
+
+            function isAuthenticated() {
+                return localStorage.getItem('tg_user') !== null;
+            }
+
+            function showWelcomeMessage() {
+                const user = JSON.parse(localStorage.getItem('tg_user'));
+                const username = user.first_name || 'Пользователь';
+    
+                showContent(`
+                    <div style="text-align: center;">
+                        <h3>Добро пожаловать, ${username}!</h3>
+                        <p>В данный момент личный кабинет находится в разработке.</p>
+                        <p>Спасибо за авторизацию! ❤️</p>
+                        <p>Ваш юзернейм: @${user.username}</p>
+                        ${user.phone !== 'не указан' ? `<p>Телефон: ${user.phone}</p>` : ''}
+                        <button data-action="goHome" style="margin-top: 20px;">OK</button>
+                    </div>
+                `, true);
             }
 
             function openCart() {
