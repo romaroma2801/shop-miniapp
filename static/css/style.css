@@ -255,3 +255,28 @@ p {
     color: #666;
     margin: 5px 0;
 }
+#login-button {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#login-button:active {
+    transform: scale(0.95);
+}
+
+.auth-popup {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.auth-popup button {
+    margin: 10px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #0088cc;
+    color: white;
+    font-size: 16px;
+}
