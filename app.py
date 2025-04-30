@@ -225,15 +225,27 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def run_bot():
     """Запуск Telegram бота в отдельном потоке"""
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
-    
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.CONTACT, handle_contact))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_error_handler(error_handler)
-    
-    logger.info("Telegram bot starting...")
-    application.run_polling()
+    try:
+        logger.info(f"Initializing bot with token: {TELEGRAM_TOKEN[:5]}...{TELEGRAM_TOKEN[-5:]}")
+        
+        application = Application.builder().token(TELEGRAM_TOKEN).build()
+        
+        # Явно регистрируем обработчики
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(MessageHandler(filters.CONTACT, handle_contact))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        application.add_error_handler(error_handler)
+        
+        logger.info("Bot handlers registered:")
+        for handler in application.handlers[0]:
+            logger.info(f"- {handler.callback.__name__}")
+        
+        logger.info("Starting bot polling...")
+        application.run_polling()
+        
+    except Exception as e:
+        logger.critical(f"Failed to start bot: {str(e)}")
+        raise
 
 # ==================== Запуск приложения ====================
 
