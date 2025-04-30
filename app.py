@@ -95,6 +95,26 @@ def save_user():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
+# Добавьте новый обработчик для команды start с параметром request_phone
+@bot.message_handler(commands=['start'])
+def handle_start(message):
+    if 'request_phone' in message.text:
+        # Создаем кнопку для запроса номера телефона
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        reg_button = types.KeyboardButton(text="📱 Отправить номер", request_contact=True)
+        keyboard.add(reg_button)
+        
+        bot.send_message(
+            message.chat.id,
+            "Нажмите кнопку ниже, чтобы поделиться номером телефона:",
+            reply_markup=keyboard
+        )
+    else:
+        # Обычное приветствие
+        bot.send_message(message.chat.id, "Добро пожаловать!")
+@app.route('/auth_callback')
+def auth_callback():
+    # Здесь можно обновить статус авторизации
+    return render_template('auth_success.html')
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
