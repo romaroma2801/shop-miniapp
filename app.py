@@ -57,44 +57,40 @@ def get_promotions():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+from flask import Flask, jsonify, request
+import os
+import json
+
+app = Flask(__name__)
+
+# Конфигурация
+USER_DATA_PATH = os.path.join(os.getcwd(), 'users.json')
+
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
     try:
         data = request.json
-        required_fields = ['id', 'first_name', 'phone']
+        if not data or 'id' not in data:
+            return jsonify({"status": "error", "message": "Invalid data"}), 400
+
+        # Сохранение в файл
+        users = []
+        if os.path.exists(USER_DATA_PATH):
+            with open(USER_DATA_PATH, 'r') as f:
+                users = json.load(f)
         
-        if not all(field in data for field in required_fields):
-            return jsonify({"status": "error", "message": "Недостаточно данных"}), 400
-
-        # Формат для сохранения
-        user_data = {
-            "user_id": data['id'],
-            "first_name": data['first_name'],
-            "last_name": data.get('last_name', ''),
-            "username": data.get('username', ''),
-            "phone": data['phone'],  # Обязательное поле
-            "auth_date": data.get('auth_date'),
-            "registration_date": datetime.now().isoformat()
-        }
-
-        # Логика сохранения в файл/БД
-        with open('users.json', 'r+') as f:
-            users = json.load(f)
-            users.append(user_data)
-            f.seek(0)
+        users.append(data)
+        
+        with open(USER_DATA_PATH, 'w') as f:
             json.dump(users, f, indent=2)
         
-        return jsonify({
-            "status": "success",
-            "user": {
-                "id": user_data['user_id'],
-                "name": f"{user_data['first_name']} {user_data['last_name']}".strip(),
-                "phone": user_data['phone']
-            }
-        })
-
+        return jsonify({"status": "success"})
+    
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
 # Добавьте новый обработчик для команды start с параметром request_phone
 @bot.message_handler(commands=['start'])
 def handle_start(message):
