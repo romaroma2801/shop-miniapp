@@ -4,22 +4,14 @@ import os
 import requests
 import json
 import uuid
-# После импортов
-USER_DATA_PATH = os.path.join(os.getcwd(), 'users.json')
+app = Flask(__name__)
+CORS(app, origins=[os.getenv("TELEGRAM_WEB_APP_URL")])
 
-# При старте приложения
+# Инициализация users.json
+USER_DATA_PATH = os.path.join(os.getcwd(), 'users.json')
 if not os.path.exists(USER_DATA_PATH):
     with open(USER_DATA_PATH, 'w') as f:
-        f.write('[]')
-
-@app.route('/api/save-user', methods=['POST'])
-def save_user():
-    try:
-        # ... остальной код ...
-        with open(USER_DATA_PATH, 'a') as f:
-            f.write(json.dumps(auth_data) + '\n')
-        # ...
-app = Flask(__name__)
+        json.dump([], f)  # Создаем файл с пустым массивом
 CORS(app, origins=[os.getenv("TELEGRAM_WEB_APP_URL")])
 
 with open('store_full.json', 'r', encoding='utf-8') as file:
@@ -69,25 +61,30 @@ def get_promotions():
 def save_user():
     try:
         auth_data = request.json
-        print("Получены данные:", auth_data)
-        
         if not auth_data or 'id' not in auth_data:
-            return jsonify({"status": "error", "message": "Invalid data"}), 400
-            
-        # Используем USER_DATA_PATH вместо жёсткого пути
-        with open(USER_DATA_PATH, 'a') as f:
-            f.write(json.dumps(auth_data) + '\n')
-            
-        return jsonify({
-            "status": "success",
-            "user": {
-                "id": auth_data['id'],
-                "name": auth_data.get('first_name', 'User')
-            }
+            return jsonify({"error": "Invalid data"}), 400
+        
+        # Читаем существующих пользователей
+        with open(USER_DATA_PATH, 'r') as f:
+            users = json.load(f)
+        
+        # Добавляем нового пользователя
+        users.append({
+            "id": auth_data['id'],
+            "username": auth_data.get('username'),
+            "first_name": auth_data.get('first_name'),
+            "last_name": auth_data.get('last_name'),
+            "auth_date": auth_data.get('auth_date')
         })
+        
+        # Сохраняем обратно
+        with open(USER_DATA_PATH, 'w') as f:
+            json.dump(users, f, indent=2)
+            
+        return jsonify({"status": "success"})
+    
     except Exception as e:
-        print("Ошибка:", str(e))
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
