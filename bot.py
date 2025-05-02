@@ -15,17 +15,16 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 WEB_APP_URL = os.getenv("WEB_APP")
 
-def kill_duplicate_bots():
-    """Убивает дублирующиеся процессы бота"""
+def kill_previous_instances():
     current_pid = os.getpid()
     for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
         try:
             if ('python' in proc.info['name'].lower() and 
-                'bot.py' in ' '.join(proc.info['cmdline'] or []) and
-                proc.info['pid'] != current_pid):
+                'bot.py' in ' '.join(proc.info['cmdline'] or []) and 
+                proc.info['pid'] != current_pid:
                 proc.terminate()
-                logger.info(f"Terminated duplicate bot process: {proc.info['pid']}")
-        except (psutil.NoSuchProcess, psutil.AccessDenied, AttributeError):
+                logger.info(f"Terminated old bot process: {proc.info['pid']}")
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -47,12 +46,7 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     # Убиваем дубликаты перед запуском
-    kill_duplicate_bots()
-    
-    # Настройка обработки сигналов
-    def stop_bot(signum, frame):
-        logger.info("Stopping bot gracefully...")
-        application.stop()
+    kill_previous_instances()
 
     # Создаем приложение
     application = Application.builder().token(TELEGRAM_TOKEN).build()
@@ -70,8 +64,7 @@ def main():
     application.run_polling(
         drop_pending_updates=True,
         close_loop=False,
-        allowed_updates=Update.ALL_TYPES,
-        stop_signals=None  # Отключаем обработку сигналов внутри библиотеки
+        stop_signals=None  # Важно!
     )
 
 if __name__ == '__main__':
