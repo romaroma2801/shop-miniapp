@@ -4,20 +4,20 @@ body {
     background: #f0f0f0;
     margin: 0;
     padding: 0;
-    overflow: hidden;
     height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .menu-vertical {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 80px 20px 60px; /* с учетом хедера и футера */
-    overflow-y: auto;
-    max-height: calc(100vh - 160px);
+    gap: 15px;
+    padding: 10px 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .menu-vertical button {
@@ -37,9 +37,10 @@ body {
     top: 0;
     width: 100%;
     background: white;
-    padding: 10px 0;
-    z-index: 10;
+    padding: 15px 0;
+    z-index: 100;
     text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     box-sizing: border-box;
 }
 
@@ -58,8 +59,9 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 50px;
-    z-index: 10;
+    z-index: 100;
     box-sizing: border-box;
+    height: 60px;
 }
 
 #home-button, #login-button {
@@ -80,12 +82,10 @@ body {
 
 .cart-button-container {
     position: fixed;
-    bottom: 0px; /* поднята на четверть выше футера */
+    bottom: 30px; /* Поднята над футером */
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    justify-content: center;
-    z-index: 15;
+    z-index: 110;
 }
 
 .cart-button {
@@ -130,7 +130,7 @@ body {
     background: transparent;
     border: none;
     cursor: pointer;
-    z-index: 1000;
+    z-index: 200;
 }
 
 
@@ -152,8 +152,13 @@ p {
 }
 
 #content {
-    position: relative;
-    z-index: 100;
+    flex: 1;
+    overflow-y: auto;
+    padding: 70px 0 70px; /* Отступы под header и над footer */
+    margin-top: 0;
+    z-index: 1;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #content.hidden {
