@@ -178,14 +178,12 @@ p {
 }
 
 .star {
-    background: yellow;
     border-radius: 4px;
 }
 
 .star {
     z-index: 10000 !important;
     position: relative;
-    background: yellow;
 }
 
 
