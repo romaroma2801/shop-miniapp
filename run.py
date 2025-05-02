@@ -19,7 +19,9 @@ def kill_previous_processes():
             continue
 
 def run_bot():
-    subprocess.run([sys.executable, "bot.py"])
+    # Ждем 5 сек перед запуском, чтобы старый процесс завершился
+    time.sleep(5)
+    subprocess.Popen(["python", "bot.py"])
 
 def run_flask():
     subprocess.run([sys.executable, "app.py"])
