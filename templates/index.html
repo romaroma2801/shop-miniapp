@@ -69,6 +69,7 @@
             document.getElementById('login-button').addEventListener('click', function(e) {
                 console.log('Login button clicked', e);
                 auth();
+            });
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.expand();
                 Telegram.WebApp.ready();
