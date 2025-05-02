@@ -16,7 +16,7 @@ WEB_APP_URL = os.getenv("WEB_APP")
 application = None  # Глобальная переменная для обработчика сигналов
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /start с inline кнопкой"""
+    """Обработчик команды /start с inline кнопкой в сообщении"""
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🛍️ Открыть приложение", url=WEB_APP_URL)]
     ])
@@ -28,14 +28,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик всех текстовых сообщений"""
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛍️ Открыть приложение", url=WEB_APP_URL)]
-    ])
-    await update.message.reply_text(
-        "Используйте кнопку ниже, чтобы открыть приложение:",
-        reply_markup=keyboard
-    )
+    """Обработчик текстовых сообщений - просто перенаправляет на старт"""
+    await start(update, context)
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
@@ -62,7 +56,8 @@ def main():
     logger.info("Starting bot polling...")
     application.run_polling(
         drop_pending_updates=True,
-        close_loop=False
+        close_loop=False,
+        allowed_updates=Update.ALL_TYPES
     )
 
 if __name__ == '__main__':
