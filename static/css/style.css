@@ -122,16 +122,17 @@ body {
 }
 
 #back-button {
-    position: fixed; /* 🔁 заменено с absolute на fixed */
-    top: 16px;
-    left: 16px;
-    width: 36px;
-    height: 36px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    z-index: 1000; /* Поверх всего! */
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 100px;
+    height: 100px;
+    background: red !important;
+    border: 2px solid black;
+    z-index: 9999 !important;
+    pointer-events: all !important;
 }
+
 
 #back-button img {
     width: 32px;
