@@ -118,7 +118,7 @@
                 }
             }
 
-            function showContent(content, showBack = true) {
+            function showContent(content, showBack = true, onRendered = null) {
                 const contentDiv = document.getElementById('content');
                 document.getElementById('back-button').style.display = showBack ? 'block' : 'none';
                 contentDiv.classList.add('hidden');
@@ -126,9 +126,11 @@
                     contentDiv.innerHTML = content;
                     setTimeout(() => {
                         contentDiv.classList.remove('hidden');
+                        if (typeof onRendered === 'function') onRendered();
                     }, 50);
                 }, 300);
             }
+
 
             function showHome() {
                 currentState = "home";
@@ -292,15 +294,23 @@
             }
 
             function showReviewForm() {
+                currentState = "review";
                 showContent(`
                     <h3>Тест клика</h3>
                     <span id="testStar" style="font-size: 40px; cursor: pointer;">⭐</span>
-                `, true);
-
-                document.getElementById('testStar').addEventListener('click', () => {
-                    alert('Клик работает!');
+                `, true, () => {
+                    // Гарантировано вызывается после вставки DOM
+                    const el = document.getElementById('testStar');
+                    if (el) {
+                        el.addEventListener('click', () => {
+                            alert('Клик работает!');
+                        });
+                    } else {
+                        console.error('❌ testStar не найден');
+                    }
                 });
             }
+
 
 
 
