@@ -6,6 +6,7 @@ import requests
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+from flask import request
 
 app = Flask(__name__)
 PORT = int(os.environ.get('PORT', 5000))
@@ -50,7 +51,48 @@ try:
 except Exception as e:
     logging.error(f"Failed to load store data: {e}")
     STORE_DATA = {}
+@app.route('/api/get-user', methods=['GET'])
+def get_user():
+    username = request.args.get('username')
+    try:
+        sheet = get_sheet()
+        records = sheet.get_all_records()
+        user = next((u for u in records if u['Username'] == username), None)
+        return jsonify({"exists": bool(user), "user": user})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+@app.route('/api/save-user', methods=['POST'])
+def save_user():
+    try:
+        data = request.json
+        sheet = get_sheet()
+        
+        # Проверяем, есть ли пользователь
+        records = sheet.get_all_records()
+        user_index = next((i for i, u in enumerate(records) if u['Username'] == data['username']), None)
+        
+        if user_index is not None:
+            # Обновляем существующего
+            row = user_index + 2  # +1 для заголовка, +1 для 0-based
+            updates = []
+            if data.get('name'): updates.append((2, data['name']))  # Колонка B
+            if data.get('phone'): updates.append((3, data['phone'])) # Колонка C
+            
+            for col, value in updates:
+                sheet.update_cell(row, col, value)
+        else:
+            # Добавляем нового
+            sheet.append_row([
+                data['username'],
+                data.get('name', ''),
+                data.get('phone', ''),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ])
+        
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 @app.route('/')
 def index():
     return render_template('index.html')
