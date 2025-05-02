@@ -122,16 +122,15 @@ body {
 }
 
 #back-button {
-    position: absolute;
-    top: 50%;
-    left: 30px;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
+    position: fixed; /* 🔁 заменено с absolute на fixed */
+    top: 16px;
+    left: 16px;
+    width: 36px;
+    height: 36px;
     background: transparent;
     border: none;
     cursor: pointer;
-    z-index: 20;
+    z-index: 1000; /* Поверх всего! */
 }
 
 #back-button img {
