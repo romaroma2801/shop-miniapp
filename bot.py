@@ -15,18 +15,6 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 WEB_APP_URL = os.getenv("WEB_APP")
 
-def kill_previous_instances():
-    current_pid = os.getpid()
-    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-        try:
-            if ('python' in proc.info['name'].lower() and 
-                'bot.py' in ' '.join(proc.info['cmdline'] or []) and 
-                proc.info['pid'] != current_pid:
-                proc.terminate()
-                logger.info(f"Terminated old bot process: {proc.info['pid']}")
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            continue
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
     await update.message.reply_text(
@@ -45,9 +33,6 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
 
 def main():
-    # Убиваем дубликаты перед запуском
-    kill_previous_instances()
-
     # Создаем приложение
     application = Application.builder().token(TELEGRAM_TOKEN).build()
     
