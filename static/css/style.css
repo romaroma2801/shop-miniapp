@@ -181,7 +181,7 @@ p {
 }
 
 .star {
-    z-index: 10000 !important;
+    z-index: 100;
     position: relative;
 }
 
