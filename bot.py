@@ -31,6 +31,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
+def stop_bot(signum, frame):
+    logger.info("Bot is shutting down gracefully...")
+    sys.exit(0)
 
 def main():
     # Создаем приложение
