@@ -49,12 +49,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const loginButton = document.getElementById('login-button');
-            if (loginButton) {
-                loginButton.addEventListener('click', auth);
-            } else {
-                console.error('Login button not found');
-            }
             const setFullHeight = () => {
                 document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
             };
