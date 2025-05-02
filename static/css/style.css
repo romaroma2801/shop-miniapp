@@ -152,8 +152,8 @@ p {
 }
 
 #content {
-    opacity: 1;
-    transition: opacity 0.3s ease-in-out;
+    position: relative;
+    z-index: 100;
 }
 
 #content.hidden {
@@ -177,9 +177,9 @@ p {
     transition: opacity 0.5s, visibility 0.5s;
 }
 
-.toast.show {
-    visibility: visible;
-    opacity: 0.9;
+.star {
+    background: yellow;
+    border-radius: 4px;
 }
 
 .star {
