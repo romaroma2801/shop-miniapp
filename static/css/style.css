@@ -37,7 +37,7 @@ body {
     top: 0;
     width: 100%;
     background: white;
-    padding: 10px 0;
+    padding: 7px 0;
     z-index: 100;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -152,8 +152,8 @@ p {
 }
 
 #content {
-    max-width: 600px;
-    width: 90%;
+    padding-left: 5px;
+    padding-right: 5px;
     flex: 1;
     overflow-y: auto;
     padding: 70px 0 70px; /* Отступы под header и над footer */
