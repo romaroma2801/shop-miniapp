@@ -4,9 +4,9 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import os
 import json
 import logging
-import threading
+import asyncio
+from threading import Thread
 import requests
-import asyncio  # Добавлен новый импорт
 
 # Настройка логгирования
 logging.basicConfig(
@@ -41,48 +41,43 @@ def get_promotions():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[KeyboardButton("🛍️ Открыть магазин", web_app=WebAppInfo(url=WEB_APP_URL))]]
     await update.message.reply_text(
-        "Добро пожаловать в наш магазин!\n\nНажмите кнопку ниже, чтобы открыть приложение:",
+        "Добро пожаловать в наш магазин!\n\nНажмите кнопку ниже, чтобы открыть интернет-магазин:",
         reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[KeyboardButton("🛍️ Открыть приложение", web_app=WebAppInfo(url=WEB_APP_URL))]]
+    keyboard = [[KeyboardButton("🛍️ Открыть магазин", web_app=WebAppInfo(url=WEB_APP_URL))]]
     await update.message.reply_text(
-        "Используйте кнопку ниже, чтобы открыть приложение:",
+        "Используйте кнопку ниже, чтобы открыть магазин:",
         reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     )
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
 
-def run_bot():
-    """Запуск Telegram бота в отдельном потоке"""
-    try:
-        logger.info(f"Initializing bot with token: {TELEGRAM_TOKEN[:5]}...{TELEGRAM_TOKEN[-5:]}")
-        
-        # Создаем новый event loop для потока
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
-        application = Application.builder().token(TELEGRAM_TOKEN).build()
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        application.add_error_handler(error_handler)
-        
-        logger.info("Starting bot polling...")
-        loop.run_until_complete(application.run_polling())
-        
-    except Exception as e:
-        logger.critical(f"Failed to start bot: {str(e)}")
-        raise
-
-# ==================== Запуск приложения ====================
-if __name__ == '__main__':
-    # Запускаем бота в отдельном потоке
-    bot_thread = threading.Thread(target=run_bot)
-    bot_thread.daemon = True
-    bot_thread.start()
+async def run_bot():
+    """Запуск Telegram бота"""
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_error_handler(error_handler)
     
-    # Запускаем Flask приложение
+    logger.info("Starting bot polling...")
+    await application.run_polling()
+
+def run_flask():
+    """Запуск Flask приложения"""
     logger.info(f"Starting Flask app on port {PORT}...")
     app.run(host='0.0.0.0', port=PORT)
+
+async def main():
+    """Основная функция для запуска всего приложения"""
+    # Создаем и запускаем задачи
+    flask_thread = Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    
+    # Запускаем бота в основном потоке
+    await run_bot()
+
+if __name__ == '__main__':
+    asyncio.run(main())
