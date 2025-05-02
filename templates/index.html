@@ -36,7 +36,7 @@
         <div id="home-button" onclick="goHome()">
             <img src="/static/home.svg" alt="Домой">
         </div>
-        <div id="login-button" onclick="auth()">
+        <div id="login-button">
             <img src="/static/login.svg" alt="Авторизация">
         </div>
     </div>
@@ -49,6 +49,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const loginButton = document.getElementById('login-button');
+            if (loginButton) {
+                loginButton.addEventListener('click', auth);
+            } else {
+                console.error('Login button not found');
+            }
             const setFullHeight = () => {
                 document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
             };
@@ -517,6 +523,7 @@
 
             // Новая функция авторизации
             async function auth() {
+                console.log('Auth function called');
                 if (!window.Telegram?.WebApp) {
                     showToast("Откройте в Telegram");
                     return;
@@ -524,6 +531,7 @@
 
                 const tg = Telegram.WebApp;
                 const user = tg.initDataUnsafe?.user;
+                console.log('User data:', user);
     
                 if (!user) {
                     Telegram.WebApp.openTelegramLink(`https://t.me/Shop_NEKURIBY_bot?start=auth_${Date.now()}`);
@@ -639,8 +647,6 @@
             window.showCities = showCities;
             window.showStores = showStores;
             window.showStoreDetails = showStoreDetails;
-            window.requestAdditionalAuth = requestAdditionalAuth;
-            window.requestPhoneNumber = requestPhoneNumber;
             window.copyPhoneNumber = function() {
                 const phone = "+375 29 225-13-34";
                 navigator.clipboard.writeText(phone)
