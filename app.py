@@ -31,18 +31,6 @@ def get_sheet():
     client = gspread.authorize(creds)
     return client.open("USERS").sheet1  # Название таблицы
 
-# Пример сохранения данных
-@app.route('/api/save-user', methods=['POST'])
-def save_user():
-    data = request.json
-    sheet = get_sheet()
-    sheet.append_row([
-        data["username"],
-        data["name"],
-        data["phone"],
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ])
-    return jsonify({"status": "success"})
 # Загрузка данных магазинов
 try:
     with open('store_full.json', 'r', encoding='utf-8') as file:
