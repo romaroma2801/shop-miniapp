@@ -19,7 +19,6 @@ def kill_previous_processes():
             continue
 
 def run_bot():
-    # Ждем 5 сек перед запуском, чтобы старый процесс завершился
     time.sleep(5)
     subprocess.Popen(["python", "bot.py"])
 
