@@ -309,3 +309,36 @@ p {
 .auth-fill-button:active {
     transform: scale(0.98);
 }
+.cabinet {
+    padding: 20px;
+    text-align: center;
+}
+
+.user-info {
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+.auth-form {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.auth-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
