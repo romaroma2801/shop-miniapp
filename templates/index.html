@@ -292,31 +292,16 @@
             }
 
             function showReviewForm() {
-                currentState = "review";
                 showContent(`
-                    <h3>Оцените качество обслуживания</h3>
-                    <div id="stars" style="font-size: 32px;">
-                        ${[1, 2, 3, 4, 5].map(i => `<span class="star" data-stars="${i}" id="star${i}">⭐</span>`).join('')}
-                    </div>
-                    <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5" style="width: 90%; margin-top: 20px;"></textarea>
-                    <button id="submit-review" style="margin-top: 15px;">Отправить</button>
-                    <div id="toast" class="toast"></div>
+                    <h3>Тест клика</h3>
+                    <span id="testStar" style="font-size: 40px; cursor: pointer;">⭐</span>
                 `, true);
 
-                window.reviewStars = 0;
-
-                // 🚨 Добавляем прямую привязку событий — временно
-                setTimeout(() => {
-                    const stars = document.querySelectorAll('.star');
-                    stars.forEach(star => {
-                        star.addEventListener('click', () => {
-                            const count = parseInt(star.dataset.stars);
-                            console.log("⭐ Клик по звезде:", count);
-                            selectStars(count);
-                        });
-                    });
-                }, 50);
+                document.getElementById('testStar').addEventListener('click', () => {
+                    alert('Клик работает!');
+                });
             }
+
 
 
             function selectStars(count) {
