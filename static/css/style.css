@@ -183,10 +183,11 @@ p {
 }
 
 .star {
-    cursor: pointer;
-    transition: transform 0.3s;
-    font-size: 32px;
+    z-index: 10000 !important;
+    position: relative;
+    background: yellow;
 }
+
 
 .star.pop {
     transform: scale(1.1);
