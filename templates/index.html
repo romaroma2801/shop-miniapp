@@ -295,21 +295,69 @@
 
             function showReviewForm() {
                 currentState = "review";
+
                 showContent(`
-                    <h3>Тест клика</h3>
-                    <span id="testStar" style="font-size: 40px; cursor: pointer;">⭐</span>
+                    <h3>Оцените качество обслуживания</h3>
+                    <div id="stars" style="font-size: 32px; margin-bottom: 10px;">
+                        ${[1, 2, 3, 4, 5].map(i => `
+                            <span class="star" data-stars="${i}" id="star${i}">⭐</span>
+                        `).join('')}
+                    </div>
+                    <textarea id="reviewText" placeholder="Напишите ваш отзыв..." rows="5"
+                              style="width: 90%; margin-top: 20px; border-radius: 10px; padding: 10px; border: 1px solid #ccc;"></textarea>
+                    <button id="submit-review" style="margin-top: 15px;">Отправить</button>
+                    <div id="toast" class="toast"></div>
                 `, true, () => {
-                    // Гарантировано вызывается после вставки DOM
-                    const el = document.getElementById('testStar');
-                    if (el) {
-                        el.addEventListener('click', () => {
-                            alert('Клик работает!');
+                    // ✅ Обработчик звёзд
+                    const stars = document.querySelectorAll('.star');
+                    stars.forEach(star => {
+                        star.addEventListener('click', () => {
+                            const count = parseInt(star.dataset.stars);
+                            window.reviewStars = count;
+
+                            stars.forEach((el, index) => {
+                                if (index < count) {
+                                    el.textContent = '🌟';
+                                    el.classList.add('pop');
+                                } else {
+                                    el.textContent = '⭐';
+                                    el.classList.remove('pop');
+                                }
+                            });
                         });
-                    } else {
-                        console.error('❌ testStar не найден');
-                    }
+                    });
+
+                    // ✅ Кнопка "Отправить"
+                    const submitBtn = document.getElementById('submit-review');
+                    submitBtn.addEventListener('click', () => {
+                        const text = document.getElementById('reviewText').value.trim();
+
+                        if (!window.reviewStars || window.reviewStars === 0) {
+                            showToast("Пожалуйста, выберите оценку");
+                            return;
+                        }
+
+                        if (text.length < 3) {
+                            showToast("Пожалуйста, напишите отзыв");
+                            return;
+                        }
+
+                        // Сохраняем и отправляем
+                        sendReviewToTelegram(window.reviewStars, text);
+                        localStorage.setItem('lastReviewTime', Date.now().toString());
+
+                        showContent(`
+                            <p>🙏 Спасибо за оставленный отзыв!</p>
+                            <p>Нам важно ваше мнение 😊</p>
+                            <button data-action="goHome">Главное меню</button>
+                        `, true);
+                    });
+
+                    // Инициализация
+                    window.reviewStars = 0;
                 });
             }
+
 
 
 
