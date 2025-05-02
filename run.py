@@ -19,7 +19,6 @@ def kill_previous_processes():
             continue
 
 def run_bot():
-    time.sleep(5)
     subprocess.Popen(["python", "bot.py"])
 
 def run_flask():
