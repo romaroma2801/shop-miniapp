@@ -3,6 +3,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import os
 import logging
 import signal
+import sys
+import psutil
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -13,35 +15,46 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 WEB_APP_URL = os.getenv("WEB_APP")
 
-application = None  # Глобальная переменная для обработчика сигналов
+def kill_duplicate_bots():
+    """Убивает дублирующиеся процессы бота"""
+    current_pid = os.getpid()
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            if ('python' in proc.info['name'].lower() and 
+                'bot.py' in ' '.join(proc.info['cmdline'] or []) and
+                proc.info['pid'] != current_pid):
+                proc.terminate()
+                logger.info(f"Terminated duplicate bot process: {proc.info['pid']}")
+        except (psutil.NoSuchProcess, psutil.AccessDenied, AttributeError):
+            continue
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /start с inline кнопкой в сообщении"""
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛍️ Открыть приложение", url=WEB_APP_URL)]
-    ])
-    
+    """Обработчик команды /start"""
     await update.message.reply_text(
         "Добро пожаловать в наш магазин!\n\n"
         "Нажмите кнопку ниже, чтобы открыть приложение:",
-        reply_markup=keyboard
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛍️ Открыть приложение", url=WEB_APP_URL)]
+        ])
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик текстовых сообщений - просто перенаправляет на старт"""
+    """Обработчик всех текстовых сообщений"""
     await start(update, context)
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
 
-def stop_bot(signum, frame):
-    """Обработчик сигнала для корректного завершения"""
-    logger.info("Stopping bot gracefully...")
-    if application:
+def main():
+    # Убиваем дубликаты перед запуском
+    kill_duplicate_bots()
+    
+    # Настройка обработки сигналов
+    def stop_bot(signum, frame):
+        logger.info("Stopping bot gracefully...")
         application.stop()
 
-def main():
-    global application
+    # Создаем приложение
     application = Application.builder().token(TELEGRAM_TOKEN).build()
     
     # Регистрация обработчиков
@@ -57,8 +70,13 @@ def main():
     application.run_polling(
         drop_pending_updates=True,
         close_loop=False,
-        allowed_updates=Update.ALL_TYPES
+        allowed_updates=Update.ALL_TYPES,
+        stop_signals=None  # Отключаем обработку сигналов внутри библиотеки
     )
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.critical(f"Bot crashed: {e}")
+        sys.exit(1)
