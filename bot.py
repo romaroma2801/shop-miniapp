@@ -11,29 +11,29 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-WEB_APP_URL = os.getenv("WEB_APP_URL")
+WEB_APP_URL = os.getenv("WEB_APP")
 
 application = None  # Глобальная переменная для обработчика сигналов
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start с inline кнопкой"""
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛍️ Открыть магазин", url=WEB_APP_URL)]
+        [InlineKeyboardButton("🛍️ Открыть приложение", url=WEB_APP_URL)]
     ])
     
     await update.message.reply_text(
         "Добро пожаловать в наш магазин!\n\n"
-        "Нажмите кнопку ниже, чтобы открыть интернет-магазин:",
+        "Нажмите кнопку ниже, чтобы открыть приложение:",
         reply_markup=keyboard
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик всех текстовых сообщений"""
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛍️ Открыть магазин", url=WEB_APP_URL)]
+        [InlineKeyboardButton("🛍️ Открыть приложение", url=WEB_APP_URL)]
     ])
     await update.message.reply_text(
-        "Используйте кнопку ниже, чтобы открыть магазин:",
+        "Используйте кнопку ниже, чтобы открыть приложение:",
         reply_markup=keyboard
     )
 
