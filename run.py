@@ -10,11 +10,12 @@ def kill_previous_processes():
     current_pid = os.getpid()
     for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
         try:
-            if ('python' in proc.info['name'].lower() or 
-                'python' in (proc.info['cmdline'] or [])):
-                if 'bot.py' in (proc.info['cmdline'] or []) and proc.info['pid'] != current_pid:
-                    proc.kill()
-                    print(f"Killed previous bot process: {proc.info['pid']}")
+            if (('python' in proc.info['name'].lower()) or 
+                ('python' in (proc.info['cmdline'] or []))) and \
+               ('bot.py' in (proc.info['cmdline'] or [])) and \
+               (proc.info['pid'] != current_pid):
+                proc.kill()
+                print(f"Killed previous bot process: {proc.info['pid']}")
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
 
