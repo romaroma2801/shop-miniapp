@@ -94,10 +94,12 @@
                     }
                 }
 
-                if (e.target.classList.contains('star')) {
-                    const count = parseInt(e.target.dataset.stars);
+                const starEl = e.target.closest('.star');
+                if (starEl && starEl.dataset.stars) {
+                    const count = parseInt(starEl.dataset.stars);
                     selectStars(count);
                 }
+
 
                 const submitBtn = e.target.closest('#submit-review');
                 if (submitBtn) {
