@@ -120,7 +120,14 @@
 
             function showContent(content, showBack = true, onRendered = null) {
                 const contentDiv = document.getElementById('content');
-                document.getElementById('back-button').style.display = showBack ? 'block' : 'none';
+                const backButton = document.getElementById('back-button');
+
+                if (backButton) {
+                    backButton.style.display = showBack ? 'block' : 'none';
+                } else {
+                    console.warn('⚠️ #back-button не найден в DOM');
+                }
+
                 contentDiv.classList.add('hidden');
                 setTimeout(() => {
                     contentDiv.innerHTML = content;
@@ -130,6 +137,7 @@
                     }, 50);
                 }, 300);
             }
+
 
 
             function showHome() {
@@ -145,6 +153,7 @@
             }
 
             function goBack() {
+                console.log("🔙 goBack вызван. currentState =", currentState);
                 if (currentState === "regions") {
                     showHome();
                 } else if (currentState === "cities") {
@@ -153,11 +162,14 @@
                     showCities(currentRegion);
                 } else if (currentState === "storeDetails") {
                     showStores(currentCity, currentRegion);
-                } else if (currentState === "review" || currentState === "jobs" || 
-                           currentState === "contacts" || currentState === "promotions") {
+                } else if (["review", "contacts", "jobs", "promotions"].includes(currentState)) {
+                    showHome();
+                } else {
+                    console.warn("❓ Неизвестное состояние:", currentState);
                     showHome();
                 }
             }
+
 
 
 
