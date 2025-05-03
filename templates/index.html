@@ -593,10 +593,15 @@
                 `, true);
             }
             function goHome() {
+                // Скрываем все элементы личного кабинета
                 document.getElementById('personal-cabinet').style.display = 'none';
                 document.getElementById('thank-you-message').style.display = 'none';
                 document.getElementById('edit-form').style.display = 'none';
+    
+                // Показываем основное содержимое
                 document.getElementById('content').style.display = 'block';
+    
+                // Восстанавливаем главное меню
                 showHome();
             }
 
@@ -625,7 +630,21 @@
                         phone: user.phone_number || '',
                         photo_url: user.photo_url || '/static/user-avatar.png'
                     };
+                    const checkUser = await fetch(`/api/get-user?username=${encodeURIComponent(userData.username)}`);
+                    const userExists = await checkUser.json();
 
+                    if (!userExists.exists) {
+                        // Сохраняем только если пользователя нет
+                        await fetch('/api/save-user', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                username: userData.username,
+                                name: userData.first_name,
+                                phone: userData.phone
+                            })
+                        });
+                    }
                     // Показываем приветствие
                     showWelcomeMessage(userData);
 
@@ -677,30 +696,21 @@
 
             // Показ личного кабинета
             function showPersonalCabinet(user) {
-                // Удаляем приветственное сообщение
-                const welcomeScreen = document.getElementById('welcome-screen');
-                if (welcomeScreen) welcomeScreen.remove();
-
-                // Заполняем данные пользователя из таблицы (а не из Telegram)
+                // Загружаем данные из таблицы
                 fetch(`/api/get-user?username=${encodeURIComponent(user.username)}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.status === 'success' && data.exists) {
-                            // Используем данные из таблицы
+                        if (data.status === 'success') {
+                            // Используем данные из таблицы, если они есть
                             const dbUser = data.user;
                             document.getElementById('user-username').textContent = `@${dbUser.Username || user.username}`;
                             document.getElementById('user-name').textContent = dbUser.Name || 'Не указано';
                             document.getElementById('user-phone').textContent = dbUser.Phone || 'Не указан';
                 
-                            // Обновляем локальные данные
+                                // Обновляем локальные данные
                             user.first_name = dbUser.Name || user.first_name;
                             user.phone = dbUser.Phone || user.phone;
                             localStorage.setItem('currentUser', JSON.stringify(user));
-                        } else {
-                            // Если нет данных в таблице, используем Telegram данные
-                            document.getElementById('user-username').textContent = `@${user.username}`;
-                            document.getElementById('user-name').textContent = user.first_name || 'Не указано';
-                            document.getElementById('user-phone').textContent = user.phone || 'Не указан';
                         }
                     })
                     .catch(error => {
@@ -714,11 +724,6 @@
                 // Показываем личный кабинет
                 document.getElementById('personal-cabinet').style.display = 'block';
                 document.getElementById('content').style.display = 'none';
-
-                // Обработчик кнопки редактирования
-                document.getElementById('edit-profile-btn').onclick = function() {
-                    showEditForm(user);
-                };
             }
             // Показ приветственного сообщения
             function showWelcomeMessage(user) {
