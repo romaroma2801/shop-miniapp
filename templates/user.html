@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Личный кабинет | NEKURI.BY</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        :root { --vh: 1vh; }
+        html, body { height: calc(var(--vh, 1vh) * 100); }
+        
+        /* Стили для личного кабинета */
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 3px solid #ff0000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .user-data {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .data-row {
+            display: flex;
+            margin-bottom: 15px;
+            font-size: 16px;
+            align-items: center;
+        }
+        
+        .data-label {
+            font-weight: bold;
+            width: 100px;
+            color: #555;
+        }
+        
+        .data-value {
+            flex: 1;
+            color: #333;
+            word-break: break-word;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 15px;
+        }
+        
+        #welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .welcome-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 3px solid #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="/static/logo22.png" alt="Логотип" class="logo">
+    </div>
+
+    <div id="content">
+        <!-- Приветствие -->
+        <div id="welcome-screen">
+            <div class="welcome-avatar">
+                <img src="" alt="Аватар" id="welcome-avatar">
+            </div>
+            <h2 id="welcome-message">Загружаем ваш профиль...</h2>
+        </div>
+
+        <!-- Личный кабинет -->
+        <div id="personal-cabinet" style="display: none;">
+            <div class="user-avatar">
+                <img src="" alt="Аватар" id="user-avatar-img">
+            </div>
+            
+            <div class="user-data">
+                <div class="data-row">
+                    <span class="data-label">Юзернейм:</span>
+                    <span class="data-value" id="user-username"></span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Имя:</span>
+                    <span class="data-value" id="user-name"></span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Телефон:</span>
+                    <span class="data-value" id="user-phone"></span>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="edit-profile-btn" class="edit-btn">✏️ Редактировать данные</button>
+                <button id="logout-btn" class="edit-btn" style="background: #555;">Выйти</button>
+            </div>
+        </div>
+
+        <!-- Форма редактирования -->
+        <div id="edit-form" style="display: none;">
+            <div class="user-data">
+                <h3 style="text-align: center; margin-bottom: 20px;">Редактирование профиля</h3>
+                
+                <div class="form-group">
+                    <label for="edit-name">Имя и фамилия</label>
+                    <input type="text" id="edit-name" placeholder="Введите ваше имя" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-phone">Телефон</label>
+                    <input type="tel" id="edit-phone" placeholder="+375 XX XXX-XX-XX" class="form-input">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="save-profile-btn" class="save-btn">Сохранить</button>
+                    <button id="cancel-edit-btn" class="save-btn" style="background: #555;">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-buttons">
+        <div id="home-button">
+            <img src="/static/home.svg" alt="Домой">
+        </div>
+        <div id="login-button" style="visibility: hidden;">
+            <img src="/static/login.svg" alt="Авторизация">
+        </div>
+    </div>
+
+    <div class="cart-button-container">
+        <button class="cart-button">
+            <img src="/static/shop.svg" alt="Корзина">
+        </button>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Проверяем авторизацию Telegram
+        if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const tgUser = Telegram.WebApp.initDataUnsafe.user;
+        const userKey = `user_${tgUser.id}`;
+        let userData = JSON.parse(localStorage.getItem(userKey)) || {
+            id: tgUser.id,
+            username: tgUser.username || `id${tgUser.id}`,
+            first_name: tgUser.first_name || '',
+            phone: tgUser.phone_number || '',
+            photo_url: tgUser.photo_url || '/static/user-avatar.png'
+        };
+
+        // Показываем приветствие
+        document.getElementById('welcome-avatar').src = userData.photo_url;
+        document.getElementById('welcome-message').textContent = `Привет, ${userData.first_name || 'Пользователь'}!`;
+
+        // Загружаем/проверяем данные
+        try {
+            const response = await fetch(`/api/get-user?username=${encodeURIComponent(userData.username)}`);
+            const result = await response.json();
+            
+            if (result.exists) {
+                // Обновляем данные если они изменились
+                userData.first_name = result.user.Name || userData.first_name;
+                userData.phone = result.user.Phone || userData.phone;
+                
+                // Сохраняем обновленные данные
+                localStorage.setItem(userKey, JSON.stringify(userData));
+            } else {
+                // Регистрируем нового пользователя
+                await fetch('/api/save-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: userData.username,
+                        name: userData.first_name,
+                        phone: userData.phone
+                    })
+                });
+            }
+            
+            // Показываем личный кабинет
+            showPersonalCabinet(userData);
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+            // Показываем кабинет с сохраненными данными
+            showPersonalCabinet(userData);
+            showToast("Используются сохраненные данные");
+        }
+
+        // Обработчики кнопок
+        document.getElementById('home-button').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem(userKey);
+            window.location.href = 'index.html';
+        });
+
+        document.getElementById('edit-profile-btn').addEventListener('click', () => {
+            showEditForm(userData);
+        });
+
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            document.getElementById('edit-form').style.display = 'none';
+            document.getElementById('personal-cabinet').style.display = 'block';
+        });
+
+        document.getElementById('save-profile-btn').addEventListener('click', async () => {
+            await saveProfile(userData);
+        });
+    });
+
+    function showPersonalCabinet(user) {
+        document.getElementById('welcome-screen').style.display = 'none';
+        
+        // Заполняем данные
+        document.getElementById('user-avatar-img').src = user.photo_url;
+        document.getElementById('user-username').textContent = `@${user.username}`;
+        document.getElementById('user-name').textContent = user.first_name || 'Не указано';
+        document.getElementById('user-phone').textContent = user.phone || 'Не указан';
+
+        // Показываем кабинет
+        document.getElementById('personal-cabinet').style.display = 'block';
+    }
+
+    function showEditForm(user) {
+        document.getElementById('personal-cabinet').style.display = 'none';
+        
+        // Заполняем форму текущими данными
+        document.getElementById('edit-name').value = user.first_name || '';
+        document.getElementById('edit-phone').value = user.phone || '';
+        
+        // Показываем форму
+        document.getElementById('edit-form').style.display = 'block';
+    }
+
+    async function saveProfile(user) {
+        const name = document.getElementById('edit-name').value.trim();
+        const phone = document.getElementById('edit-phone').value.trim();
+
+        if (!name) {
+            showToast("Введите ваше имя");
+            return;
+        }
+
+        try {
+            // Обновляем данные на сервере
+            const response = await fetch('/api/save-user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: user.username,
+                    name: name,
+                    phone: phone
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // Обновляем локальные данные
+                user.first_name = name;
+                user.phone = phone;
+                localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
+                
+                // Показываем кабинет с обновленными данными
+                showPersonalCabinet(user);
+                document.getElementById('edit-form').style.display = 'none';
+                
+                showToast("Данные успешно сохранены");
+            } else {
+                throw new Error(result.message || 'Ошибка сохранения');
+            }
+        } catch (error) {
+            console.error('Ошибка сохранения:', error);
+            showToast("Ошибка при сохранении данных");
+        }
+    }
+
+    function showToast(message, duration = 2000) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.style.opacity = 1, 10);
+        setTimeout(() => {
+            toast.style.opacity = 0;
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+    </script>
+</body>
+</html>
