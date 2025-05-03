@@ -534,3 +534,14 @@ p {
     height: 100%;
     object-fit: cover;
 }
+/* Для плавного появления/исчезновения приветствия */
+@keyframes quickFade {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.quick-welcome {
+    animation: quickFade 1s ease-in-out forwards;
+}
