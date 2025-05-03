@@ -51,15 +51,16 @@ def get_sheet():
 def index():
     return render_template('index.html')
 
-@@app.route('/test-gsheets')
-def test_gsheets():
+@app.route('/api/get-user')
+def get_user():
+    username = request.args.get('username')
     try:
         sheet = get_sheet()
         records = sheet.get_all_records()
-        return jsonify(records)
+        user = next((u for u in records if u['Username'] == username), None)
+        return jsonify({"exists": bool(user), "user": user})
     except Exception as e:
-        import traceback
-        return traceback.format_exc(), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
