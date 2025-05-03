@@ -430,7 +430,15 @@ p {
 
 /* Форма редактирования */
 #edit-form {
-    background: #f0f0f0;
+    background: #f8f8f8;
+    padding: 20px;
+    border-radius: 10px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
 }
 
 .form-group input {
@@ -439,7 +447,8 @@ p {
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
 }
 
 .save-btn {
@@ -456,10 +465,45 @@ p {
 /* Сообщение после сохранения */
 #thank-you-message {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .thank-you-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    max-width: 80%;
+}
+.thank-you-content h3 {
+    font-size: 22px;
+    color: #ff0000;
+    margin-bottom: 15px;
+}
+
+.thank-you-content p {
+    font-size: 18px;
+    color: #333;
+}
    
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    border: 3px solid #ff0000;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
