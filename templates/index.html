@@ -46,7 +46,65 @@
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
+    <!-- Добавьте этот HTML перед закрывающим тегом </body> -->
+    <div id="personal-cabinet" style="display: none;">
+        <!-- Шапка с аватаром -->
+        <div class="user-header">
+            <div class="user-avatar" id="user-avatar">
+                <!-- Аватар будет загружен из Telegram -->
+            </div>
+            <h2 id="welcome-message">Добро пожаловать!</h2>
+        </div>
+    
+        <!-- Блок с данными пользователя -->
+        <div class="user-data" id="user-data">
+            <div class="data-row">
+                <span class="data-label">Юзернейм:</span>
+                <span class="data-value" id="user-username"></span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Имя:</span>
+                <span class="data-value" id="user-name"></span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Телефон:</span>
+                <span class="data-value" id="user-phone"></span>
+            </div>
+        </div>
+    
+        <!-- Кнопка действий -->
+        <div class="actions">
+            <button id="edit-profile-btn" class="edit-btn">✏️ Дополнить личные данные</button>
+        </div>
+    </div>
 
+    <!-- Форма редактирования -->
+    <div id="edit-form" style="display: none;">
+        <div class="form-header">
+            <h3>Редактирование профиля</h3>
+        </div>
+    
+        <div class="form-group">
+            <label for="edit-name">Имя и фамилия</label>
+            <input type="text" id="edit-name" placeholder="Введите ваше имя">
+        </div>
+    
+        <div class="form-group">
+            <label for="edit-phone">Телефон</label>
+            <input type="tel" id="edit-phone" placeholder="+375 XX XXX-XX-XX">
+        </div>
+    
+        <button id="save-profile-btn" class="save-btn">Сохранить</button>
+    </div>
+
+    <!-- Сообщение после сохранения -->
+    <div id="thank-you-message" style="display: none;">
+        <div class="thank-you-content">
+            <h3>Спасибо!</h3>
+            <p>Ваши данные успешно сохранены.</p>
+            <button id="return-to-cabinet" class="return-btn">Вернуться в личный кабинет</button>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const setFullHeight = () => {
@@ -553,41 +611,58 @@
                     }
 
                     const userData = {
+                        id: user.id,
                         username: user.username || `id${user.id}`,
-                        first_name: user.first_name,
-                        phone: user.phone_number || ''
+                        first_name: user.first_name || '',
+                        phone: user.phone_number || '',
+                        photo_url: user.photo_url || '/static/user-avatar.png'
                     };
 
-                    localStorage.setItem('tg_user', JSON.stringify(userData));
+                    // Показываем приветствие
+                    showWelcomeMessage(userData);
 
                     try {
+                        // Проверяем существование пользователя
                         const response = await fetch(`/api/get-user?username=${encodeURIComponent(userData.username)}`);
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-                        const data = await response.json();
-                        if (data.exists) {
-                            showPersonalCabinet(data.user);
-                        } else {
-                            try {
-                                const saveResponse = await fetch('/api/save-user', {
-                                    method: 'POST',
-                                    headers: {'Content-Type': 'application/json'},
-                                    body: JSON.stringify(userData)
-                                });
+                        const result = await response.json();
+
+                        if (result.status === 'error') {
+                            throw new Error(result.message);
+                        }
+
+                        if (!result.exists) {
+                            // Сохраняем нового пользователя
+                            const saveResponse = await fetch('/api/save-user', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    username: userData.username,
+                                    name: userData.first_name,
+                                    phone: userData.phone
+                                })
+                            });
                     
-                                if (!saveResponse.ok) throw new Error('Save failed');
-                                showPersonalCabinet(userData);
-                            } catch (saveError) {
-                                console.error('Save error:', saveError);
-                                showToast("Ошибка сохранения. Попробуйте позже");
+                            const saveResult = await saveResponse.json();
+                    
+                            if (saveResult.status !== 'success') {
+                                throw new Error(saveResult.message || 'Ошибка сохранения');
                             }
                         }
-                    } catch (fetchError) {
-                        console.error('Fetch error:', fetchError);
-                        showToast("Ошибка соединения с сервером");
+
+                        // Через 2 секунды показываем личный кабинет
+                        setTimeout(() => {
+                            showPersonalCabinet(userData);
+                        }, 2000);
+
+                    } catch (error) {
+                        console.error('Auth error:', error);
+                        // В случае ошибки все равно показываем кабинет
+                        setTimeout(() => {
+                            showPersonalCabinet(userData);
+                        }, 2000);
                     }
                 } catch (error) {
-                    console.error('Auth error:', error);
+                    console.error('Global auth error:', error);
                     showToast("Произошла ошибка авторизации");
                 }
             }
@@ -613,62 +688,181 @@
                 `, true);
             }
 
-            // Форма для доп. данных
-            function showAuthForm() {
-                showContent(`
-                    <div class="auth-form">
-                        <h3>Дополнительные данные</h3>
-                        <input type="text" id="auth-name" placeholder="Ваше имя" value="${localStorage.getItem('tg_user')?.first_name || ''}">
-                        <input type="tel" id="auth-phone" placeholder="Номер телефона">
-                        <button onclick="submitAuthForm()">Сохранить</button>
+            // Показ приветственного сообщения
+            function showWelcomeMessage(user) {
+                // Скрываем основное содержимое
+                document.getElementById('content').style.display = 'none';
+        
+                // Показываем приветствие
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.id = 'welcome-screen';
+                welcomeDiv.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: white;
+                    z-index: 1000;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    padding: 20px;
+                `;
+        
+                welcomeDiv.innerHTML = `
+                    <div class="welcome-avatar" style="
+                        width: 100px;
+                        height: 100px;
+                        border-radius: 50%;
+                        overflow: hidden;
+                        margin-bottom: 20px;
+                    ">
+                        <img src="${user.photo_url}" alt="Аватар" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
-                `, true);
+                    <h2>Добро пожаловать, ${user.first_name || 'Пользователь'}!</h2>
+                    <p>Сейчас мы перенаправим вас в личный кабинет...</p>
+                `;
+        
+                document.body.appendChild(welcomeDiv);
             }
 
-            // Отправка формы
-            async function submitAuthForm() {
-                const name = document.getElementById('auth-name').value;
-                const phone = document.getElementById('auth-phone').value;
-    
-                if (!phone) {
-                    showToast("Введите телефон");
+            // Показ личного кабинета
+            function showPersonalCabinet(user) {
+                // Удаляем приветственное сообщение, если есть
+                const welcomeScreen = document.getElementById('welcome-screen');
+                if (welcomeScreen) {
+                    welcomeScreen.remove();
+                }
+        
+                // Скрываем основное меню
+                document.getElementById('content').style.display = 'none';
+        
+                // Заполняем данные пользователя
+                document.getElementById('user-avatar').innerHTML = `
+                    <img src="${user.photo_url || '/static/user-avatar.png'}" alt="Аватар">
+                `;
+                document.getElementById('user-username').textContent = `@${user.username}`;
+                document.getElementById('user-name').textContent = user.first_name || 'Не указано';
+                document.getElementById('user-phone').textContent = user.phone || 'Не указан';
+        
+                // Показываем личный кабинет
+                document.getElementById('personal-cabinet').style.display = 'block';
+        
+                // Сохраняем пользователя в localStorage
+                localStorage.setItem('currentUser', JSON.stringify(user));
+        
+                // Обработчики кнопок
+                document.getElementById('edit-profile-btn').onclick = function() {
+                    showEditForm(user);
+                };
+            }
+
+            // Показать форму редактирования
+            function showEditForm(user) {
+                document.getElementById('personal-cabinet').style.display = 'none';
+        
+                // Заполняем форму текущими данными
+                document.getElementById('edit-name').value = user.first_name || '';
+                document.getElementById('edit-phone').value = user.phone || '';
+        
+                // Показываем форму
+                document.getElementById('edit-form').style.display = 'block';
+        
+                // Обработчик кнопки сохранения
+                document.getElementById('save-profile-btn').onclick = function() {
+                    saveProfile(user.username);
+                };
+            }
+
+            // Сохранение профиля
+            async function saveProfile(username) {
+                const name = document.getElementById('edit-name').value.trim();
+                const phone = document.getElementById('edit-phone').value.trim();
+        
+                if (!name) {
+                    showToast("Введите ваше имя");
                     return;
                 }
 
-                const user = JSON.parse(localStorage.getItem('tg_user'));
-                const response = await fetch('/api/save-user', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        username: user.username,
-                        name: name || user.first_name,
-                        phone: phone
-                    })
-                });
+                if (!phone) {
+                    showToast("Введите номер телефона");
+                    return;
+                }
 
-                if (response.ok) {
-                    user.phone = phone;
-                    localStorage.setItem('tg_user', JSON.stringify(user));
-                    showPersonalCabinet(user);
-                } else {
-                    showToast("Ошибка сохранения");
+                try {
+                    // Сохраняем на сервере
+                    const response = await fetch('/api/save-user', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            username: username,
+                            name: name,
+                            phone: phone
+                        })
+                    });
+
+                    const result = await response.json();
+            
+                    if (result.status === 'success') {
+                        // Обновляем локальные данные
+                        const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+                        user.first_name = name;
+                        user.phone = phone;
+                        localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                        // Показываем сообщение об успехе
+                        showThankYouMessage();
+                    } else {
+                        throw new Error(result.message || 'Ошибка сохранения');
+                    }
+                } catch (error) {
+                    console.error('Save error:', error);
+                    showToast("Ошибка при сохранении данных");
                 }
             }
+
+            // Показ сообщения после сохранения
+            function showThankYouMessage() {
+                document.getElementById('edit-form').style.display = 'none';
+                document.getElementById('thank-you-message').style.display = 'block';
+        
+                // Через 2 секунды возвращаем в личный кабинет
+                setTimeout(() => {
+                    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+                    document.getElementById('thank-you-message').style.display = 'none';
+                    showPersonalCabinet(user);
+                }, 2000);
+            }
+
+            // Обработчик кнопки возврата
+            document.getElementById('return-to-cabinet')?.addEventListener('click', function() {
+                const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+                document.getElementById('thank-you-message').style.display = 'none';
+                showPersonalCabinet(user);
+            });
             function openCart() {
                 alert("Функция корзины в разработке!");
             }
 
             // Экспорт всех функций в глобальную область видимости
+            // Основные функции приложения
             window.showHome = showHome;
             window.goHome = goHome;
-            window.auth = auth;
+            window.auth = auth; // Обновленная версия
             window.openCart = openCart;
             window.goBack = goBack;
             window.showSection = showSection;
+
+            // Функции для магазинов
             window.showRegions = showRegions;
             window.showCities = showCities;
             window.showStores = showStores;
             window.showStoreDetails = showStoreDetails;
+
+            // Вспомогательные функции
             window.copyPhoneNumber = function() {
                 const phone = "+375 29 225-13-34";
                 navigator.clipboard.writeText(phone)
