@@ -130,7 +130,7 @@ async def handle_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Город не найден. Попробуйте снова.")
 
 # --- Telegram Setup ---
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 telegram_app = Application.builder().token(BOT_TOKEN).build()
 telegram_app.add_handler(CommandHandler("start", start))
