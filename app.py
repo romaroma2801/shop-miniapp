@@ -24,6 +24,8 @@ try:
 except Exception as e:
     logging.error(f"Failed to load store data: {e}")
     STORE_DATA = {}
+    logging.error(f"get_user error: {e}")
+    return jsonify({"error": str(e)}), 500
 
 # --- Google Sheets ---
 def get_sheet():
@@ -53,14 +55,42 @@ def index():
 
 @app.route('/api/get-user')
 def get_user():
-    username = request.args.get('username')
+    username = request.args.get('username')  # Получаем username из запроса
+    if not username:
+        return jsonify({'error': 'No username provided'}), 400
+
     try:
-        sheet = get_sheet()
-        records = sheet.get_all_records()
-        user = next((u for u in records if u['Username'] == username), None)
-        return jsonify({"exists": bool(user), "user": user})
+        # Авторизация в Google Sheets
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(
+            {
+                "type": "service_account",
+                "project_id": os.getenv("GSHEETS_PROJECT_ID"),
+                "private_key_id": os.getenv("GSHEETS_PRIVATE_KEY_ID"),
+                "private_key": os.getenv("GSHEETS_PRIVATE_KEY").replace("\\n", "\n"),
+                "client_email": os.getenv("GSHEETS_CLIENT_EMAIL"),
+                "client_id": os.getenv("GSHEETS_CLIENT_ID"),
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_x509_cert_url": os.getenv("GSHEETS_CLIENT_CERT_URL"),
+            },
+            ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        )
+
+        client = gspread.authorize(credentials)
+        sheet = client.open_by_url(os.getenv("USERS")).sheet1
+        users = sheet.get_all_records()
+
+        for user in users:
+            if user["Username"] == username:
+                return jsonify(user)
+
+        return jsonify({'error': 'User not found'}), 404
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("Auth error:", e)
+        return jsonify({'error': 'Internal server error'}), 500
+
 
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
