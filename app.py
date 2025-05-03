@@ -127,31 +127,6 @@ def save_user():
         logging.error(f"Error in save_user: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/api/save-user', methods=['POST'])
-def save_user():
-    try:
-        data = request.json
-        sheet = get_sheet()
-        records = sheet.get_all_records()
-        user_index = next((i for i, u in enumerate(records) if u['Username'] == data['username']), None)
-
-        if user_index is not None:
-            row = user_index + 2
-            if data.get('name'):
-                sheet.update_cell(row, 2, data['name'])
-            if data.get('phone'):
-                sheet.update_cell(row, 3, data['phone'])
-        else:
-            sheet.append_row([
-                data['username'],
-                data.get('name', ''),
-                data.get('phone', ''),
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            ])
-        return jsonify({"status": "success"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
 @app.route('/api/regions')
 def get_regions():
     return jsonify(list(STORE_DATA.keys()))
