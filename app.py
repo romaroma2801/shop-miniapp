@@ -24,8 +24,7 @@ try:
 except Exception as e:
     logging.error(f"Failed to load store data: {e}")
     STORE_DATA = {}
-    logging.error(f"get_user error: {e}")
-    return jsonify({"error": str(e)}), 500
+    # Удалено ошибочное возвращение return вне функции
 
 # --- Google Sheets ---
 def get_sheet():
@@ -88,10 +87,8 @@ def get_user():
         return jsonify({'error': 'User not found'}), 404
 
     except Exception as e:
-        print("Auth error:", e)
-        return jsonify({'error': 'Internal server error'}), 500
-
-
+        logging.error(f"get_user error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
