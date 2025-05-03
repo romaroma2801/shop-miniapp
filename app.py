@@ -88,7 +88,8 @@ def get_user():
         return jsonify({'error': 'User not found'}), 404
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("Auth error:", e)
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 
