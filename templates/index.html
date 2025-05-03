@@ -50,7 +50,7 @@
     <div id="personal-cabinet" style="display: none;">
         <div class="user-header">
             <div class="user-avatar" id="user-avatar">
-                <!-- Аватар будет загружен из Telegram -->
+                <img src="" alt="Аватар" id="user-avatar-img">
             </div>
         </div>
     
@@ -118,6 +118,10 @@
             document.body.style.userSelect = 'none';
             document.addEventListener('dblclick', (e) => e.preventDefault());
             document.getElementById('back-button').addEventListener('click', goBack);
+            document.getElementById('home-button').addEventListener('click', function() {
+                console.log('Home button clicked');
+                goHome();
+            });
             document.getElementById('login-button').addEventListener('click', function(e) {
                 console.log('Login button clicked', e);
                 auth();
@@ -589,6 +593,10 @@
                 `, true);
             }
             function goHome() {
+                document.getElementById('personal-cabinet').style.display = 'none';
+                document.getElementById('thank-you-message').style.display = 'none';
+                document.getElementById('edit-form').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
                 showHome();
             }
 
@@ -669,25 +677,49 @@
 
             // Показ личного кабинета
             function showPersonalCabinet(user) {
-                const missing = [];
-                if (!user.phone) missing.push("телефон");
-    
-                showContent(`
-                    <div class="cabinet">
-                        <h3>👋 Привет, ${user.first_name}!</h3>
-                        <div class="user-info">
-                            <p>Username: ${user.username}</p>
-                            <p>Телефон: ${user.phone || 'не указан'}</p>
-                        </div>
-                        ${missing.length ? `
-                            <button onclick="showAuthForm()" class="auth-btn">
-                                Заполнить ${missing.join(', ')}
-                            </button>
-                        ` : ''}
-                    </div>
-                `, true);
-            }
+                // Удаляем приветственное сообщение
+                const welcomeScreen = document.getElementById('welcome-screen');
+                if (welcomeScreen) welcomeScreen.remove();
 
+                // Заполняем данные пользователя из таблицы (а не из Telegram)
+                fetch(`/api/get-user?username=${encodeURIComponent(user.username)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.exists) {
+                            // Используем данные из таблицы
+                            const dbUser = data.user;
+                            document.getElementById('user-username').textContent = `@${dbUser.Username || user.username}`;
+                            document.getElementById('user-name').textContent = dbUser.Name || 'Не указано';
+                            document.getElementById('user-phone').textContent = dbUser.Phone || 'Не указан';
+                
+                            // Обновляем локальные данные
+                            user.first_name = dbUser.Name || user.first_name;
+                            user.phone = dbUser.Phone || user.phone;
+                            localStorage.setItem('currentUser', JSON.stringify(user));
+                        } else {
+                            // Если нет данных в таблице, используем Telegram данные
+                            document.getElementById('user-username').textContent = `@${user.username}`;
+                            document.getElementById('user-name').textContent = user.first_name || 'Не указано';
+                            document.getElementById('user-phone').textContent = user.phone || 'Не указан';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching user data:', error);
+                        // В случае ошибки используем Telegram данные
+                        document.getElementById('user-username').textContent = `@${user.username}`;
+                        document.getElementById('user-name').textContent = user.first_name || 'Не указано';
+                        document.getElementById('user-phone').textContent = user.phone || 'Не указан';
+                    });
+
+                // Показываем личный кабинет
+                document.getElementById('personal-cabinet').style.display = 'block';
+                document.getElementById('content').style.display = 'none';
+
+                // Обработчик кнопки редактирования
+                document.getElementById('edit-profile-btn').onclick = function() {
+                    showEditForm(user);
+                };
+            }
             // Показ приветственного сообщения
             function showWelcomeMessage(user) {
                 // Скрываем основное содержимое
