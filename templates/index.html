@@ -48,16 +48,13 @@
     </div>
     <!-- Добавьте этот HTML перед закрывающим тегом </body> -->
     <div id="personal-cabinet" style="display: none;">
-        <!-- Шапка с аватаром -->
         <div class="user-header">
             <div class="user-avatar" id="user-avatar">
                 <!-- Аватар будет загружен из Telegram -->
             </div>
-            <h2 id="welcome-message">Добро пожаловать!</h2>
         </div>
     
-        <!-- Блок с данными пользователя -->
-        <div class="user-data" id="user-data">
+        <div class="user-data">
             <div class="data-row">
                 <span class="data-label">Юзернейм:</span>
                 <span class="data-value" id="user-username"></span>
@@ -71,6 +68,9 @@
                 <span class="data-value" id="user-phone"></span>
             </div>
         </div>
+    
+        <button id="edit-profile-btn" class="edit-btn">✏️ Дополнить личные данные</button>
+    </div>
     
         <!-- Кнопка действий -->
         <div class="actions">
@@ -736,28 +736,20 @@
                 if (welcomeScreen) {
                     welcomeScreen.remove();
                 }
-        
-                // Скрываем основное меню
-                document.getElementById('content').style.display = 'none';
-        
+    
                 // Заполняем данные пользователя
                 document.getElementById('user-avatar').innerHTML = `
                     <img src="${user.photo_url || '/static/user-avatar.png'}" alt="Аватар">
                 `;
-                document.getElementById('user-username').textContent = `@${user.username}`;
-                document.getElementById('user-name').textContent = user.first_name || 'Не указано';
-                document.getElementById('user-phone').textContent = user.phone || 'Не указан';
-        
+                updateUserData(user);
+    
                 // Показываем личный кабинет
                 document.getElementById('personal-cabinet').style.display = 'block';
-        
+                document.getElementById('edit-form').style.display = 'none';
+                document.getElementById('thank-you-message').style.display = 'none';
+    
                 // Сохраняем пользователя в localStorage
                 localStorage.setItem('currentUser', JSON.stringify(user));
-        
-                // Обработчики кнопок
-                document.getElementById('edit-profile-btn').onclick = function() {
-                    showEditForm(user);
-                };
             }
 
             // Показать форму редактирования
@@ -781,7 +773,7 @@
             async function saveProfile(username) {
                 const name = document.getElementById('edit-name').value.trim();
                 const phone = document.getElementById('edit-phone').value.trim();
-        
+    
                 if (!name) {
                     showToast("Введите ваше имя");
                     return;
@@ -805,16 +797,19 @@
                     });
 
                     const result = await response.json();
-            
+        
                     if (result.status === 'success') {
                         // Обновляем локальные данные
                         const user = JSON.parse(localStorage.getItem('currentUser')) || {};
                         user.first_name = name;
                         user.phone = phone;
                         localStorage.setItem('currentUser', JSON.stringify(user));
-                
-                        // Показываем сообщение об успехе
+            
+                        // Показываем красивое сообщение
                         showThankYouMessage();
+            
+                        // Обновляем данные в личном кабинете
+            updateUserData(user);
                     } else {
                         throw new Error(result.message || 'Ошибка сохранения');
                     }
@@ -823,17 +818,30 @@
                     showToast("Ошибка при сохранении данных");
                 }
             }
+            // Новая функция для обновления данных в личном кабинете
+            function updateUserData(user) {
+                document.getElementById('user-name').textContent = user.first_name || 'Не указано';
+                document.getElementById('user-phone').textContent = user.phone || 'Не указан';
+            }
 
             // Показ сообщения после сохранения
             function showThankYouMessage() {
                 document.getElementById('edit-form').style.display = 'none';
-                document.getElementById('thank-you-message').style.display = 'block';
-        
-                // Через 2 секунды возвращаем в личный кабинет
+    
+                const thankYouDiv = document.getElementById('thank-you-message');
+                thankYouDiv.innerHTML = `
+                    <div class="thank-you-content">
+                        <h3>Спасибо!</h3>
+                        <p>Ваши данные успешно сохранены</p>
+                    </div>
+                `;
+                thankYouDiv.style.display = 'flex';
+    
+                // Автоматически скрываем через 2 секунды
                 setTimeout(() => {
+                    thankYouDiv.style.display = 'none';
                     const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-                    document.getElementById('thank-you-message').style.display = 'none';
-                    showPersonalCabinet(user);
+                    document.getElementById('personal-cabinet').style.display = 'block';
                 }, 2000);
             }
 
