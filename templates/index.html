@@ -46,98 +46,53 @@
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
-    <!-- Добавьте этот HTML перед закрывающим тегом </body> -->
-    <div id="personal-cabinet" style="display: none;">
-        <div class="user-header">
-            <div class="user-avatar" id="user-avatar">
-                <img src="" alt="Аватар" id="user-avatar-img">
-            </div>
-        </div>
-    
-        <div class="user-data">
-            <div class="data-row">
-                <span class="data-label">Юзернейм:</span>
-                <span class="data-value" id="user-username"></span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Имя:</span>
-                <span class="data-value" id="user-name"></span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Телефон:</span>
-                <span class="data-value" id="user-phone"></span>
-            </div>
-        </div>
-    
-        <button id="edit-profile-btn" class="edit-btn">✏️ Дополнить личные данные</button>
-    </div>
-
-    <!-- Форма редактирования -->
-    <div id="edit-form" style="display: none;">
-        <div class="form-header">
-            <h3>Редактирование профиля</h3>
-        </div>
-    
-        <div class="form-group">
-            <label for="edit-name">Имя и фамилия</label>
-            <input type="text" id="edit-name" placeholder="Введите ваше имя">
-        </div>
-    
-        <div class="form-group">
-            <label for="edit-phone">Телефон</label>
-            <input type="tel" id="edit-phone" placeholder="+375 XX XXX-XX-XX">
-        </div>
-    
-        <button id="save-profile-btn" class="save-btn">Сохранить</button>
-    </div>
-
-    <!-- Сообщение после сохранения -->
-    <div id="thank-you-message" style="display: none;">
-        <div class="thank-you-content">
-            <h3>Спасибо!</h3>
-            <p>Ваши данные успешно сохранены.</p>
-            <button id="return-to-cabinet" class="return-btn">Вернуться в личный кабинет</button>
-        </div>
-    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
                 // ===== НАЧАЛО ВСТАВКИ =====
                 // Фоновая регистрация пользователя при загрузке
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
                     const tgUser = Telegram.WebApp.initDataUnsafe.user;
-                    const userData = {
-                        id: tgUser.id,
-                        username: tgUser.username || `id${tgUser.id}`,
-                        first_name: tgUser.first_name || '',
-                        phone: tgUser.phone_number || '',
-                        photo_url: tgUser.photo_url || '/static/user-avatar.png'
-                    };
+                    const userKey = `user_${tgUser.id}`;
         
-                    // Сохраняем в localStorage
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
+                    // Проверяем, когда последний раз обновляли данные
+                    const lastUpdate = localStorage.getItem(`${userKey}_last_update`);
+                    const now = Date.now();
         
-                    // Фоновая синхронизация с сервером
-                    (async () => {
-                        try {
-                            const response = await fetch(`/api/get-user?username=${encodeURIComponent(userData.username)}`);
-                            const result = await response.json();
-                
-                            if (!result.exists) {
-                                await fetch('/api/save-user', {
-                                    method: 'POST',
-                                    headers: {'Content-Type': 'application/json'},
-                                    body: JSON.stringify({
-                                        username: userData.username,
-                                        name: userData.first_name,
-                                        phone: userData.phone
-                                    })
-                                });
-                                console.log('Пользователь зарегистрирован в фоне');
+                    // Обновляем данные, если они старые (старше 5 минут)
+                    if (!lastUpdate || (now - parseInt(lastUpdate)) > 300000) {
+                        (async () => {
+                            try {
+                                const response = await fetch(`/api/get-user?username=${encodeURIComponent(tgUser.username || `id${tgUser.id}`)}`);
+                                const result = await response.json();
+                    
+                                const userData = {
+                                    id: tgUser.id,
+                                    username: tgUser.username || `id${tgUser.id}`,
+                                    first_name: result.exists ? result.user.Name : tgUser.first_name || '',
+                                    phone: result.exists ? result.user.Phone : tgUser.phone_number || '',
+                                    photo_url: tgUser.photo_url || '/static/user-avatar.png',
+                                    updated_at: now
+                                };
+                    
+                                localStorage.setItem(userKey, JSON.stringify(userData));
+                                localStorage.setItem(`${userKey}_last_update`, now.toString());
+                    
+                                if (!result.exists) {
+                                    await fetch('/api/save-user', {
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify({
+                                            username: userData.username,
+                                            name: userData.first_name,
+                                            phone: userData.phone
+                                        })
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Фоновая синхронизация не удалась:', error);
                             }
-                        } catch (error) {
-                            console.error('Ошибка фоновой синхронизации:', error);
-                        }
-                    })();
+                        })();
+                    }
                 }
                 // ===== КОНЕЦ ВСТАВКИ =====
             const setFullHeight = () => {
@@ -151,9 +106,12 @@
             document.body.style.userSelect = 'none';
             document.addEventListener('dblclick', (e) => e.preventDefault());
             document.getElementById('back-button').addEventListener('click', goBack);
-            document.getElementById('login-button').addEventListener('click', function(e) {
-                console.log('Login button clicked', e);
-                auth();
+            document.getElementById('login-button').addEventListener('click', function() {
+                if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                    window.location.href = 'user.html';
+                } else {
+                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
+                }
             });
             document.getElementById('home-button').addEventListener('click', function() {
                 console.log('Home button clicked');
@@ -626,247 +584,19 @@
                 `, true);
             }
             function goHome() {
-                // Скрываем все элементы личного кабинета
-                document.getElementById('personal-cabinet').style.display = 'none';
-                document.getElementById('thank-you-message').style.display = 'none';
-                document.getElementById('edit-form').style.display = 'none';
-    
-                // Показываем основное содержимое
-                const contentDiv = document.getElementById('content');
-                contentDiv.style.display = 'block';
-                contentDiv.classList.remove('hidden');
-    
-                // Восстанавливаем главное меню
-                currentState = "home";
-                contentDiv.innerHTML = `
-                    <button onclick="showRegions()">Адреса магазинов</button>
-                    <button onclick="showSection('catalog')">Каталог товаров</button>
-                    <button onclick="showSection('review')">Оставить отзыв</button>
-                    <button onclick="showSection('contacts')">Контакты</button>
-                    <button onclick="showSection('jobs')">Вакансии</button>
-                    <button onclick="showSection('promotions')">Акции</button>
-                `;
-    
-                // Скрываем кнопку "Назад"
-                document.getElementById('back-button').style.display = 'none';
+                showHome();
             }
 
-            // Новая функция авторизации
-            async function auth() {
-                try {
-                    if (!window.Telegram?.WebApp) {
-                        showToast("Откройте в Telegram");
-                        return;
-                    }
-
-                    const tg = Telegram.WebApp;
-                    const user = tg.initDataUnsafe?.user;
-        
-                    if (!user) {
-                        Telegram.WebApp.openTelegramLink(`https://t.me/Shop_NEKURIBY_bot?start=auth_${Date.now()}`);
-                        return;
-                    }
-
-                    // Быстрое приветствие (показываем на 1 секунду)
-                    const userData = {
-                        id: user.id,
-                        username: user.username || `id${user.id}`,
-                        first_name: user.first_name || '',
-                        phone: user.phone_number || '',
-                        photo_url: user.photo_url || '/static/user-avatar.png'
-                    };
-
-                    // Показываем мгновенное приветствие
-                    showQuickWelcome(userData);
-        
-                    // Параллельно работаем с данными
-                    setTimeout(() => {
-                        showPersonalCabinet(userData);
-                    }, 1000); // Через 1 сек показываем кабинет
-
-                    // Фоновая проверка/регистрация пользователя
-                    try {
-                        const response = await fetch(`/api/get-user?username=${encodeURIComponent(userData.username)}`);
-                        const result = await response.json();
-
-                        if (!result.exists) {
-                            await fetch('/api/save-user', {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({
-                                    username: userData.username,
-                                    name: userData.first_name,
-                                    phone: userData.phone
-                                })
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Auth background error:', error);
-                    }
-
-                } catch (error) {
-                    console.error('Auth error:', error);
-                    showToast("Ошибка авторизации");
-                }
-            }
-
-            // Быстрое приветствие (без анимации)
-            function showQuickWelcome(user) {
-                const welcomeHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 0; left: 0;
-                        width: 100%; height: 100%;
-                        background: white;
-                        z-index: 1000;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        text-align: center;
-                        padding: 20px;
-                    ">
-                        <div style="
-                            width: 80px; height: 80px;
-                            border-radius: 50%; overflow: hidden;
-                            margin-bottom: 15px;
-                        ">
-                            <img src="${user.photo_url}" alt="Аватар" style="width:100%;height:100%;object-fit:cover;">
-                        </div>
-                        <h2 style="margin-bottom:10px;">Добро пожаловать, ${user.first_name || 'Пользователь'}!</h2>
-                        <p>Загружаем ваш профиль...</p>
-                    </div>
-                `;
-    
-                const welcomeDiv = document.createElement('div');
-                welcomeDiv.innerHTML = welcomeHTML;
-                document.body.appendChild(welcomeDiv);
-    
-                // Автоматическое скрытие через 1 секунду
-                setTimeout(() => {
-                    welcomeDiv.remove();
-                }, 1000);
-            }
-
-            // Показ личного кабинета
-            function showPersonalCabinet(user) {
-                // Проверяем существование кнопки
-                const editBtn = document.getElementById('edit-profile-btn');
-                if (!editBtn) {
-                    console.error('Edit button not found!');
-                    return;
-                }
-
-                // Заполняем данные
-                document.getElementById('user-username').textContent = `@${user.username}`;
-                document.getElementById('user-name').textContent = user.first_name || 'Не указано';
-                document.getElementById('user-phone').textContent = user.phone || 'Не указан';
-    
-                // Устанавливаем аватар
-                const avatarImg = document.getElementById('user-avatar-img');
-                if (avatarImg) {
-                    avatarImg.src = user.photo_url;
-                    avatarImg.alt = user.first_name || 'Аватар';
-                }
-    
-                // Устанавливаем обработчик
-                editBtn.onclick = function() {
-                    showEditForm(user);
-                };
-
-                // Показываем кабинет
-                document.getElementById('content').style.display = 'none';
-                document.getElementById('personal-cabinet').style.display = 'block';
-            }
-            // Показать форму редактирования
-            function showEditForm(user) {
-                document.getElementById('personal-cabinet').style.display = 'none';
-        
-                // Заполняем форму текущими данными
-                document.getElementById('edit-name').value = user.first_name || '';
-                document.getElementById('edit-phone').value = user.phone || '';
-        
-                // Показываем форму
-                document.getElementById('edit-form').style.display = 'block';
-        
-                // Обработчик кнопки сохранения
-                document.getElementById('save-profile-btn').onclick = function() {
-                    saveProfile(user.username);
-                };
-            }
-
-            // Сохранение профиля
-            async function saveProfile(username) {
-                const name = document.getElementById('edit-name').value.trim();
-                const phone = document.getElementById('edit-phone').value.trim();
-
-                try {
-                    const response = await fetch('/api/save-user', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            username: username,
-                            name: name,
-                            phone: phone
-                        })
-                    });
-
-                    const result = await response.json();
-        
-                    if (result.status !== 'success') {
-                        throw new Error(result.message || 'Ошибка сохранения');
-                    }
-
-                    // Обновляем данные в интерфейсе
-                    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-                    user.first_name = name;
-                    user.phone = phone;
-                    localStorage.setItem('currentUser', JSON.stringify(user));
-
-                    // Показываем сообщение об успехе
-                    showThankYouMessage();
-
-                    // Обновляем личный кабинет
-                    showPersonalCabinet(user);
-        
-                } catch (error) {
-                    console.error('Save error:', error);
-                    showToast("Ошибка при сохранении: " + error.message);
-                }
-            }
-            // Новая функция для обновления данных в личном кабинете
+            
+            
+            
             function updateUserData(user) {
                 document.getElementById('user-name').textContent = user.first_name || 'Не указано';
                 document.getElementById('user-phone').textContent = user.phone || 'Не указан';
             }
 
             // Показ сообщения после сохранения
-            function showThankYouMessage() {
-                document.getElementById('edit-form').style.display = 'none';
-    
-                const thankYouDiv = document.getElementById('thank-you-message');
-                thankYouDiv.innerHTML = `
-                    <div class="thank-you-content">
-                        <h3>Спасибо!</h3>
-                        <p>Ваши данные успешно сохранены</p>
-                    </div>
-                `;
-                thankYouDiv.style.display = 'flex';
-    
-                // Автоматически скрываем через 2 секунды
-                setTimeout(() => {
-                    thankYouDiv.style.display = 'none';
-                    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-                    document.getElementById('personal-cabinet').style.display = 'block';
-                }, 2000);
-            }
-
-            // Обработчик кнопки возврата
-            document.getElementById('return-to-cabinet')?.addEventListener('click', function() {
-                const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-                document.getElementById('thank-you-message').style.display = 'none';
-                showPersonalCabinet(user);
-            });
+            
             function openCart() {
                 alert("Функция корзины в разработке!");
             }
