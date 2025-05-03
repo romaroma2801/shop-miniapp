@@ -54,41 +54,78 @@ def index():
 
 @app.route('/api/get-user')
 def get_user():
-    username = request.args.get('username')  # Получаем username из запроса
+    username = request.args.get('username')
     if not username:
-        return jsonify({'error': 'No username provided'}), 400
+        return jsonify({'status': 'error', 'message': 'No username provided'}), 400
 
     try:
-        # Авторизация в Google Sheets
-        credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-            {
-                "type": "service_account",
-                "project_id": os.getenv("GSHEETS_PROJECT_ID"),
-                "private_key_id": os.getenv("GSHEETS_PRIVATE_KEY_ID"),
-                "private_key": os.getenv("GSHEETS_PRIVATE_KEY").replace("\\n", "\n"),
-                "client_email": os.getenv("GSHEETS_CLIENT_EMAIL"),
-                "client_id": os.getenv("GSHEETS_CLIENT_ID"),
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_x509_cert_url": os.getenv("GSHEETS_CLIENT_CERT_URL"),
-            },
-            ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        )
-
-        client = gspread.authorize(credentials)
-        sheet = client.open_by_url(os.getenv("USERS")).sheet1
-        users = sheet.get_all_records()
-
-        for user in users:
-            if user["Username"] == username:
-                return jsonify(user)
-
-        return jsonify({'error': 'User not found'}), 404
+        sheet = get_sheet()
+        records = sheet.get_all_records()
+        
+        # Ищем пользователя (без учета регистра)
+        user = next((u for u in records if u.get('Username', '').lower() == username.lower()), None)
+        
+        if user:
+            return jsonify({
+                'status': 'success',
+                'user': user,
+                'exists': True
+            })
+        else:
+            return jsonify({
+                'status': 'success',
+                'user': {
+                    'Username': username,
+                    'name': '',
+                    'phone': ''
+                },
+                'exists': False
+            })
 
     except Exception as e:
-        logging.error(f"get_user error: {e}")
-        return jsonify({"error": str(e)}), 500
+        logging.error(f"Error in get_user: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/save-user', methods=['POST'])
+def save_user():
+    try:
+        data = request.json
+        if not data.get('username'):
+            return jsonify({'status': 'error', 'message': 'Username is required'}), 400
+
+        sheet = get_sheet()
+        records = sheet.get_all_records()
+        
+        # Проверяем существование пользователя
+        user_index = next((i for i, u in enumerate(records) if u.get('Username', '').lower() == data['username'].lower()), None)
+        
+        if user_index is not None:
+            # Обновляем существующего пользователя
+            row = user_index + 2
+            updates = []
+            if data.get('name'):
+                sheet.update_cell(row, 2, data['name'])
+            if data.get('phone'):
+                sheet.update_cell(row, 3, data['phone'])
+            message = "User updated"
+        else:
+            # Добавляем нового пользователя
+            sheet.append_row([
+                data['username'],
+                data.get('name', ''),
+                data.get('phone', ''),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ])
+            message = "User created"
+        
+        return jsonify({"status": "success", "message": message})
+    
+    except Exception as e:
+        logging.error(f"Error in save_user: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/save-user', methods=['POST'])
 def save_user():
