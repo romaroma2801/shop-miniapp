@@ -69,7 +69,7 @@
             </div>
         </div>
     
-        <button id="edit-profile-btn" class="edit-btn">✏️ Дополнить личные данные</button>
+        <button id="menu-vertical" class="menu-vertical">✏️ Дополнить личные данные</button>
     </div>
 
     <!-- Форма редактирования -->
@@ -115,6 +115,10 @@
             document.getElementById('login-button').addEventListener('click', function(e) {
                 console.log('Login button clicked', e);
                 auth();
+            });
+            document.getElementById('home-button').addEventListener('click', function() {
+                console.log('Home button clicked');
+                goHome();
             });
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.expand();
