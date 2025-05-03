@@ -71,12 +71,6 @@
     
         <button id="edit-profile-btn" class="edit-btn">✏️ Дополнить личные данные</button>
     </div>
-    
-        <!-- Кнопка действий -->
-        <div class="actions">
-            <button id="edit-profile-btn" class="edit-btn">✏️ Дополнить личные данные</button>
-        </div>
-    </div>
 
     <!-- Форма редактирования -->
     <div id="edit-form" style="display: none;">
@@ -118,10 +112,6 @@
             document.body.style.userSelect = 'none';
             document.addEventListener('dblclick', (e) => e.preventDefault());
             document.getElementById('back-button').addEventListener('click', goBack);
-            document.getElementById('home-button').addEventListener('click', function() {
-                console.log('Home button clicked');
-                goHome();
-            });
             document.getElementById('login-button').addEventListener('click', function(e) {
                 console.log('Login button clicked', e);
                 auth();
@@ -593,24 +583,8 @@
                 `, true);
             }
             function goHome() {
-                // Скрываем все элементы личного кабинета
-                document.getElementById('personal-cabinet').style.display = 'none';
-                document.getElementById('thank-you-message').style.display = 'none';
-                document.getElementById('edit-form').style.display = 'none';
-    
-                // Восстанавливаем основное содержимое
-                const contentDiv = document.getElementById('content');
-                contentDiv.style.display = 'block';
-                contentDiv.innerHTML = ''; // Очищаем содержимое
-    
-                // Пересоздаем главное меню
                 showHome();
-    
-                // Принудительно обновляем стили
-                setTimeout(() => {
-                    contentDiv.style.height = 'auto';
-                    contentDiv.style.overflow = 'auto';
-                }, 50);
+                console.log('Home screen shown');
             }
 
             // Новая функция авторизации
