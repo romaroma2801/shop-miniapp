@@ -704,17 +704,25 @@
 
             // Показ личного кабинета
             function showPersonalCabinet(user) {
-                // Сначала скрываем все остальные элементы
+                // Удаляем приветственное сообщение, если есть
+                const welcomeScreen = document.getElementById('welcome-screen');
+                if (welcomeScreen) welcomeScreen.remove();
+
+                // Скрываем другие элементы интерфейса
                 document.getElementById('content').style.display = 'none';
                 document.getElementById('thank-you-message').style.display = 'none';
                 document.getElementById('edit-form').style.display = 'none';
-    
+
+                // Заполняем аватар
+                const avatarImg = document.getElementById('user-avatar-img');
+                if (avatarImg) {
+                    avatarImg.src = user.photo_url || '/static/user-avatar.png';
+                    avatarImg.alt = user.first_name || 'Аватар';
+                }
+
                 // Загружаем данные из таблицы
                 fetch(`/api/get-user?username=${encodeURIComponent(user.username)}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network error');
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
                             // Обновляем данные в интерфейсе
@@ -730,15 +738,17 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        // Используем данные из Telegram, если не удалось загрузить
+                        // Используем Telegram данные как fallback
                         document.getElementById('user-username').textContent = `@${user.username}`;
                         document.getElementById('user-name').textContent = user.first_name || 'Не указано';
                         document.getElementById('user-phone').textContent = user.phone || 'Не указан';
-                    })
-                    .finally(() => {
-                        // Показываем личный кабинет после загрузки данных
-                        document.getElementById('personal-cabinet').style.display = 'block';
                     });
+
+                // Показываем личный кабинет
+                document.getElementById('personal-cabinet').style.display = 'block';
+
+                // Назначаем обработчик кнопки редактирования
+                document.getElementById('edit-profile-btn').onclick = () => showEditForm(user);
             }
             // Показ приветственного сообщения
             function showWelcomeMessage(user) {
@@ -779,29 +789,6 @@
                 `;
         
                 document.body.appendChild(welcomeDiv);
-            }
-
-            // Показ личного кабинета
-            function showPersonalCabinet(user) {
-                // Удаляем приветственное сообщение, если есть
-                const welcomeScreen = document.getElementById('welcome-screen');
-                if (welcomeScreen) {
-                    welcomeScreen.remove();
-                }
-    
-                // Заполняем данные пользователя
-                document.getElementById('user-avatar').innerHTML = `
-                    <img src="${user.photo_url || '/static/user-avatar.png'}" alt="Аватар">
-                `;
-                updateUserData(user);
-    
-                // Показываем личный кабинет
-                document.getElementById('personal-cabinet').style.display = 'block';
-                document.getElementById('edit-form').style.display = 'none';
-                document.getElementById('thank-you-message').style.display = 'none';
-    
-                // Сохраняем пользователя в localStorage
-                localStorage.setItem('currentUser', JSON.stringify(user));
             }
 
             // Показать форму редактирования
