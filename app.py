@@ -51,6 +51,9 @@ def get_sheet():
 @app.route('/')
 def index():
     return render_template('index.html')
+@app.route('/user')
+def user_page():
+    return render_template('user.html')
 
 @app.route('/api/get-user')
 def get_user():
