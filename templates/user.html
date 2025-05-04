@@ -120,6 +120,64 @@
         #edit-profile-btn {
             background: linear-gradient(135deg, #ff0000, #ff5252);
         }
+        #edit-form {
+            transition: opacity 0.3s ease;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .edit-form-container {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+             display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .save-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            flex: 1;
+            font-weight: bold;
+        }
+
+        .cancel-btn {
+            background: #ddd;
+            color: #333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            flex: 1;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -167,23 +225,26 @@
         </div>
 
         <!-- Форма редактирования -->
-        <div id="edit-form" style="display: none;">
-            <div class="user-data">
-                <h3 style="text-align: center; margin-bottom: 20px;">Редактирование профиля</h3>
-                
+        <!-- Замените блок edit-form на этот -->
+        <div id="edit-form" style="display: none; opacity: 0;">
+            <div class="user-header">
+                <h2>Редактирование профиля</h2>
+            </div>
+    
+            <div class="edit-form-container">
                 <div class="form-group">
                     <label for="edit-name">Имя и фамилия</label>
-                    <input type="text" id="edit-name" placeholder="Введите ваше имя" class="form-input">
+                    <input type="text" id="edit-name" class="form-input" placeholder="Введите ваше имя">
                 </div>
                 
                 <div class="form-group">
                     <label for="edit-phone">Телефон</label>
-                    <input type="tel" id="edit-phone" placeholder="+375 XX XXX-XX-XX" class="form-input">
+                    <input type="tel" id="edit-phone" class="form-input" placeholder="+375 XX XXX-XX-XX">
                 </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
+        
+                <div class="form-actions">
                     <button id="save-profile-btn" class="save-btn">Сохранить</button>
-                    <button id="cancel-edit-btn" class="save-btn" style="background: #555;">Отмена</button>
+                    <button id="cancel-edit-btn" class="cancel-btn">Отмена</button>
                 </div>
             </div>
         </div>
@@ -261,11 +322,15 @@
         }
 
         // Обработчики кнопок
-        document.getElementById('home-button').addEventListener('click', () => {
-            document.getElementById('personal-cabinet').classList.remove('show');
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 300);
+        document.getElementById('edit-profile-btn').addEventListener('click', () => {
+            const userData = JSON.parse(localStorage.getItem(`user_${Telegram.WebApp.initDataUnsafe.user.id}`));
+    
+            if (!userData) {
+                showToast("Ошибка загрузки данных пользователя");
+                return;
+            }
+    
+            showEditForm(userData);
         });
 
 
@@ -313,16 +378,44 @@
         }, 500);
     }
 
+ 
     function showEditForm(user) {
-        document.getElementById('personal-cabinet').style.display = 'none';
-        
+        const personalCabinet = document.getElementById('personal-cabinet');
+        const editForm = document.getElementById('edit-form');
+    
         // Заполняем форму текущими данными
         document.getElementById('edit-name').value = user.first_name || '';
         document.getElementById('edit-phone').value = user.phone || '';
         
-        // Показываем форму
-        document.getElementById('edit-form').style.display = 'block';
+        // Анимация перехода
+        personalCabinet.style.opacity = '0';
+        
+        setTimeout(() => {
+            personalCabinet.style.display = 'none';
+            editForm.style.display = 'block';
+            
+            setTimeout(() => {
+                editForm.style.opacity = '1';
+            }, 50);
+        }, 300);
     }
+
+    // Обновите обработчик отмены
+    document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+        const personalCabinet = document.getElementById('personal-cabinet');
+        const editForm = document.getElementById('edit-form');
+    
+        editForm.style.opacity = '0';
+    
+        setTimeout(() => {
+            editForm.style.display = 'none';
+            personalCabinet.style.display = 'block';
+        
+            setTimeout(() => {
+                personalCabinet.style.opacity = '1';
+            }, 50);
+        }, 300);
+    });
 
     async function saveProfile(user) {
         const name = document.getElementById('edit-name').value.trim();
