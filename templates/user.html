@@ -27,11 +27,15 @@
         }
             
         .user-data {
-            background: white;
-            padding: 20px;
+            background: #f9f9f9;
             border-radius: 10px;
-            margin: 20px 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .user-header h2 {
+            text-align: center;
+            color: #ff0000;
+            margin-bottom: 20px;
         }
         
         .data-row {
@@ -133,11 +137,15 @@
         </div>
 
         <!-- Личный кабинет -->
-        <div id="personal-cabinet" style="display: none;">
+        <div id="personal-cabinet" style="display: none; opacity: 0;">
+            <div class="user-header">
+                <h2>Shop NEKURI.BY</h2>
+            </div>
+    
             <div class="user-avatar">
                 <img src="" alt="Аватар" id="user-avatar-img">
             </div>
-            
+    
             <div class="user-data">
                 <div class="data-row">
                     <span class="data-label">Юзернейм:</span>
@@ -152,10 +160,9 @@
                     <span class="data-value" id="user-phone"></span>
                 </div>
             </div>
-            
+    
             <div class="action-buttons">
                 <button id="edit-profile-btn" class="edit-btn">✏️ Редактировать данные</button>
-                <button id="logout-btn" class="edit-btn" style="background: #555;">Выйти</button>
             </div>
         </div>
 
@@ -278,19 +285,31 @@
 
     function showPersonalCabinet(user) {
         const welcomeScreen = document.getElementById('welcome-screen');
+        const personalCabinet = document.getElementById('personal-cabinet');
+    
+        // Проверка данных перед показом
+        if (!user) {
+            console.error('User data is empty');
+            return;
+        }
+    
+        // Заполняем данные
+        document.getElementById('user-avatar-img').src = user.photo_url || '/static/user-avatar.png';
+        document.getElementById('user-username').textContent = `@${user.username || 'неизвестно'}`;
+        document.getElementById('user-name').textContent = user.first_name || 'Не указано';
+        document.getElementById('user-phone').textContent = user.phone || 'Не указан';
+    
+        // Анимация перехода
         welcomeScreen.classList.add('fade-out');
     
         setTimeout(() => {
             welcomeScreen.style.display = 'none';
+            personalCabinet.style.display = 'block';
         
-            // Заполняем данные
-            document.getElementById('user-avatar-img').src = user.photo_url;
-            document.getElementById('user-username').textContent = `@${user.username}`;
-            document.getElementById('user-name').textContent = user.first_name || 'Не указано';
-            document.getElementById('user-phone').textContent = user.phone || 'Не указан';
-
-            // Показываем кабинет с анимацией
-            document.getElementById('personal-cabinet').classList.add('show');
+            // Запускаем анимацию появления
+            setTimeout(() => {
+                personalCabinet.style.opacity = '1';
+            }, 50);
         }, 500);
     }
 
