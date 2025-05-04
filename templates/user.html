@@ -128,10 +128,11 @@
         }
 
         .edit-form-container {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
     
         .form-group {
@@ -147,10 +148,16 @@
 
         .form-input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
             font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .form-input:focus {
+            border-color: #ff0000;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
         }
 
         .form-actions {
@@ -164,21 +171,42 @@
             color: white;
             border: none;
             padding: 12px 20px;
-            border-radius: 8px;
-            flex: 1;
+            border-radius: 25px;
+            font-size: 16px;
             font-weight: bold;
-            
+            flex: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .save-btn:hover {
+            background: #e60000;
+            transform: translateY(-1px);
+        }
 
         .cancel-btn {
-            background: #ddd;
-            color: #333;
-            border: none;
+            background: white;
+            color: #ff0000;
+            border: 1px solid #ff0000;
             padding: 12px 20px;
-            border-radius: 8px;
-            flex: 1;
+            border-radius: 25px;
+            font-size: 16px;
             font-weight: bold;
+            flex: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: background-color 0.2s;
+        }
+
+        .cancel-btn:hover {
+            background: #ffeeee;
+            transform: translateY(-1px);
+        }
+        
+        /* Анимация при нажатии для обеих кнопок */
+        .save-btn:active, .cancel-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
     </style>
