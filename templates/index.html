@@ -584,7 +584,10 @@
                 `, true);
             }
             function goHome() {
-                showHome();
+                document.getElementById('content').classList.add('fade-out');
+                setTimeout(() => {
+                    showHome();
+                }, 300);
             }
 
             
