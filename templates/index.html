@@ -108,7 +108,7 @@
             document.getElementById('back-button').addEventListener('click', goBack);
             document.getElementById('login-button').addEventListener('click', function() {
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-                    window.location.href = 'user.html';
+                    window.location.href = '/user';
                 } else {
                     Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
                 }
