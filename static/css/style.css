@@ -343,20 +343,6 @@ p {
     cursor: pointer;
 }
 
-/* Личный кабинет - общие стили */
-#personal-cabinet, #edit-form, #thank-you-message, #welcome-screen {
-    position: fixed;
-    top: 60px; /* Отступ под шапку */
-    left: 0;
-    width: 100%;
-    height: calc(100% - 120px); /* Учитываем шапку и футер */
-    background: #f0f0f0;
-    z-index: 50;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    display: none;
-}
 
 /* Шапка и футер поверх личного кабинета */
 .header, .footer-buttons {
@@ -454,12 +440,6 @@ p {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Форма редактирования */
-#edit-form {
-    background: #f8f8f8;
-    padding: 20px;
-    border-radius: 10px;
-}
 .form-group label {
     display: block;
     margin-bottom: 8px;
@@ -475,17 +455,6 @@ p {
     font-size: 16px;
     margin-bottom: 20px;
     box-sizing: border-box;
-}
-
-.save-btn {
-    background: #ff0000;
-    color: white;
-    padding: 12px;
-    width: 100%;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
 }
 
 /* Сообщение после сохранения */
