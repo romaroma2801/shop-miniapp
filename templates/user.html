@@ -167,7 +167,7 @@
             border-radius: 8px;
             flex: 1;
             font-weight: bold;
-        }
+            
 
         .cancel-btn {
             background: #ddd;
@@ -177,7 +177,10 @@
             border-radius: 8px;
             flex: 1;
             font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
+        
     </style>
 </head>
 <body>
@@ -197,7 +200,7 @@
         <!-- Личный кабинет -->
         <div id="personal-cabinet" style="display: none; opacity: 0;">
             <div class="user-header">
-                <h2>Shop NEKURI.BY</h2>
+                <h2>Добро пожаловать в личный кабинет</h2>
             </div>
     
             <div class="user-avatar">
@@ -333,7 +336,21 @@
             showEditForm(userData);
         });
 
+        document.getElementById('home-button').addEventListener('click', function() {
+            console.log('Home button clicked'); // Для отладки
+    
+            // Анимация исчезновения
+            document.getElementById('personal-cabinet').style.opacity = '0';
+    
+            setTimeout(() => {
+                window.location.href = '/'; // Переход на главную
+            }, 300);
+        });
 
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            document.getElementById('edit-form').style.display = 'none';
+            document.getElementById('personal-cabinet').style.display = 'block';
+        });
         document.getElementById('edit-profile-btn').addEventListener('click', () => {
             showEditForm(userData);
         });
