@@ -20,18 +20,6 @@ body {
     box-sizing: border-box;
 }
 
-.menu-vertical button {
-    padding: 16px;
-    font-size: 18px;
-    width: 90%;
-    border: none;
-    border-radius: 10px;
-    background-color: #ff0000;
-    color: white;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-}
-
 .header {
     position: fixed;
     top: 0;
@@ -399,34 +387,6 @@ p {
     flex: 1;
     color: #333;
     word-break: break-all;
-}}
-
-/* Кнопка "Дополнить личные данные" */
-.edit-btn {
-    display: block;
-    margin: 25px auto;
-    padding: 16px;
-    width: 90%;
-    max-width: 300px;
-    font-size: 18px;
-    border: none;
-    border-radius: 10px;
-    background-color: #ff0000;
-    color: white;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    /* Добавляем отступ снизу для мобильных устройств */
-    margin-bottom: 20px;
-    /* Убираем возможное наследование стилей */
-    appearance: none;
-    -webkit-appearance: none;
-    /* Выравнивание иконки и текста */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
 }
 
 .edit-btn:hover {
@@ -513,4 +473,57 @@ p {
 
 .quick-welcome {
     animation: quickFade 1s ease-in-out forwards;
+}
+/* Унифицированные стили кнопок */
+button {
+    background: #ff0000;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button.secondary {
+    background: white;
+    color: #ff0000;
+    border: 1px solid #ff0000;
+}
+
+button.secondary:hover {
+    background: #ffeeee;
+}
+
+/* Специфичные стили для кнопок в меню */
+.menu-vertical button {
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    margin: 5px 0;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Стиль для кнопки "Посмотреть на карте" */
+.map-button {
+    background: white;
+    color: #ff0000;
+    border: 1px solid #ff0000;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    margin: 5px 0;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
