@@ -42,12 +42,25 @@
     </div>
 
     <div class="cart-button-container">
-        <button onclick="openCart()" class="cart-button">
+        <button class="cart-button" id="cart-button">
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+                function openCart() {
+                    alert("Функция корзины в разработке!");
+                }
+                function copyPhoneNumber() {
+                    const phone = "+375 29 225-13-34";
+                    navigator.clipboard.writeText(phone)
+                        .then(() => {
+                            showToast("Номер скопирован в буфер обмена!");
+                            if (navigator.vibrate) navigator.vibrate(50);
+                        })
+                        .catch(() => showToast("Не удалось скопировать номер"));
+                }
+                document.querySelector('.cart-button').addEventListener('click', openCart);
                 // ===== НАЧАЛО ВСТАВКИ =====
                 // Фоновая регистрация пользователя при загрузке
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
@@ -604,12 +617,6 @@
             function updateUserData(user) {
                 document.getElementById('user-name').textContent = user.first_name || 'Не указано';
                 document.getElementById('user-phone').textContent = user.phone || 'Не указан';
-            }
-
-            // Показ сообщения после сохранения
-            
-            function openCart() {
-                alert("Функция корзины в разработке!");
             }
 
             // Экспорт всех функций в глобальную область видимости
