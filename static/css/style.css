@@ -111,24 +111,26 @@ body {
 
 #back-button {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
     width: 40px;
     height: 40px;
-    background: transparent;
+    background: transparent; /* Прозрачный фон */
     border: none;
     cursor: pointer;
     z-index: 200;
+    padding: 0; /* Убираем внутренние отступы */
+    margin: 0; /* Убираем внешние отступы */
 }
-
 
 #back-button img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 40px;
     height: 40px;
-    top: 10px;
-    left: 10px;
 }
-
 h3 {
     font-size: 16px;
     margin-bottom: 12px;
