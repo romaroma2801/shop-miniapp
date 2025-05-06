@@ -56,37 +56,42 @@
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
                     
-                    // Проверяем поддержку API
-                    if (!navigator.clipboard) {
-                        showToast("Браузер не поддерживает копирование");
-                        return;
-                    }
-                
-                    // Запрашиваем разрешение
-                    navigator.permissions.query({name: 'clipboard-write'}).then(result => {
-                        if (result.state === 'granted' || result.state === 'prompt') {
-                            navigator.clipboard.writeText(phone)
-                                .then(() => {
-                                    showToast("Номер скопирован в буфер обмена!");
-                                    if (navigator.vibrate) navigator.vibrate(50);
-                                })
-                                .catch(err => {
-                                    console.error('Ошибка копирования:', err);
-                                    showToast("Не удалось скопировать номер");
-                                });
-                        } else {
-                            showToast("Нет разрешения на копирование");
+                    // Fallback для старых браузеров
+                    const fallbackCopy = () => {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = phone;
+                        textarea.style.position = 'fixed';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        
+                        try {
+                            const success = document.execCommand('copy');
+                            showToast(success ? "Номер скопирован!" : "Не удалось скопировать");
+                        } catch (err) {
+                            showToast("Ошибка при копировании");
+                        } finally {
+                            document.body.removeChild(textarea);
                         }
-                    }).catch(err => {
-                        console.error('Ошибка проверки разрешений:', err);
-                        // Пробуем без проверки разрешений
+                    };
+                
+                    // Современный способ
+                    if (navigator.clipboard) {
                         navigator.clipboard.writeText(phone)
                             .then(() => {
-                                showToast("Номер скопирован!");
-                                if (navigator.vibrate) navigator.vibrate(50);
+                                showToast("Номер скопирован в буфер обмена!");
+                                try {
+                                    if (navigator.vibrate) navigator.vibrate(50);
+                                } catch (e) {
+                                    console.log("Вибрация не сработала");
+                                }
                             })
-                            .catch(() => showToast("Не удалось скопировать номер"));
-                    });
+                            .catch((err) => {
+                                console.error("Clipboard error:", err);
+                                fallbackCopy(); // Пробуем старый способ
+                            });
+                    } else {
+                        fallbackCopy();
+                    }
                 }
                 document.querySelector('.cart-button').addEventListener('click', openCart);
                 // ===== НАЧАЛО ВСТАВКИ =====
@@ -342,8 +347,10 @@
                         <button onclick="window.open('https://vk.com/nekuribrest', '_blank')">ВКонтакте</button>
                         <button onclick="window.open('https://www.tiktok.com/@nekuri.by', '_blank')">TikTok</button>
                     `, true, () => {
-                        document.getElementById('copy-phone-btn').addEventListener('click', copyPhoneNumber);
-                    });
+                        document.getElementById('copy-phone-btn').addEventListener('click', function() {
+                            console.log("Кнопка копирования нажата");
+                            copyPhoneNumber();
+                        });
                 } else if (section === 'review') {
                     checkReviewCooldown();
                 } else if (section === 'jobs') {
@@ -663,18 +670,6 @@
             window.showCities = showCities;
             window.showStores = showStores;
             window.showStoreDetails = showStoreDetails;
-
-            // Вспомогательные функции
-            window.copyPhoneNumber = function() {
-                const phone = "+375 29 225-13-34";
-                navigator.clipboard.writeText(phone)
-                    .then(() => {
-                        showToast("Номер скопирован в буфер обмена!");
-                        // Вибрация для подтверждения (если поддерживается)
-                        if (navigator.vibrate) navigator.vibrate(50);
-                    })
-                    .catch(() => showToast("Не удалось скопировать номер"));
-            };
         });
     </script>
 <div id="toast" class="toast" style="
