@@ -123,8 +123,10 @@ body {
 
 
 #back-button img {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
+    top: 10px;
+    left: 10px;
 }
 
 h3 {
