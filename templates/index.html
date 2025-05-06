@@ -2,6 +2,8 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Permissions-Policy" content="clipboard-write">
+    <meta http-equiv="Permissions-Policy" content="clipboard-write, vibration">
     <title>Мини-приложение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
@@ -53,12 +55,38 @@
                 }
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
-                    navigator.clipboard.writeText(phone)
-                        .then(() => {
-                            showToast("Номер скопирован в буфер обмена!");
-                            if (navigator.vibrate) navigator.vibrate(50);
-                        })
-                        .catch(() => showToast("Не удалось скопировать номер"));
+                    
+                    // Проверяем поддержку API
+                    if (!navigator.clipboard) {
+                        showToast("Браузер не поддерживает копирование");
+                        return;
+                    }
+                
+                    // Запрашиваем разрешение
+                    navigator.permissions.query({name: 'clipboard-write'}).then(result => {
+                        if (result.state === 'granted' || result.state === 'prompt') {
+                            navigator.clipboard.writeText(phone)
+                                .then(() => {
+                                    showToast("Номер скопирован в буфер обмена!");
+                                    if (navigator.vibrate) navigator.vibrate(50);
+                                })
+                                .catch(err => {
+                                    console.error('Ошибка копирования:', err);
+                                    showToast("Не удалось скопировать номер");
+                                });
+                        } else {
+                            showToast("Нет разрешения на копирование");
+                        }
+                    }).catch(err => {
+                        console.error('Ошибка проверки разрешений:', err);
+                        // Пробуем без проверки разрешений
+                        navigator.clipboard.writeText(phone)
+                            .then(() => {
+                                showToast("Номер скопирован!");
+                                if (navigator.vibrate) navigator.vibrate(50);
+                            })
+                            .catch(() => showToast("Не удалось скопировать номер"));
+                    });
                 }
                 document.querySelector('.cart-button').addEventListener('click', openCart);
                 // ===== НАЧАЛО ВСТАВКИ =====
