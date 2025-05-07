@@ -533,26 +533,6 @@
                 }
             }
 
-            function submitReview() {
-                const text = document.getElementById('reviewText').value.trim();
-                if (window.reviewStars === 0) {
-                showToast("Пожалуйста, выберите оценку");
-                return;
-                }
-
-                if (text.length < 3) {
-                    showToast("Пожалуйста, напишите отзыв");
-                    return;
-                }
-                sendReviewToTelegram(reviewStars, text);
-                localStorage.setItem('lastReviewTime', Date.now().toString());
-                showContent(`
-                    <p>🙏 Спасибо за оставленный отзыв!</p>
-                    <p>Нам важно ваше мнение 😊</p>
-                    <button data-action="goHome">Главное меню</button>
-                `, true);
-            }
-
             function sendReviewToTelegram(stars, text) {
                 const username = Telegram.WebApp.initDataUnsafe?.user?.username || 'Без username';
                 const message = `⭐ Оценка: ${stars}/5\n✍️ Отзыв: ${text}\n👤 Пользователь: @${username}`;
