@@ -136,10 +136,20 @@ def catalog_page():
 @app.route('/api/catalog')
 def get_catalog():
     try:
-        response = requests.get('https://nekuri.by/parser/output/catalog.json')
+        # Добавляем заголовки CORS
+        headers = {
+            'User-Agent': 'Mozilla/5.0',
+            'Accept': 'application/json'
+        }
+        response = requests.get('https://nekuri.by/parser/output/catalog.json', headers=headers)
         response.raise_for_status()
-        return jsonify(response.json())
+        
+        # Добавляем CORS заголовки в ответ
+        resp = jsonify(response.json())
+        resp.headers.add('Access-Control-Allow-Origin', '*')
+        return resp
     except Exception as e:
+        logging.error(f"Error fetching catalog: {str(e)}")
         return jsonify({"error": str(e)}), 500
         
 @app.route('/api/regions')
