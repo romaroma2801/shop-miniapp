@@ -130,6 +130,10 @@ def save_user():
         logging.error(f"Error in save_user: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/catalog')
+def catalog_page():
+    return render_template('catalog.html')
+
 @app.route('/api/regions')
 def get_regions():
     return jsonify(list(STORE_DATA.keys()))
