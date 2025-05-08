@@ -531,3 +531,79 @@ button.secondary:hover {
     width: 100%;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
+.app-container {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.header h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: #c00000;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.category-button {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  box-shadow: 2px 2px 6px #ccc;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.category-button img {
+  max-height: 80px;
+  margin-bottom: 8px;
+}
+
+.product-card {
+  border: 1px solid #eee;
+  border-radius: 16px;
+  box-shadow: 2px 2px 8px #ccc;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.product-card img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.add-button {
+  background: #c00000;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.add-button:hover {
+  background: #a00000;
+}
+
+.disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  padding: 10px;
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+.bottom-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
