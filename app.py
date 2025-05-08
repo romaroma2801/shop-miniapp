@@ -136,11 +136,11 @@ def catalog_page():
 @app.route('/api/catalog')
 def get_catalog():
     try:
-        response = requests.get('https://nekuri.by/parser/output/catalog.json')
+        headers = {'User-Agent': 'Mozilla/5.0'}  # <--- Важно!
+        response = requests.get('https://nekuri.by/parser/output/catalog.json', headers=headers)
         response.raise_for_status()
         data = response.json()
         
-        # Приводим данные к единой структуре
         processed_data = {}
         required_categories = [
             "Парогенераторы",
@@ -150,7 +150,6 @@ def get_catalog():
             "Самозамес"
         ]
         
-        # Создаем гарантированную структуру
         for i, cat_name in enumerate(required_categories, 1):
             processed_data[str(i)] = {
                 "id": str(i),
@@ -160,7 +159,6 @@ def get_catalog():
                 "products": []
             }
         
-        # Заполняем реальными данными, если они есть
         for item in data.values():
             if isinstance(item, dict) and item.get('name'):
                 for target_cat in processed_data.values():
@@ -174,7 +172,7 @@ def get_catalog():
     except Exception as e:
         logging.error(f"Error processing catalog: {str(e)}")
         return jsonify({"error": str(e)}), 500
-        
+
 @app.route('/api/regions')
 def get_regions():
     return jsonify(list(STORE_DATA.keys()))
