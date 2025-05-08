@@ -136,11 +136,15 @@ def catalog_page():
 @app.route('/api/catalog')
 def get_catalog():
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}  # <--- Важно!
+        headers = {'User-Agent': 'Mozilla/5.0'}
         response = requests.get('https://nekuri.by/parser/output/catalog.json', headers=headers)
         response.raise_for_status()
         data = response.json()
-        
+
+        # Проверка структуры
+        if not isinstance(data, (dict, list)):
+            raise ValueError("Invalid catalog structure")
+
         processed_data = {}
         required_categories = [
             "Парогенераторы",
@@ -149,7 +153,7 @@ def get_catalog():
             "Кальяны и комплектующие",
             "Самозамес"
         ]
-        
+
         for i, cat_name in enumerate(required_categories, 1):
             processed_data[str(i)] = {
                 "id": str(i),
@@ -158,8 +162,10 @@ def get_catalog():
                 "subcategories": {},
                 "products": []
             }
-        
-        for item in data.values():
+
+        items = data.values() if isinstance(data, dict) else data  # <--- исправление
+
+        for item in items:
             if isinstance(item, dict) and item.get('name'):
                 for target_cat in processed_data.values():
                     if item['name'].lower() in target_cat['name'].lower():
@@ -167,8 +173,9 @@ def get_catalog():
                             target_cat['subcategories'].update(item['subcategories'])
                         if 'products' in item:
                             target_cat['products'].extend(item['products'])
-        
+
         return jsonify(processed_data)
+
     except Exception as e:
         logging.error(f"Error processing catalog: {str(e)}")
         return jsonify({"error": str(e)}), 500
