@@ -35,9 +35,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            function goHome() {
+                window.location.href = '/'; // Перенаправление на главную (index.html)
+            }
             let currentCategoryId = null;
             let categoryStack = [];
-            const catalogUrl = 'https://nekuri.by/parser/output/catalog.json';
+            const catalogUrl = '/api/catalog';
             const imageBaseUrl = 'https://nekuri.by';
             
             // Иконки для основных категорий
@@ -66,10 +69,23 @@
                 }
             }
 
-            function goHome() {
-                window.location.href = '/';
+            
+            function showError() {
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = `
+                    <p>Произошла ошибка при загрузке каталога</p>
+                    <button onclick="window.location.href='/'">На главную</button>
+                    <button onclick="initCatalog()">Попробовать снова</button>
+                `;
+                
+                // Добавьте обработчики для кнопок
+                setTimeout(() => {
+                    document.querySelector('button[onclick="window.location.href=\'/\'"]')
+                        .addEventListener('click', goHome);
+                    document.querySelector('button[onclick="initCatalog()"]')
+                        .addEventListener('click', initCatalog);
+                }, 100);
             }
-
             // Инициализация каталога
             async function initCatalog() {
                 try {
