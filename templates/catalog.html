@@ -181,9 +181,10 @@
             
                     const categoryContent = document.getElementById('category-content');
             
-                    // Проверяем подкатегории
                     const subcategories = category.subcategories || {};
-                    if (Object.keys(subcategories).length > 0) {
+                    const hasSubcategories = Object.keys(subcategories).length > 0;
+            
+                    if (hasSubcategories) {
                         const grid = document.createElement('div');
                         grid.className = 'subcategories-grid';
             
@@ -196,41 +197,58 @@
                                      onerror="this.src='/static/no-image.png'">
                                 <h3>${subcat.name}</h3>
                             `;
-                            subcategoryElement.addEventListener('click', () => showCategory(subcat.id));
+                            subcategoryElement.addEventListener('click', () => showSubcategory(categoryId, subcat.id));
                             grid.appendChild(subcategoryElement);
                         });
             
                         categoryContent.appendChild(grid);
-                    }
-            
-                    // Собираем товары из самой категории и подкатегорий
-                    let allProducts = [];
-                    if (category.products && category.products.length > 0) {
-                        allProducts = category.products;
-                    }
-            
-                    Object.values(subcategories).forEach(subcat => {
-                        if (subcat.products && subcat.products.length > 0) {
-                            allProducts = allProducts.concat(subcat.products);
+                    } else {
+                        const products = category.products || [];
+                        if (products.length > 0) {
+                            renderProducts(products);
+                        } else {
+                            categoryContent.innerHTML += `
+                                <div class="empty-message">
+                                    <p>Товары в этой категории отсутствуют</p>
+                                    <button onclick="location.reload()">Обновить</button>
+                                </div>
+                            `;
                         }
-                    });
-            
-                    // Отображаем товары
-                    if (allProducts.length > 0) {
-                        renderProducts(allProducts);
-                        return;
                     }
-            
-                    // Если ничего не найдено
-                    categoryContent.innerHTML += `
-                        <div class="empty-message">
-                            <p>Товары в этой категории отсутствуют</p>
-                            <button onclick="location.reload()">Обновить</button>
-                        </div>
-                    `;
                 } catch (error) {
                     console.error('Category load error:', error);
                     showError('Ошибка загрузки категории', error);
+                }
+            }
+            function showSubcategory(parentCategoryId, subcategoryId) {
+                try {
+                    const subcat = catalogData[parentCategoryId]?.subcategories?.[subcategoryId];
+                    if (!subcat) throw new Error(`Подкатегория ${subcategoryId} не найдена`);
+            
+                    const contentDiv = document.getElementById('content');
+                    contentDiv.innerHTML = `
+                        <div class="header">
+                            <h1>${subcat.name}</h1>
+                        </div>
+                        <div class="category-content" id="category-content"></div>
+                    `;
+            
+                    const categoryContent = document.getElementById('category-content');
+            
+                    const products = subcat.products || [];
+                    if (products.length > 0) {
+                        renderProducts(products);
+                    } else {
+                        categoryContent.innerHTML += `
+                            <div class="empty-message">
+                                <p>Товары в этой подкатегории отсутствуют</p>
+                                <button onclick="location.reload()">Обновить</button>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Subcategory load error:', error);
+                    showError('Ошибка загрузки подкатегории', error);
                 }
             }
 
