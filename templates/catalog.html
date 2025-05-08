@@ -5,6 +5,30 @@
     <title>Каталог товаров</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .app-container {
+            margin-top: 20px; /* Отступ от хедера */
+            padding: 0 10px;
+        }
+        
+        .header {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            margin: 0;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        
+        .logo {
+            display: block;
+            max-width: 150px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
     <button id="back-button" onclick="goBack()">
@@ -120,7 +144,7 @@
             function renderMainCategories(catalogData) {
                 const contentDiv = document.getElementById('content');
                 contentDiv.innerHTML = `
-                    <div class="header">
+                    <div class="catalog-header">
                         <h1>Каталог товаров</h1>
                     </div>
                     <div class="grid" id="categories-grid"></div>
@@ -128,29 +152,43 @@
                 
                 const grid = document.getElementById('categories-grid');
                 
-                // Фильтруем только основные категории (parent_id = 0)
-                const mainCategories = Object.values(catalogData).filter(
-                    cat => cat.parent_id === "0"
-                );
-                
-                // Сортируем категории по нашему порядку
-                const orderedCategories = [
+                // Определяем порядок категорий
+                const categoryOrder = [
                     "Парогенераторы",
                     "Жидкости",
-                    "Запчасти и комплектующие",
+                    "Запчасти и комплектующие", 
                     "Кальяны и комплектующие",
                     "Самозамес"
-                ].map(name => mainCategories.find(cat => cat.name === name)).filter(Boolean);
+                ];
                 
-                orderedCategories.forEach(category => {
+                // Фильтруем и сортируем категории
+                const mainCategories = Object.values(catalogData)
+                    .filter(cat => cat.parent_id === "0")
+                    .sort((a, b) => {
+                        const aIndex = categoryOrder.indexOf(a.name);
+                        const bIndex = categoryOrder.indexOf(b.name);
+                        return (aIndex - bIndex);
+                    });
+                
+                // Создаем кнопки категорий
+                mainCategories.forEach(category => {
+                    if (!category.name) return;
+                    
                     const icon = categoryIcons[category.name] || 'no-image.png';
                     const categoryElement = document.createElement('div');
                     categoryElement.className = 'category-button';
                     categoryElement.innerHTML = `
-                        <img src="/static/${icon}" alt="${category.name}">
+                        <img src="/static/${icon}" alt="${category.name}" 
+                             onerror="this.src='/static/no-image.png'">
                         <h3>${category.name}</h3>
                     `;
-                    categoryElement.addEventListener('click', () => showCategory(category.id));
+                    categoryElement.addEventListener('click', () => {
+                        if (category.id) {
+                            showCategory(category.id);
+                        } else {
+                            showError('У категории отсутствует ID');
+                        }
+                    });
                     grid.appendChild(categoryElement);
                 });
             }
@@ -164,8 +202,12 @@
                         return;
                     }
                     
+                    // Проверяем, что категория существует
+                    if (!cachedData[categoryId]) {
+                        throw new Error(`Категория с ID ${categoryId} не найдена`);
+                    }
+                    
                     const category = cachedData[categoryId];
-                    if (!category) throw new Error('Категория не найдена');
                     
                     if (addToStack) {
                         categoryStack.push({ id: currentCategoryId });
@@ -174,49 +216,53 @@
                     currentCategoryId = categoryId;
                     
                     const contentDiv = document.getElementById('content');
+                    contentDiv.innerHTML = ''; // Очищаем контент
                     
-                    // Если есть подкатегории - показываем их
-                    if (Object.keys(category.subcategories).length > 0) {
-                        contentDiv.innerHTML = `
-                            <div class="header">
-                                <h1>${category.name}</h1>
-                            </div>
-                            <div class="grid" id="subcategories-grid"></div>
-                        `;
+                    // Создаем заголовок
+                    const header = document.createElement('div');
+                    header.className = 'category-header';
+                    header.innerHTML = `<h2>${category.name || 'Категория'}</h2>`;
+                    contentDiv.appendChild(header);
+                    
+                    // Проверяем подкатегории
+                    if (category.subcategories && Object.keys(category.subcategories).length > 0) {
+                        const grid = document.createElement('div');
+                        grid.className = 'grid';
+                        contentDiv.appendChild(grid);
                         
-                        const grid = document.getElementById('subcategories-grid');
                         Object.values(category.subcategories).forEach(subcat => {
-                            const icon = subcat.icon 
-                                ? `${imageBaseUrl}${subcat.icon}`
-                                : '/static/no-image.png';
-                                
+                            if (!subcat.name) return; // Пропускаем пустые
+                            
+                            const icon = subcat.icon ? 
+                                `${imageBaseUrl}${subcat.icon}` : 
+                                '/static/no-image.png';
+                            
                             const subcategoryElement = document.createElement('div');
                             subcategoryElement.className = 'category-button';
                             subcategoryElement.innerHTML = `
-                                <img src="${icon}" alt="${subcat.name}" onerror="this.src='/static/no-image.png'">
+                                <img src="${icon}" alt="${subcat.name}" 
+                                     onerror="this.src='/static/no-image.png'">
                                 <h3>${subcat.name}</h3>
                             `;
                             subcategoryElement.addEventListener('click', () => showCategory(subcat.id));
                             grid.appendChild(subcategoryElement);
                         });
                     } 
-                    // Если есть товары - показываем их
                     else if (category.products && category.products.length > 0) {
                         renderProducts(category.products, category.name);
                     } 
-                    // Если ничего нет
                     else {
-                        contentDiv.innerHTML = `
-                            <div class="header">
-                                <h1>${category.name}</h1>
-                            </div>
+                        const emptyMsg = document.createElement('div');
+                        emptyMsg.className = 'empty-category';
+                        emptyMsg.innerHTML = `
                             <p>В этой категории пока нет товаров</p>
                             <button onclick="showCategory('${categoryId}', false)">Обновить</button>
                         `;
+                        contentDiv.appendChild(emptyMsg);
                     }
                 } catch (error) {
                     console.error('Ошибка загрузки категории:', error);
-                    showError();
+                    showError(`Не удалось загрузить категорию. ${error.message}`);
                 }
             }
 
