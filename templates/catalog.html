@@ -1,97 +1,315 @@
-<!-- catalog.html -->
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Каталог товаров</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Каталог товаров</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <div class="app-container">
+    <button id="back-button" onclick="goBack()">
+        <img src="/static/back.svg" alt="Назад">
+    </button>
     <div class="header">
-      <h1>Каталог товаров</h1>
+        <img src="/static/logo22.png" alt="Логотип" class="logo">
     </div>
-    <div id="catalog-content"></div>
-    <div class="bottom-nav">
-      <button onclick="goBack()">Назад</button>
-      <button onclick="goHome()">Домой</button>
+
+    <div id="content" class="app-container">
+        <!-- Контент будет загружаться динамически -->
     </div>
-  </div>
 
-  <script>
-    const API_URL = "https://nekuri.by/parser/output/catalog.json";
-    let catalogData = {};
-    let navStack = [];
+    <div class="footer-buttons">
+        <div id="home-button" onclick="goHome()">
+            <img src="/static/home.svg" alt="Домой">
+        </div>
+        <div id="login-button">
+            <img src="/static/login.svg" alt="Авторизация">
+        </div>
+    </div>
 
-    async function loadCatalog() {
-      try {
-        const res = await axios.get(API_URL);
-        catalogData = res.data;
-        renderCategories(catalogData);
-      } catch (err) {
-        document.getElementById("catalog-content").innerHTML = "<p>Ошибка загрузки каталога</p>";
-      }
-    }
+    <div class="cart-button-container">
+        <button class="cart-button" id="cart-button">
+            <img src="/static/shop.svg" alt="Корзина">
+        </button>
+    </div>
 
-    function renderCategories(data) {
-      navStack.push(data);
-      const container = document.getElementById("catalog-content");
-      container.innerHTML = "";
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentCategoryId = null;
+            let categoryStack = [];
+            const catalogUrl = 'https://nekuri.by/parser/output/catalog.json';
+            const imageBaseUrl = 'https://nekuri.by';
+            
+            // Иконки для основных категорий
+            const categoryIcons = {
+                "Парогенераторы": "vape.png",
+                "Жидкости": "juice.png",
+                "Запчасти и комплектующие": "spanner.png",
+                "Кальяны и комплектующие": "hookah.png",
+                "Самозамес": "test.png"
+            };
 
-      const categories = Object.values(data.subcategories || {});
-      if (categories.length > 0) {
-        const grid = document.createElement("div");
-        grid.className = "grid";
-        categories.forEach(cat => {
-          const btn = document.createElement("button");
-          btn.className = "category-button";
-          btn.innerHTML = `
-            ${cat.icon ? `<img src="https://nekuri.by${cat.icon}" alt="${cat.name}" />` : ""}
-            <span>${cat.name}</span>`;
-          btn.onclick = () => renderCategories(cat);
-          grid.appendChild(btn);
+            // Инициализация приложения
+            initCatalog();
+
+            // Функции навигации
+            function goBack() {
+                if (categoryStack.length > 0) {
+                    const prevCategory = categoryStack.pop();
+                    if (prevCategory) {
+                        showCategory(prevCategory.id, false);
+                    } else {
+                        showMainCategories();
+                    }
+                } else {
+                    window.history.back();
+                }
+            }
+
+            function goHome() {
+                window.location.href = '/';
+            }
+
+            // Инициализация каталога
+            async function initCatalog() {
+                try {
+                    // Проверяем кэш
+                    const cachedData = localStorage.getItem('cachedCatalog');
+                    const cacheTime = localStorage.getItem('catalogCacheTime');
+                    const now = Date.now();
+                    
+                    if (cachedData && cacheTime && (now - parseInt(cacheTime)) < 3600000) {
+                        // Используем кэшированные данные, если они не старше 1 часа
+                        renderMainCategories(JSON.parse(cachedData));
+                    } else {
+                        // Загружаем свежие данные
+                        const response = await fetch(catalogUrl);
+                        if (!response.ok) throw new Error('Ошибка загрузки каталога');
+                        const data = await response.json();
+                        
+                        // Кэшируем данные
+                        localStorage.setItem('cachedCatalog', JSON.stringify(data));
+                        localStorage.setItem('catalogCacheTime', now.toString());
+                        
+                        renderMainCategories(data);
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки каталога:', error);
+                    showError();
+                }
+            }
+
+            // Отображение главных категорий
+            function renderMainCategories(catalogData) {
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = `
+                    <div class="header">
+                        <h1>Каталог товаров</h1>
+                    </div>
+                    <div class="grid" id="categories-grid"></div>
+                `;
+                
+                const grid = document.getElementById('categories-grid');
+                
+                // Фильтруем только основные категории (parent_id = 0)
+                const mainCategories = Object.values(catalogData).filter(
+                    cat => cat.parent_id === "0"
+                );
+                
+                // Сортируем категории по нашему порядку
+                const orderedCategories = [
+                    "Парогенераторы",
+                    "Жидкости",
+                    "Запчасти и комплектующие",
+                    "Кальяны и комплектующие",
+                    "Самозамес"
+                ].map(name => mainCategories.find(cat => cat.name === name)).filter(Boolean);
+                
+                orderedCategories.forEach(category => {
+                    const icon = categoryIcons[category.name] || 'no-image.png';
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'category-button';
+                    categoryElement.innerHTML = `
+                        <img src="/static/${icon}" alt="${category.name}">
+                        <h3>${category.name}</h3>
+                    `;
+                    categoryElement.addEventListener('click', () => showCategory(category.id));
+                    grid.appendChild(categoryElement);
+                });
+            }
+
+            // Отображение категории или подкатегорий
+            async function showCategory(categoryId, addToStack = true) {
+                try {
+                    const cachedData = JSON.parse(localStorage.getItem('cachedCatalog'));
+                    if (!cachedData) {
+                        await initCatalog();
+                        return;
+                    }
+                    
+                    const category = cachedData[categoryId];
+                    if (!category) throw new Error('Категория не найдена');
+                    
+                    if (addToStack) {
+                        categoryStack.push({ id: currentCategoryId });
+                    }
+                    
+                    currentCategoryId = categoryId;
+                    
+                    const contentDiv = document.getElementById('content');
+                    
+                    // Если есть подкатегории - показываем их
+                    if (Object.keys(category.subcategories).length > 0) {
+                        contentDiv.innerHTML = `
+                            <div class="header">
+                                <h1>${category.name}</h1>
+                            </div>
+                            <div class="grid" id="subcategories-grid"></div>
+                        `;
+                        
+                        const grid = document.getElementById('subcategories-grid');
+                        Object.values(category.subcategories).forEach(subcat => {
+                            const icon = subcat.icon 
+                                ? `${imageBaseUrl}${subcat.icon}`
+                                : '/static/no-image.png';
+                                
+                            const subcategoryElement = document.createElement('div');
+                            subcategoryElement.className = 'category-button';
+                            subcategoryElement.innerHTML = `
+                                <img src="${icon}" alt="${subcat.name}" onerror="this.src='/static/no-image.png'">
+                                <h3>${subcat.name}</h3>
+                            `;
+                            subcategoryElement.addEventListener('click', () => showCategory(subcat.id));
+                            grid.appendChild(subcategoryElement);
+                        });
+                    } 
+                    // Если есть товары - показываем их
+                    else if (category.products && category.products.length > 0) {
+                        renderProducts(category.products, category.name);
+                    } 
+                    // Если ничего нет
+                    else {
+                        contentDiv.innerHTML = `
+                            <div class="header">
+                                <h1>${category.name}</h1>
+                            </div>
+                            <p>В этой категории пока нет товаров</p>
+                            <button onclick="showCategory('${categoryId}', false)">Обновить</button>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки категории:', error);
+                    showError();
+                }
+            }
+
+            // Отображение списка товаров
+            function renderProducts(products, categoryName) {
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = `
+                    <div class="header">
+                        <h1>${categoryName}</h1>
+                    </div>
+                    <div id="products-list"></div>
+                `;
+                
+                const productsList = document.getElementById('products-list');
+                
+                products.forEach(product => {
+                    const productElement = document.createElement('div');
+                    productElement.className = 'product-card';
+                    productElement.innerHTML = `
+                        <img src="${imageBaseUrl}${product.image}" alt="${product.name}" onerror="this.src='/static/no-image.png'">
+                        <h3>${product.name}</h3>
+                        <p>${formatPrice(product.price)} руб.</p>
+                        ${renderProductButton(product)}
+                    `;
+                    
+                    // Клик по карточке товара - просмотр деталей
+                    productElement.addEventListener('click', (e) => {
+                        if (!e.target.closest('button')) {
+                            showProductDetails(product, categoryName);
+                        }
+                    });
+                    
+                    productsList.appendChild(productElement);
+                });
+            }
+
+            // Отображение детальной информации о товаре
+            function showProductDetails(product, categoryName) {
+                categoryStack.push({ id: currentCategoryId });
+                
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = `
+                    <div class="header">
+                        <h1>${categoryName}</h1>
+                    </div>
+                    <div class="product-details">
+                        <img src="${imageBaseUrl}${product.image}" alt="${product.name}" onerror="this.src='/static/no-image.png'">
+                        <h2>${product.name}</h2>
+                        <div class="product-description">${formatDescription(product.description)}</div>
+                        <div class="product-price">${formatPrice(product.price)} руб.</div>
+                        ${renderProductButton(product, true)}
+                    </div>
+                `;
+            }
+
+            // Форматирование цены
+            function formatPrice(price) {
+                return parseFloat(price).toFixed(2).replace('.', ',');
+            }
+
+            // Форматирование описания
+            function formatDescription(description) {
+                if (!description) return '';
+                return description
+                    .replace(/\r\n/g, '<br>')
+                    .replace(/\t/g, ' ')
+                    .replace(/\s+/g, ' ');
+            }
+
+            // Рендер кнопки товара (добавить в корзину/недоступно)
+            function renderProductButton(product, isLarge = false) {
+                const isAvailable = product.availability !== "out of stock";
+                const buttonClass = isLarge ? 'add-button large' : 'add-button';
+                
+                if (isAvailable) {
+                    return `<button class="${buttonClass}" onclick="addToCart(event, '${product.id}')">Добавить в корзину</button>`;
+                } else {
+                    return `<button class="${buttonClass} disabled" disabled>Не доступен</button>`;
+                }
+            }
+
+            // Функция добавления в корзину
+            function addToCart(event, productId) {
+                event.stopPropagation();
+                alert("Смотреть можно - трогать нельзя");
+            }
+
+            // Обработка ошибок
+            function showError() {
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = `
+                    <p>Произошла ошибка при загрузке каталога</p>
+                    <button onclick="initCatalog()">Попробовать снова</button>
+                    <button onclick="goHome()">На главную</button>
+                `;
+            }
+
+            // Инициализация кнопок
+            document.getElementById('login-button').addEventListener('click', function() {
+                if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                    window.location.href = '/user';
+                } else {
+                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
+                }
+            });
+
+            document.getElementById('cart-button').addEventListener('click', function() {
+                alert("Функция корзины в разработке!");
+            });
         });
-        container.appendChild(grid);
-      } else {
-        renderProducts(data.products);
-      }
-    }
-
-    function renderProducts(products) {
-      const container = document.getElementById("catalog-content");
-      container.innerHTML = "";
-      if (!products || products.length === 0) {
-        container.innerHTML = "<p>Нет доступных товаров</p>";
-        return;
-      }
-      products.forEach(product => {
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.innerHTML = `
-          <img src="https://nekuri.by${product.image}" alt="${product.name}" />
-          <h3>${product.name}</h3>
-          <p>${product.price} руб.</p>
-          <button class="${product.availability === 'out of stock' ? 'disabled' : 'add-button'}">
-            ${product.availability === 'out of stock' ? 'Недоступен' : 'В корзину'}
-          </button>`;
-        container.appendChild(card);
-      });
-    }
-
-    function goBack() {
-      if (navStack.length > 1) {
-        navStack.pop();
-        renderCategories(navStack[navStack.length - 1]);
-      }
-    }
-
-    function goHome() {
-      navStack = [];
-      renderCategories(catalogData);
-    }
-
-    loadCatalog();
-  </script>
+    </script>
 </body>
 </html>
