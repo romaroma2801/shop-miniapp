@@ -34,10 +34,11 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            function goHome() {
+        function goHome() {
                 window.location.href = '/'; // Перенаправление на главную (index.html)
-            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            
             let currentCategoryId = null;
             let categoryStack = [];
             const catalogUrl = '/api/catalog';
