@@ -133,7 +133,15 @@ def save_user():
 @app.route('/catalog')
 def catalog_page():
     return render_template('catalog.html')
-
+@app.route('/api/catalog')
+def get_catalog():
+    try:
+        response = requests.get('https://nekuri.by/parser/output/catalog.json')
+        response.raise_for_status()
+        return jsonify(response.json())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 @app.route('/api/regions')
 def get_regions():
     return jsonify(list(STORE_DATA.keys()))
