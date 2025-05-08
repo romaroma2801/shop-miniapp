@@ -1,1 +1,97 @@
+<!-- catalog.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Каталог товаров</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <h1>Каталог товаров</h1>
+    </div>
+    <div id="catalog-content"></div>
+    <div class="bottom-nav">
+      <button onclick="goBack()">Назад</button>
+      <button onclick="goHome()">Домой</button>
+    </div>
+  </div>
 
+  <script>
+    const API_URL = "https://nekuri.by/parser/output/catalog.json";
+    let catalogData = {};
+    let navStack = [];
+
+    async function loadCatalog() {
+      try {
+        const res = await axios.get(API_URL);
+        catalogData = res.data;
+        renderCategories(catalogData);
+      } catch (err) {
+        document.getElementById("catalog-content").innerHTML = "<p>Ошибка загрузки каталога</p>";
+      }
+    }
+
+    function renderCategories(data) {
+      navStack.push(data);
+      const container = document.getElementById("catalog-content");
+      container.innerHTML = "";
+
+      const categories = Object.values(data.subcategories || {});
+      if (categories.length > 0) {
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        categories.forEach(cat => {
+          const btn = document.createElement("button");
+          btn.className = "category-button";
+          btn.innerHTML = `
+            ${cat.icon ? `<img src="https://nekuri.by${cat.icon}" alt="${cat.name}" />` : ""}
+            <span>${cat.name}</span>`;
+          btn.onclick = () => renderCategories(cat);
+          grid.appendChild(btn);
+        });
+        container.appendChild(grid);
+      } else {
+        renderProducts(data.products);
+      }
+    }
+
+    function renderProducts(products) {
+      const container = document.getElementById("catalog-content");
+      container.innerHTML = "";
+      if (!products || products.length === 0) {
+        container.innerHTML = "<p>Нет доступных товаров</p>";
+        return;
+      }
+      products.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+          <img src="https://nekuri.by${product.image}" alt="${product.name}" />
+          <h3>${product.name}</h3>
+          <p>${product.price} руб.</p>
+          <button class="${product.availability === 'out of stock' ? 'disabled' : 'add-button'}">
+            ${product.availability === 'out of stock' ? 'Недоступен' : 'В корзину'}
+          </button>`;
+        container.appendChild(card);
+      });
+    }
+
+    function goBack() {
+      if (navStack.length > 1) {
+        navStack.pop();
+        renderCategories(navStack[navStack.length - 1]);
+      }
+    }
+
+    function goHome() {
+      navStack = [];
+      renderCategories(catalogData);
+    }
+
+    loadCatalog();
+  </script>
+</body>
+</html>
