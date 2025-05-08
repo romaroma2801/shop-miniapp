@@ -25,8 +25,34 @@
         
         .logo {
             display: block;
-            max-width: 150px;
+            max-width: 200px;
             margin: 0 auto;
+        }
+        .category-button {
+        cursor: pointer;
+        transition: transform 0.2s;
+        }
+        .category-button:hover {
+            transform: scale(1.03);
+        }
+        .category-button img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+        .empty-message {
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+        }
+        .refresh-btn {
+            display: block;
+            margin: 0 auto;
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -141,7 +167,7 @@
             }
 
             // Отображение главных категорий
-            function renderMainCategories(catalogData) {
+           function renderMainCategories(catalogData) {
                 const contentDiv = document.getElementById('content');
                 contentDiv.innerHTML = `
                     <div class="catalog-header">
@@ -152,28 +178,25 @@
                 
                 const grid = document.getElementById('categories-grid');
                 
-                // Определяем порядок категорий
+                // Определяем порядок и названия категорий
                 const categoryOrder = [
-                    "Парогенераторы",
-                    "Жидкости",
-                    "Запчасти и комплектующие", 
-                    "Кальяны и комплектующие",
-                    "Самозамес"
+                    {name: "Парогенераторы", id: "find_by_name"},
+                    {name: "Жидкости", id: "find_by_name"},
+                    {name: "Запчасти и комплектующие", id: "find_by_name"},
+                    {name: "Кальяны и комплектующие", id: "find_by_name"},
+                    {name: "Самозамес", id: "find_by_name"}
                 ];
                 
-                // Фильтруем и сортируем категории
-                const mainCategories = Object.values(catalogData)
-                    .filter(cat => cat.parent_id === "0")
-                    .sort((a, b) => {
-                        const aIndex = categoryOrder.indexOf(a.name);
-                        const bIndex = categoryOrder.indexOf(b.name);
-                        return (aIndex - bIndex);
-                    });
+                // Находим ID категорий по имени
+                const categoriesWithIds = categoryOrder.map(cat => {
+                    const found = Object.values(catalogData).find(
+                        item => item.name === cat.name
+                    );
+                    return found || null;
+                }).filter(Boolean);
                 
                 // Создаем кнопки категорий
-                mainCategories.forEach(category => {
-                    if (!category.name) return;
-                    
+                categoriesWithIds.forEach(category => {
                     const icon = categoryIcons[category.name] || 'no-image.png';
                     const categoryElement = document.createElement('div');
                     categoryElement.className = 'category-button';
@@ -183,10 +206,10 @@
                         <h3>${category.name}</h3>
                     `;
                     categoryElement.addEventListener('click', () => {
-                        if (category.id) {
+                        if (category.id && catalogData[category.id]) {
                             showCategory(category.id);
                         } else {
-                            showError('У категории отсутствует ID');
+                            showError(`Категория "${category.name}" недоступна`);
                         }
                     });
                     grid.appendChild(categoryElement);
@@ -202,12 +225,10 @@
                         return;
                     }
                     
-                    // Проверяем, что категория существует
-                    if (!cachedData[categoryId]) {
-                        throw new Error(`Категория с ID ${categoryId} не найдена`);
-                    }
-                    
                     const category = cachedData[categoryId];
+                    if (!category) {
+                        throw new Error(`Категория с ID ${categoryId} не найдена в кэше`);
+                    }
                     
                     if (addToStack) {
                         categoryStack.push({ id: currentCategoryId });
@@ -216,56 +237,58 @@
                     currentCategoryId = categoryId;
                     
                     const contentDiv = document.getElementById('content');
-                    contentDiv.innerHTML = ''; // Очищаем контент
+                    contentDiv.innerHTML = `
+                        <div class="category-header">
+                            <h2>${category.name || 'Категория'}</h2>
+                        </div>
+                        <div id="category-content"></div>
+                    `;
                     
-                    // Создаем заголовок
-                    const header = document.createElement('div');
-                    header.className = 'category-header';
-                    header.innerHTML = `<h2>${category.name || 'Категория'}</h2>`;
-                    contentDiv.appendChild(header);
+                    const categoryContent = document.getElementById('category-content');
                     
-                    // Проверяем подкатегории
+                    // Проверяем наличие подкатегорий
                     if (category.subcategories && Object.keys(category.subcategories).length > 0) {
-                        const grid = document.createElement('div');
-                        grid.className = 'grid';
-                        contentDiv.appendChild(grid);
+                        const subcategories = Object.values(category.subcategories)
+                            .filter(subcat => subcat.name && subcat.id);
                         
-                        Object.values(category.subcategories).forEach(subcat => {
-                            if (!subcat.name) return; // Пропускаем пустые
-                            
-                            const icon = subcat.icon ? 
-                                `${imageBaseUrl}${subcat.icon}` : 
-                                '/static/no-image.png';
-                            
-                            const subcategoryElement = document.createElement('div');
-                            subcategoryElement.className = 'category-button';
-                            subcategoryElement.innerHTML = `
-                                <img src="${icon}" alt="${subcat.name}" 
-                                     onerror="this.src='/static/no-image.png'">
-                                <h3>${subcat.name}</h3>
-                            `;
-                            subcategoryElement.addEventListener('click', () => showCategory(subcat.id));
-                            grid.appendChild(subcategoryElement);
-                        });
-                    } 
-                    else if (category.products && category.products.length > 0) {
-                        renderProducts(category.products, category.name);
-                    } 
-                    else {
-                        const emptyMsg = document.createElement('div');
-                        emptyMsg.className = 'empty-category';
-                        emptyMsg.innerHTML = `
-                            <p>В этой категории пока нет товаров</p>
-                            <button onclick="showCategory('${categoryId}', false)">Обновить</button>
-                        `;
-                        contentDiv.appendChild(emptyMsg);
+                        if (subcategories.length > 0) {
+                            const grid = document.createElement('div');
+                            grid.className = 'grid';
+                            subcategories.forEach(subcat => {
+                                const subcategoryElement = document.createElement('div');
+                                subcategoryElement.className = 'category-button';
+                                subcategoryElement.innerHTML = `
+                                    <img src="${subcat.icon ? imageBaseUrl + subcat.icon : '/static/no-image.png'}" 
+                                         alt="${subcat.name}" 
+                                         onerror="this.src='/static/no-image.png'">
+                                    <h3>${subcat.name}</h3>
+                                `;
+                                subcategoryElement.addEventListener('click', () => showCategory(subcat.id));
+                                grid.appendChild(subcategoryElement);
+                            });
+                            categoryContent.appendChild(grid);
+                            return;
+                        }
                     }
+                    
+                    // Проверяем наличие товаров
+                    if (category.products && category.products.length > 0) {
+                        renderProducts(category.products, category.name);
+                        return;
+                    }
+                    
+                    // Если ничего не найдено
+                    categoryContent.innerHTML = `
+                        <p class="empty-message">В этой категории пока нет товаров</p>
+                        <button class="refresh-btn" onclick="showCategory('${categoryId}', false)">
+                            Обновить
+                        </button>
+                    `;
                 } catch (error) {
                     console.error('Ошибка загрузки категории:', error);
-                    showError(`Не удалось загрузить категорию. ${error.message}`);
+                    showError(`Не удалось загрузить категорию: ${error.message}`);
                 }
             }
-
             // Отображение списка товаров
             function renderProducts(products, categoryName) {
                 const contentDiv = document.getElementById('content');
