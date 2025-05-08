@@ -140,29 +140,39 @@ def get_catalog():
         response.raise_for_status()
         data = response.json()
         
-        # Фильтруем только нужные категории
-        allowed_categories = {
+        # Приводим данные к единой структуре
+        processed_data = {}
+        required_categories = [
             "Парогенераторы",
-            "Жидкости для вейпа",
+            "Жидкости",
             "Запчасти и комплектующие",
             "Кальяны и комплектующие",
             "Самозамес"
-        }
+        ]
         
-        # Переименовываем категорию жидкостей
-        for cat_id, cat_data in data.items():
-            if cat_data.get('name') == 'Жидкости для вейпа':
-                cat_data['name'] = 'Жидкости'
+        # Создаем гарантированную структуру
+        for i, cat_name in enumerate(required_categories, 1):
+            processed_data[str(i)] = {
+                "id": str(i),
+                "name": cat_name,
+                "parent_id": "0",
+                "subcategories": {},
+                "products": []
+            }
         
-        # Фильтруем категории
-        filtered_data = {
-            k: v for k, v in data.items() 
-            if v.get('name') in allowed_categories
-        }
+        # Заполняем реальными данными, если они есть
+        for item in data.values():
+            if isinstance(item, dict) and item.get('name'):
+                for target_cat in processed_data.values():
+                    if item['name'].lower() in target_cat['name'].lower():
+                        if 'subcategories' in item:
+                            target_cat['subcategories'].update(item['subcategories'])
+                        if 'products' in item:
+                            target_cat['products'].extend(item['products'])
         
-        return jsonify(filtered_data)
+        return jsonify(processed_data)
     except Exception as e:
-        logging.error(f"Error fetching catalog: {str(e)}")
+        logging.error(f"Error processing catalog: {str(e)}")
         return jsonify({"error": str(e)}), 500
         
 @app.route('/api/regions')
