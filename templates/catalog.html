@@ -167,10 +167,10 @@
             async function showCategory(categoryId) {
                 try {
                     showLoading();
-                    
+            
                     const category = catalogData[categoryId];
                     if (!category) throw new Error(`Категория ${categoryId} не найдена`);
-                    
+            
                     const contentDiv = document.getElementById('content');
                     contentDiv.innerHTML = `
                         <div class="header">
@@ -178,15 +178,16 @@
                         </div>
                         <div class="category-content" id="category-content"></div>
                     `;
-                    
+            
                     const categoryContent = document.getElementById('category-content');
-                    
+            
                     // Проверяем подкатегории
-                    if (Object.keys(category.subcategories).length > 0) {
+                    const subcategories = category.subcategories || {};
+                    if (Object.keys(subcategories).length > 0) {
                         const grid = document.createElement('div');
                         grid.className = 'subcategories-grid';
-                        
-                        Object.values(category.subcategories).forEach(subcat => {
+            
+                        Object.values(subcategories).forEach(subcat => {
                             const subcategoryElement = document.createElement('div');
                             subcategoryElement.className = 'subcategory-card';
                             subcategoryElement.innerHTML = `
@@ -198,19 +199,30 @@
                             subcategoryElement.addEventListener('click', () => showCategory(subcat.id));
                             grid.appendChild(subcategoryElement);
                         });
-                        
+            
                         categoryContent.appendChild(grid);
-                        return;
                     }
-                    
-                    // Проверяем товары
+            
+                    // Собираем товары из самой категории и подкатегорий
+                    let allProducts = [];
                     if (category.products && category.products.length > 0) {
-                        renderProducts(category.products);
+                        allProducts = category.products;
+                    }
+            
+                    Object.values(subcategories).forEach(subcat => {
+                        if (subcat.products && subcat.products.length > 0) {
+                            allProducts = allProducts.concat(subcat.products);
+                        }
+                    });
+            
+                    // Отображаем товары
+                    if (allProducts.length > 0) {
+                        renderProducts(allProducts);
                         return;
                     }
-                    
+            
                     // Если ничего не найдено
-                    categoryContent.innerHTML = `
+                    categoryContent.innerHTML += `
                         <div class="empty-message">
                             <p>Товары в этой категории отсутствуют</p>
                             <button onclick="location.reload()">Обновить</button>
@@ -221,6 +233,7 @@
                     showError('Ошибка загрузки категории', error);
                 }
             }
+
             
             // Показ товаров
             function renderProducts(products) {
