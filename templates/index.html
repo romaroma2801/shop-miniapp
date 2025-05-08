@@ -421,7 +421,12 @@
 
                         </div>
                     `, true);
-                
+                } else if (section === 'catalog') {
+                    // Плавный переход
+                    document.getElementById('content').classList.add('fade-out');
+                    setTimeout(() => {
+                        window.location.href = '/catalog';
+                    }, 300);
                 } else if (section === 'promotions') {
                     currentState = "promotions";
                     showPromotions();
