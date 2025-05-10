@@ -1,115 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <title>Каталог</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="/static/css/style.css">
   <style>
-    #search-bar {
-      padding: 10px;
-      width: 100%;
-      margin: 10px 0;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      box-sizing: border-box;
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Roboto', sans-serif;
     }
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
-    .category-button {
+    .category-button, .product-card {
       background: #fff;
       border: 1px solid #ddd;
       border-radius: 16px;
-      box-shadow: 2px 2px 6px #ccc;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       padding: 12px;
       text-align: center;
       cursor: pointer;
     }
-    .category-button img {
+    .category-button img, .product-card img {
       max-height: 80px;
       margin-bottom: 8px;
-    }
-    .product-card {
-      border: 1px solid #eee;
-      border-radius: 16px;
-      box-shadow: 2px 2px 8px #ccc;
-      padding: 10px;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100%;
-      box-sizing: border-box;
-    }
-    .product-card img {
-      max-width: 100%;
-      max-height: 120px;
       object-fit: contain;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      width: 100%;
     }
     .product-card h4 {
       font-size: 14px;
       font-weight: normal;
-      margin: 6px 0;
-      text-align: center;
     }
-    .product-card p.price {
+    .product-card .price {
       font-size: 16px;
       font-weight: bold;
-      margin: 6px 0;
     }
-    .map-button, .add-button {
+    .add-button, .map-button {
       width: 100%;
-      box-sizing: border-box;
-      border-radius: 25px;
       padding: 10px;
-      font-size: 14px;
       margin-top: 10px;
-      text-align: center;
+      border-radius: 25px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .add-button {
+      background: #ff0000;
+      color: white;
+      border: none;
     }
     .map-button {
       background: white;
       color: #ff0000;
       border: 1px solid #ff0000;
     }
-    .add-button {
-      background: #ff0000;
-      color: white;
-      border: 1px solid #ff0000;
-    }
-    .product-detail-card {
-      border: 1px solid #eee;
-      border-radius: 16px;
-      box-shadow: 2px 2px 8px #ccc;
+    .product-detail {
       padding: 16px;
-      background: #fff;
-      margin: 10px;
-      box-sizing: border-box;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin: 12px;
       word-wrap: break-word;
       white-space: pre-wrap;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .product-detail-card p.price {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 12px 0;
-    }
-    .product-detail-card button {
-      width: 100%;
-      max-width: 280px;
     }
   </style>
 </head>
-<body ontouchstart="">
+<body>
   <div class="header">
     <img src="/static/logo22.png" alt="Логотип" class="logo">
   </div>
@@ -130,147 +89,141 @@
   </div>
 
   <div class="cart-button-container">
-    <button class="cart-button" id="cart-button" onclick="openCart()">
+    <button class="cart-button" onclick="openCart()">
       <img src="/static/shop.svg" alt="Корзина">
     </button>
   </div>
 
   <script>
-    let catalogData = {};
-    let navigationStack = [];
-    let lastProductList = [];
+    let catalog = {};
+    let navigation = [];
+    let lastProducts = [];
 
     async function loadCatalog() {
-      const res = await fetch('/api/catalog');
-      catalogData = await res.json();
-      showMainCategories();
+      const response = await fetch("https://nekuri.by/parser/output/catalog.json");
+      const data = await response.json();
+      catalog = buildCatalogMap(data);
+      renderMainCategories();
     }
 
-    function scrollTop() {
-      document.getElementById('content').scrollTo({ top: 0, behavior: 'smooth' });
+    function buildCatalogMap(items) {
+      const map = {};
+      for (const item of items) map[item.id] = item;
+      return map;
     }
 
-    function showMainCategories() {
-      navigationStack = [];
-      const content = document.getElementById('content');
-      content.innerHTML = getSearchBar() + '<div class="grid">' +
-        Object.entries({
-          '1': 'vape.png',
-          '2': 'juice.png',
-          '3': 'spanner.png',
-          '4': 'hookah.png',
-          '5': 'test.png',
-          '6': 'sale.png'
-        }).map(([id, icon]) => {
-          const name = catalogData[id]?.name || '';
-          return `
-            <div class="category-button" onclick="openCategory('${id}')">
-              <img src="/static/${icon}" alt="${name}">
-              <div>${name}</div>
-            </div>`;
-        }).join('') + '</div>';
-      bindSearch();
-      scrollTop();
+    function renderMainCategories() {
+      navigation = [];
+      const categories = [
+        { id: "61", name: "Парогенераторы", icon: "vape.png" },
+        { id: "63", name: "Жидкости для вейпа", icon: "juice.png" },
+        { id: "69", name: "Запчасти и комплектующие", icon: "spanner.png" },
+        { id: "64", name: "Кальяны и комплектующие", icon: "hookah.png" },
+        { id: "68", name: "Самозамес", icon: "test.png" },
+        { id: "211", name: "Уценённый товар", icon: "sale.png" },
+      ];
+      document.getElementById("content").innerHTML = `
+        <form onsubmit="search(event)">
+          <input type="text" id="search-bar" placeholder="Поиск по каталогу">
+        </form>
+        <div class="grid">
+          ${categories.map(cat => `
+            <div class="category-button" onclick="openCategory('${cat.id}')">
+              <img src="/static/${cat.icon}" alt="${cat.name}">
+              <div>${cat.name}</div>
+            </div>`).join('')}
+        </div>`;
     }
 
-    function getSearchBar() {
-      return '<form onsubmit="triggerSearch(event)"><input type="text" id="search-bar" placeholder="Поиск по каталогу"></form>';
-    }
-
-    function triggerSearch(event) {
-      event.preventDefault();
-      const query = document.getElementById('search-bar').value.toLowerCase();
-      const allProducts = Object.values(catalogData).flatMap(cat => cat.products || []);
-      const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
-      showProducts(filtered);
-    }
-
-    function openCategory(catId) {
-      const category = catalogData[catId];
-      if (!category) return;
-      navigationStack.push(() => showMainCategories());
-      if (!category.subcategories || Object.keys(category.subcategories).length === 0) {
-        showProducts(category.products);
+    function openCategory(id) {
+      const cat = catalog[id];
+      if (!cat) return;
+      navigation.push(renderMainCategories);
+      if (cat.subcategories && Object.keys(cat.subcategories).length) {
+        renderSubcategories(cat.subcategories);
+      } else if (cat.products && cat.products.length) {
+        renderProducts(cat.products);
       } else {
-        showSubcategories(category.subcategories);
+        document.getElementById("content").innerHTML = '<p>Товаров нет</p>';
       }
     }
 
-    function showSubcategories(subcategories) {
-      navigationStack.push(() => showSubcategories(subcategories));
-      const content = document.getElementById('content');
-      content.innerHTML = getSearchBar() + '<div class="grid">' +
-        Object.values(subcategories).map(sub => `
-          <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
-            <img src="${fixImg(sub.icon)}">
-            <div>${sub.name}</div>
-          </div>`).join('') + '</div>';
-      bindSearch();
-      scrollTop();
+    function renderSubcategories(subs) {
+      navigation.push(() => renderSubcategories(subs));
+      document.getElementById("content").innerHTML = `
+        <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
+        <div class="grid">
+          ${Object.values(subs).map(sub => `
+            <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
+              <img src="${fixImg(sub.icon)}">
+              <div>${sub.name}</div>
+            </div>`).join('')}
+        </div>`;
     }
 
     function openSubcategory(sub) {
-      navigationStack.push(() => openSubcategory(sub));
+      navigation.push(() => openSubcategory(sub));
       if (sub.subcategories && Object.keys(sub.subcategories).length) {
-        showSubcategories(sub.subcategories);
+        renderSubcategories(sub.subcategories);
       } else {
-        showProducts(sub.products);
+        renderProducts(sub.products);
       }
     }
 
-    function showProducts(products) {
-      lastProductList = products;
-      navigationStack.push(() => showProducts(lastProductList));
-      const content = document.getElementById('content');
-      content.innerHTML = getSearchBar() + '<div class="grid">' +
-        products.map(p => `
-          <div class="product-card" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
-            <img src="${fixImg(p.image)}" alt="${p.title}">
-            <h4>${p.title}</h4>
-            <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
-            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-                 onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-              ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
-            </div>
-          </div>`).join('') + '</div>';
-      bindSearch();
-      scrollTop();
+    function renderProducts(products) {
+      lastProducts = products;
+      navigation.push(() => renderProducts(lastProducts));
+      document.getElementById("content").innerHTML = `
+        <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
+        <div class="grid">
+          ${products.map(p => `
+            <div class="product-card" onclick='viewProduct(${JSON.stringify(p).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
+              <img src="${fixImg(p.image)}">
+              <h4>${p.title}</h4>
+              <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
+              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+                   onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
+              </div>
+            </div>`).join('')}
+        </div>`;
     }
 
-    function showProductDetail(product) {
-      navigationStack.push(() => showProducts(lastProductList));
-      const content = document.getElementById('content');
-      content.innerHTML = getSearchBar() + `
-        <div class="product-detail-card">
-          <img src="${fixImg(product.image)}" alt="${product.title}" style="width:100%; max-height:200px; object-fit:contain;">
-          <h4>${product.title}</h4>
-          <p>${product.description}</p>
-          <p class="price">${parseFloat(product.price).toFixed(2)} BYN</p>
-          <div class="${product.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-               onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-            ${product.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
+    function viewProduct(p) {
+      navigation.push(() => renderProducts(lastProducts));
+      document.getElementById("content").innerHTML = `
+        <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
+        <div class="product-detail">
+          <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
+          <h4>${p.title}</h4>
+          <p>${p.description}</p>
+          <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
+          <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+               onclick="alert('Смотреть можно, трогать нельзя!')">
+            ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
           </div>
         </div>`;
-      bindSearch();
-      scrollTop();
     }
 
-    function bindSearch() {
-      const input = document.getElementById('search-bar');
-      if (input) input.blur();
+    function fixImg(url) {
+      return 'https://nekuri.by' + url.replace(/ /g, '%20').replace(/\\/g, '');
     }
 
-    function fixImg(path) {
-      return 'https://nekuri.by' + path.replace(/\\/g, '').replace(/ /g, '%20');
+    function search(event) {
+      event.preventDefault();
+      const val = document.getElementById('search-bar').value.toLowerCase();
+      const products = Object.values(catalog).flatMap(c => c.products || []);
+      const filtered = products.filter(p => p.title.toLowerCase().includes(val));
+      renderProducts(filtered);
     }
 
     function goBack() {
-      const last = navigationStack.pop();
-      if (last) last();
+      const fn = navigation.pop();
+      if (typeof fn === 'function') fn();
     }
 
     function openCart() {
-      alert('Функция корзины в разработке!');
+      alert('Корзина пока не работает');
     }
 
     function goToLogin() {
