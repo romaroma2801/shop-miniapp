@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Каталог</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="/static/css/style.css">
   <style>
     #search-bar {
@@ -72,6 +72,7 @@
       font-size: 14px;
       margin-top: 10px;
       text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     .map-button {
       background: white;
@@ -93,15 +94,22 @@
       box-sizing: border-box;
       word-wrap: break-word;
       white-space: pre-wrap;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .product-detail-card p.price {
       font-size: 18px;
       font-weight: bold;
       margin: 12px 0;
     }
+    .product-detail-card button {
+      width: 100%;
+      max-width: 280px;
+    }
   </style>
 </head>
-<body>
+<body ontouchstart="">
   <div class="header">
     <img src="/static/logo22.png" alt="Логотип" class="logo">
   </div>
@@ -166,7 +174,15 @@
     }
 
     function getSearchBar() {
-      return '<input type="text" id="search-bar" placeholder="Поиск по каталогу">';
+      return '<form onsubmit="triggerSearch(event)"><input type="text" id="search-bar" placeholder="Поиск по каталогу"></form>';
+    }
+
+    function triggerSearch(event) {
+      event.preventDefault();
+      const query = document.getElementById('search-bar').value.toLowerCase();
+      const allProducts = Object.values(catalogData).flatMap(cat => cat.products || []);
+      const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
+      showProducts(filtered);
     }
 
     function openCategory(catId) {
@@ -241,15 +257,7 @@
 
     function bindSearch() {
       const input = document.getElementById('search-bar');
-      if (input) {
-        input.addEventListener('input', () => {
-          const query = input.value.toLowerCase();
-          const allProducts = Object.values(catalogData).flatMap(cat => cat.products || []);
-          const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
-          showProducts(filtered);
-        });
-        input.focus();
-      }
+      if (input) input.blur();
     }
 
     function fixImg(path) {
@@ -257,10 +265,6 @@
     }
 
     function goBack() {
-      if (document.activeElement === document.getElementById('search-bar')) {
-        document.getElementById('search-bar').blur();
-        return;
-      }
       const last = navigationStack.pop();
       if (last) last();
     }
