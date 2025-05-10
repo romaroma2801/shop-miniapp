@@ -30,6 +30,7 @@
       flex-direction: column;
       justify-content: space-between;
       text-align: center;
+      height: 100%;
     }
     .product-card img {
       max-width: 100%;
@@ -40,16 +41,31 @@
     }
     .product-card h4 {
       font-size: 14px;
+      font-weight: normal;
       margin: 6px 0;
     }
-    .product-card p {
-      font-size: 12px;
-      margin: 4px 0;
+    .product-card p.price {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 6px 0;
     }
     .map-button, .add-button {
       width: 100%;
       box-sizing: border-box;
-      margin-top: 8px;
+      margin-top: auto;
+      border-radius: 25px;
+      padding: 10px;
+      font-size: 14px;
+    }
+    .map-button {
+      background: white;
+      color: #ff0000;
+      border: 1px solid #ff0000;
+    }
+    .add-button {
+      background: #ff0000;
+      color: white;
+      border: none;
     }
   </style>
 </head>
@@ -62,9 +78,7 @@
     <img src="/static/back.svg" alt="Назад">
   </button>
 
-  <div class="menu-vertical" id="content">
-    <input type="text" id="search-bar" placeholder="Поиск по каталогу">
-  </div>
+  <div class="menu-vertical" id="content"></div>
 
   <div class="footer-buttons">
     <div id="home-button" onclick="location.href='/'">
@@ -91,6 +105,10 @@
       showCategories();
     }
 
+    function scrollTop() {
+      document.getElementById('content').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function showCategories() {
       navigationStack = [];
       const content = document.getElementById('content');
@@ -111,14 +129,14 @@
             </div>`).join('')}
         </div>`;
       bindSearch();
+      scrollTop();
     }
 
     function openCategory(catId) {
       const category = catalogData[catId];
       if (!category) return;
       navigationStack.push(() => openCategory(catId));
-
-      if (catId === '2' || (!category.subcategories || Object.keys(category.subcategories).length === 0)) {
+      if (catId === '2' || !category.subcategories || Object.keys(category.subcategories).length === 0) {
         showProducts(category.products);
       } else {
         const content = document.getElementById('content');
@@ -126,12 +144,13 @@
           <input type="text" id="search-bar" placeholder="Поиск по каталогу">
           <div class="grid">
             ${Object.values(category.subcategories).map(sub => `
-              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'")})'>
+              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
                 <img src="${fixImg(sub.icon)}">
                 <div>${sub.name}</div>
               </div>`).join('')}
           </div>`;
         bindSearch();
+        scrollTop();
       }
     }
 
@@ -143,39 +162,40 @@
           <input type="text" id="search-bar" placeholder="Поиск по каталогу">
           <div class="grid">
             ${Object.values(sub.subcategories).map(sub2 => `
-              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2).replace(/'/g, "\'")})'>
+              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
                 <img src="${fixImg(sub2.icon)}">
                 <div>${sub2.name}</div>
               </div>`).join('')}
           </div>`;
         bindSearch();
+        scrollTop();
       } else {
         showProducts(sub.products);
       }
     }
 
     function showProducts(products) {
-      navigationStack.push(() => showProducts(products));
       const content = document.getElementById('content');
       content.innerHTML = `
         <input type="text" id="search-bar" placeholder="Поиск по каталогу">
         <div class="grid">
           ${products.map(p => `
-            <div class="product-card" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g, "\'")})'>
+            <div class="product-card" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
               <img src="${fixImg(p.image)}" alt="${p.title}">
               <h4>${p.title}</h4>
-              <p>Цена: ${parseFloat(p.price).toFixed(2)} BYN</p>
+              <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
               <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
                    onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-                ${p.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
+                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Добавить в корзину'}
               </div>
             </div>`).join('')}
         </div>`;
       bindSearch();
+      scrollTop();
     }
 
     function showProductDetail(product) {
-      navigationStack.push(() => showProducts(Object.values(catalogData).flatMap(cat => cat.products || []).filter(p => p.title !== product.title)));
+      navigationStack.push(() => showProducts(Object.values(catalogData).flatMap(cat => cat.products || [])));
       const content = document.getElementById('content');
       content.innerHTML = `
         <input type="text" id="search-bar" placeholder="Поиск по каталогу">
@@ -183,13 +203,14 @@
           <img src="${fixImg(product.image)}" alt="${product.title}">
           <h4>${product.title}</h4>
           <p style="white-space: pre-wrap; text-align:left;">${product.description}</p>
-          <p>Цена: ${parseFloat(product.price).toFixed(2)} BYN</p>
+          <p class="price">${parseFloat(product.price).toFixed(2)} BYN</p>
           <div class="${product.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
                onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-            ${product.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
+            ${product.available === 'out_of_stock' ? 'Недоступен' : 'Добавить в корзину'}
           </div>
         </div>`;
       bindSearch();
+      scrollTop();
     }
 
     function bindSearch() {
@@ -201,6 +222,7 @@
           const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
           showProducts(filtered);
         });
+        input.focus();
       }
     }
 
