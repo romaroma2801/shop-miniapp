@@ -8,16 +8,35 @@
   <style>
     #search-bar {
       padding: 10px;
-      width: calc(100% - 40px);
-      margin: 10px 20px;
+      width: 100%;
+      margin: 10px 0;
       border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 16px;
+      box-sizing: border-box;
     }
-    .subheader {
-      font-weight: bold;
-      margin: 10px 0;
-      text-align: center;
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .product-card {
+      border: 1px solid #eee;
+      border-radius: 16px;
+      box-shadow: 2px 2px 8px #ccc;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .product-card img {
+      max-width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -62,20 +81,22 @@
     function showCategories() {
       navigationStack = [];
       const content = document.getElementById('content');
-      content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
-        '<div class="grid">' + [
-          { id: '1', name: 'Парогенераторы', icon: 'vape.png' },
-          { id: '2', name: 'Жидкости для вейпа', icon: 'juice.png' },
-          { id: '3', name: 'Запчасти и комплектующие', icon: 'spanner.png' },
-          { id: '4', name: 'Кальяны и комплектующие', icon: 'hookah.png' },
-          { id: '5', name: 'Самозамес', icon: 'test.png' },
-          { id: '6', name: 'Уценённый товар', icon: 'sale.png' },
-        ].map(cat => `
-          <div class="category-button" onclick="openCategory('${cat.id}')">
-            <img src="/static/icons/${cat.icon}" alt="${cat.name}">
-            <div>${cat.name}</div>
-          </div>
-        `).join('') + '</div>';
+      content.innerHTML = `
+        <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+        <div class="grid">
+          ${[
+            { id: '1', name: 'Парогенераторы', icon: 'vape.png' },
+            { id: '2', name: 'Жидкости для вейпа', icon: 'juice.png' },
+            { id: '3', name: 'Запчасти и комплектующие', icon: 'spanner.png' },
+            { id: '4', name: 'Кальяны и комплектующие', icon: 'hookah.png' },
+            { id: '5', name: 'Самозамес', icon: 'test.png' },
+            { id: '6', name: 'Уценённый товар', icon: 'sale.png' }
+          ].map(cat => `
+            <div class="category-button" onclick="openCategory('${cat.id}')">
+              <img src="/static/${cat.icon}" alt="${cat.name}">
+              <div>${cat.name}</div>
+            </div>`).join('')}
+        </div>`;
     }
 
     function openCategory(catId) {
@@ -84,14 +105,15 @@
       if (!category) return;
       if (category.subcategories && Object.keys(category.subcategories).length) {
         const content = document.getElementById('content');
-        content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
-          '<div class="grid">' +
-          Object.values(category.subcategories).map(sub => `
-            <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub)})'>
-              <img src="${sub.icon || '/static/icons/juice.png'}">
-              <div>${sub.name}</div>
-            </div>
-          `).join('') + '</div>';
+        content.innerHTML = `
+          <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+          <div class="grid">
+            ${Object.values(category.subcategories).map(sub => `
+              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub)})'>
+                <img src="${fixImg(sub.icon)}">
+                <div>${sub.name}</div>
+              </div>`).join('')}
+          </div>`;
       } else {
         showProducts(category.products);
       }
@@ -101,14 +123,15 @@
       navigationStack.push(() => openCategory(sub.parent_id));
       if (sub.subcategories && Object.keys(sub.subcategories).length) {
         const content = document.getElementById('content');
-        content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
-          '<div class="grid">' +
-          Object.values(sub.subcategories).map(sub2 => `
-            <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2)})'>
-              <img src="${sub2.icon || '/static/icons/juice.png'}">
-              <div>${sub2.name}</div>
-            </div>
-          `).join('') + '</div>';
+        content.innerHTML = `
+          <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+          <div class="grid">
+            ${Object.values(sub.subcategories).map(sub2 => `
+              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2)})'>
+                <img src="${fixImg(sub2.icon)}">
+                <div>${sub2.name}</div>
+              </div>`).join('')}
+          </div>`;
       } else {
         showProducts(sub.products);
       }
@@ -117,25 +140,48 @@
     function showProducts(products) {
       navigationStack.push(() => showCategories());
       const content = document.getElementById('content');
-      content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
-        products.map(p => `
-          <div class="product-card">
-            <img src="${p.image}" alt="${p.title}">
-            <h4>${p.title}</h4>
-            <p>Цена: ${p.price} BYN</p>
-            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-                 onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-              ${p.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
-            </div>
+      content.innerHTML = `
+        <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+        <div class="grid">
+          ${products.map(p => `
+            <div class="product-card" onclick='showProductDetail(${JSON.stringify(p)})'>
+              <img src="${fixImg(p.image)}" alt="${p.title}">
+              <h4>${p.title}</h4>
+              <p>Цена: ${p.price} BYN</p>
+              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+                   onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+                ${p.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
+              </div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function showProductDetail(product) {
+      navigationStack.push(() => showProducts([product]));
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+        <div class="product-card">
+          <img src="${fixImg(product.image)}" alt="${product.title}">
+          <h4>${product.title}</h4>
+          <p>${product.description}</p>
+          <p>Цена: ${product.price} BYN</p>
+          <div class="${product.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+               onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+            ${product.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
           </div>
-        `).join('');
+        </div>`;
     }
 
     function searchCatalog(query) {
       query = query.toLowerCase();
-      const allProducts = Object.values(catalogData).flatMap(cat => cat.products);
+      const allProducts = Object.values(catalogData).flatMap(cat => cat.products || []);
       const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
       showProducts(filtered);
+    }
+
+    function fixImg(path) {
+      return 'https://nekuri.by' + path.replace(/\\/g, '').replace(/ /g, '%20');
     }
 
     function goBack() {
