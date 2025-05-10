@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head> 
+<head>
   <meta charset="UTF-8">
   <title>Каталог</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,19 +24,32 @@
       border: 1px solid #eee;
       border-radius: 16px;
       box-shadow: 2px 2px 8px #ccc;
-      padding: 12px;
-      margin-bottom: 12px;
+      padding: 10px;
       background: #fff;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      justify-content: space-between;
+      text-align: center;
     }
     .product-card img {
       max-width: 100%;
-      max-height: 150px;
+      max-height: 120px;
       object-fit: contain;
       border-radius: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+    }
+    .product-card h4 {
+      font-size: 14px;
+      margin: 6px 0;
+    }
+    .product-card p {
+      font-size: 12px;
+      margin: 4px 0;
+    }
+    .map-button, .add-button {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -50,7 +63,7 @@
   </button>
 
   <div class="menu-vertical" id="content">
-    <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+    <input type="text" id="search-bar" placeholder="Поиск по каталогу">
   </div>
 
   <div class="footer-buttons">
@@ -82,7 +95,7 @@
       navigationStack = [];
       const content = document.getElementById('content');
       content.innerHTML = `
-        <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+        <input type="text" id="search-bar" placeholder="Поиск по каталогу">
         <div class="grid">
           ${[
             { id: '1', name: 'Парогенераторы', icon: 'vape.png' },
@@ -97,87 +110,98 @@
               <div>${cat.name}</div>
             </div>`).join('')}
         </div>`;
+      bindSearch();
     }
 
     function openCategory(catId) {
-      navigationStack.push(() => showCategories());
       const category = catalogData[catId];
       if (!category) return;
-      if (category.subcategories && Object.keys(category.subcategories).length) {
+      navigationStack.push(() => openCategory(catId));
+
+      if (catId === '2' || (!category.subcategories || Object.keys(category.subcategories).length === 0)) {
+        showProducts(category.products);
+      } else {
         const content = document.getElementById('content');
         content.innerHTML = `
-          <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+          <input type="text" id="search-bar" placeholder="Поиск по каталогу">
           <div class="grid">
             ${Object.values(category.subcategories).map(sub => `
-              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub)})'>
+              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'")})'>
                 <img src="${fixImg(sub.icon)}">
                 <div>${sub.name}</div>
               </div>`).join('')}
           </div>`;
-      } else {
-        showProducts(category.products);
+        bindSearch();
       }
     }
 
     function openSubcategory(sub) {
-      navigationStack.push(() => openCategory(sub.parent_id));
+      navigationStack.push(() => openSubcategory(sub));
       if (sub.subcategories && Object.keys(sub.subcategories).length) {
         const content = document.getElementById('content');
         content.innerHTML = `
-          <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+          <input type="text" id="search-bar" placeholder="Поиск по каталогу">
           <div class="grid">
             ${Object.values(sub.subcategories).map(sub2 => `
-              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2)})'>
+              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2).replace(/'/g, "\'")})'>
                 <img src="${fixImg(sub2.icon)}">
                 <div>${sub2.name}</div>
               </div>`).join('')}
           </div>`;
+        bindSearch();
       } else {
         showProducts(sub.products);
       }
     }
 
     function showProducts(products) {
-      navigationStack.push(() => showCategories());
+      navigationStack.push(() => showProducts(products));
       const content = document.getElementById('content');
       content.innerHTML = `
-        <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+        <input type="text" id="search-bar" placeholder="Поиск по каталогу">
         <div class="grid">
           ${products.map(p => `
-            <div class="product-card" onclick='showProductDetail(${JSON.stringify(p)})'>
+            <div class="product-card" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g, "\'")})'>
               <img src="${fixImg(p.image)}" alt="${p.title}">
               <h4>${p.title}</h4>
-              <p>Цена: ${p.price} BYN</p>
+              <p>Цена: ${parseFloat(p.price).toFixed(2)} BYN</p>
               <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
                    onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
                 ${p.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
               </div>
             </div>`).join('')}
         </div>`;
+      bindSearch();
     }
 
     function showProductDetail(product) {
-      navigationStack.push(() => showProducts([product]));
+      navigationStack.push(() => showProducts(Object.values(catalogData).flatMap(cat => cat.products || []).filter(p => p.title !== product.title)));
       const content = document.getElementById('content');
       content.innerHTML = `
-        <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+        <input type="text" id="search-bar" placeholder="Поиск по каталогу">
         <div class="product-card">
           <img src="${fixImg(product.image)}" alt="${product.title}">
           <h4>${product.title}</h4>
-          <p>${product.description}</p>
-          <p>Цена: ${product.price} BYN</p>
+          <p style="white-space: pre-wrap; text-align:left;">${product.description}</p>
+          <p>Цена: ${parseFloat(product.price).toFixed(2)} BYN</p>
           <div class="${product.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
                onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
             ${product.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
           </div>
         </div>`;
+      bindSearch();
     }
 
-    function searchCatalog(query) {
-      query = query.toLowerCase();
-      const allProducts = Object.values(catalogData).flatMap(cat => cat.products || []);
-      const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
-      showProducts(filtered);
+    function bindSearch() {
+      const input = document.getElementById('search-bar');
+      if (input) {
+        input.addEventListener('input', () => {
+          const query = input.value.toLowerCase();
+          const allProducts = Object.values(catalogData).flatMap(cat => cat.products || []);
+          const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
+          showProducts(filtered);
+        });
+      }
     }
 
     function fixImg(path) {
@@ -185,6 +209,7 @@
     }
 
     function goBack() {
+      if (navigationStack.length > 1) navigationStack.pop();
       const last = navigationStack.pop();
       if (last) last();
     }
