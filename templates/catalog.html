@@ -92,31 +92,34 @@
     let catalog = {};
     let navigation = [];
     let lastProducts = [];
+    const categoryIcons = {
+      "Парогенераторы": "vape.png",
+      "Жидкости": "juice.png",
+      "Жидкости для вейпа": "juice.png",
+      "Запчасти и комплектующие": "spanner.png",
+      "Кальяны и комплектующие": "hookah.png",
+      "Самозамес": "test.png",
+      "Уценённый товар": "sale.png"
+    };
 
     async function loadCatalog() {
       const response = await fetch("/api/catalog");
-      catalog = await response.json();
+      const data = await response.json();
+      catalog = data;
       renderMainCategories();
     }
 
     function renderMainCategories() {
       navigation = [];
-      const icons = {
-        "1": "vape.png",
-        "2": "juice.png",
-        "3": "spanner.png",
-        "4": "hookah.png",
-        "5": "test.png",
-        "6": "sale.png"
-      };
+      const topCategories = Object.values(catalog).filter(cat => cat.parent_id === "0");
       document.getElementById("content").innerHTML = `
         <form onsubmit="search(event)">
           <input type="text" id="search-bar" placeholder="Поиск по каталогу">
         </form>
         <div class="grid">
-          ${Object.entries(catalog).map(([id, cat]) => `
-            <div class="category-button" onclick="openCategory('${id}')">
-              <img src="/static/${icons[id] || 'vape.png'}" alt="${cat.name}">
+          ${topCategories.map(cat => `
+            <div class="category-button" onclick="openCategory('${cat.id}')">
+              <img src="/static/${categoryIcons[cat.name] || 'vape.png'}" alt="${cat.name}">
               <div>${cat.name}</div>
             </div>`).join('')}
         </div>`;
