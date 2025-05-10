@@ -37,9 +37,11 @@
     .add-button, .map-button {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
+      margin-top: auto;
       border-radius: 25px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-size: 14px;
+      box-sizing: border-box;
     }
     .add-button {
       background: #ff0000;
@@ -59,6 +61,15 @@
       margin: 12px;
       word-wrap: break-word;
       white-space: pre-wrap;
+    }
+    #search-bar {
+      padding: 12px;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 25px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -99,7 +110,8 @@
       "Запчасти и комплектующие": "spanner.png",
       "Кальяны и комплектующие": "hookah.png",
       "Самозамес": "test.png",
-      "Уценённый товар": "sale.png"
+      "Уценённый товар": "sale.png",
+      "Уценённые Парогенераторы": "sale.png"
     };
 
     async function loadCatalog() {
@@ -128,9 +140,9 @@
     function openCategory(id) {
       const cat = catalog[id];
       if (!cat) return;
-      navigation.push(renderMainCategories);
+      navigation.push(() => openCategory(id));
       if (cat.subcategories && Object.keys(cat.subcategories).length) {
-        renderSubcategories(cat.subcategories);
+        renderSubcategories(Object.values(cat.subcategories));
       } else if (cat.products && cat.products.length) {
         renderProducts(cat.products);
       } else {
@@ -143,7 +155,7 @@
       document.getElementById("content").innerHTML = `
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
         <div class="grid">
-          ${Object.values(subs).map(sub => `
+          ${subs.map(sub => `
             <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
               <img src="${fixImg(sub.icon)}">
               <div>${sub.name}</div>
@@ -154,9 +166,9 @@
     function openSubcategory(sub) {
       navigation.push(() => openSubcategory(sub));
       if (sub.subcategories && Object.keys(sub.subcategories).length) {
-        renderSubcategories(sub.subcategories);
+        renderSubcategories(Object.values(sub.subcategories));
       } else {
-        renderProducts(sub.products);
+        renderProducts(sub.products || []);
       }
     }
 
@@ -167,7 +179,7 @@
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
         <div class="grid">
           ${products.map(p => `
-            <div class="product-card" onclick='viewProduct(${JSON.stringify(p).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
+            <div class="product-card" onclick='viewProduct(${encodeURIComponent(JSON.stringify(p))})'>
               <img src="${fixImg(p.image)}">
               <h4>${p.title}</h4>
               <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
@@ -179,7 +191,8 @@
         </div>`;
     }
 
-    function viewProduct(p) {
+    function viewProduct(pEncoded) {
+      const p = JSON.parse(decodeURIComponent(pEncoded));
       navigation.push(() => renderProducts(lastProducts));
       document.getElementById("content").innerHTML = `
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
@@ -208,8 +221,11 @@
     }
 
     function goBack() {
-      const fn = navigation.pop();
-      if (typeof fn === 'function') fn();
+      if (navigation.length > 0) {
+        navigation.pop();
+        const fn = navigation[navigation.length - 1];
+        if (typeof fn === 'function') fn();
+      }
     }
 
     function openCart() {
