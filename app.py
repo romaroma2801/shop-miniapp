@@ -141,44 +141,17 @@ def get_catalog():
         response.raise_for_status()
         data = response.json()
 
-        # Проверка структуры
-        if not isinstance(data, (dict, list)):
-            raise ValueError("Invalid catalog structure")
+        # Убедимся, что это словарь
+        if not isinstance(data, dict):
+            raise ValueError("Каталог должен быть в формате словаря")
 
-        processed_data = {}
-        required_categories = [
-            "Парогенераторы",
-            "Жидкости",
-            "Запчасти и комплектующие",
-            "Кальяны и комплектующие",
-            "Самозамес"
-        ]
-
-        for i, cat_name in enumerate(required_categories, 1):
-            processed_data[str(i)] = {
-                "id": str(i),
-                "name": cat_name,
-                "parent_id": "0",
-                "subcategories": {},
-                "products": []
-            }
-
-        items = data.values() if isinstance(data, dict) else data  # <--- исправление
-
-        for item in items:
-            if isinstance(item, dict) and item.get('name'):
-                for target_cat in processed_data.values():
-                    if item['name'].lower() in target_cat['name'].lower():
-                        if 'subcategories' in item:
-                            target_cat['subcategories'].update(item['subcategories'])
-                        if 'products' in item:
-                            target_cat['products'].extend(item['products'])
-
-        return jsonify(processed_data)
+        # Просто отдаем все, без переработки ID и фильтрации
+        return jsonify(data)
 
     except Exception as e:
-        logging.error(f"Error processing catalog: {str(e)}")
+        logging.error(f"Ошибка при загрузке каталога: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/regions')
 def get_regions():
