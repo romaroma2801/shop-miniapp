@@ -20,6 +20,19 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+    .category-button {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 16px;
+      box-shadow: 2px 2px 6px #ccc;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .category-button img {
+      max-height: 80px;
+      margin-bottom: 8px;
+    }
     .product-card {
       border: 1px solid #eee;
       border-radius: 16px;
@@ -28,9 +41,10 @@
       background: #fff;
       display: flex;
       flex-direction: column;
+      align-items: center;
       justify-content: space-between;
-      text-align: center;
       height: 100%;
+      box-sizing: border-box;
     }
     .product-card img {
       max-width: 100%;
@@ -43,6 +57,7 @@
       font-size: 14px;
       font-weight: normal;
       margin: 6px 0;
+      text-align: center;
     }
     .product-card p.price {
       font-size: 16px;
@@ -66,6 +81,17 @@
       background: #ff0000;
       color: white;
       border: none;
+    }
+    .product-detail-card {
+      border: 1px solid #eee;
+      border-radius: 16px;
+      box-shadow: 2px 2px 8px #ccc;
+      padding: 16px;
+      background: #fff;
+      margin: 10px;
+      box-sizing: border-box;
+      word-wrap: break-word;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -102,107 +128,96 @@
     async function loadCatalog() {
       const res = await fetch('/api/catalog');
       catalogData = await res.json();
-      showCategories();
+      showMainCategories();
     }
 
     function scrollTop() {
       document.getElementById('content').scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function showCategories() {
+    function showMainCategories() {
       navigationStack = [];
       const content = document.getElementById('content');
-      content.innerHTML = `
-        <input type="text" id="search-bar" placeholder="Поиск по каталогу">
-        <div class="grid">
-          ${[
-            { id: '1', name: 'Парогенераторы', icon: 'vape.png' },
-            { id: '2', name: 'Жидкости для вейпа', icon: 'juice.png' },
-            { id: '3', name: 'Запчасти и комплектующие', icon: 'spanner.png' },
-            { id: '4', name: 'Кальяны и комплектующие', icon: 'hookah.png' },
-            { id: '5', name: 'Самозамес', icon: 'test.png' },
-            { id: '6', name: 'Уценённый товар', icon: 'sale.png' }
-          ].map(cat => `
-            <div class="category-button" onclick="openCategory('${cat.id}')">
-              <img src="/static/${cat.icon}" alt="${cat.name}">
-              <div>${cat.name}</div>
-            </div>`).join('')}
-        </div>`;
+      content.innerHTML = getSearchBar() + '<div class="grid">' +
+        [
+          { id: '1', name: 'Парогенераторы', icon: 'vape.png' },
+          { id: '2', name: 'Жидкости для вейпа', icon: 'juice.png' },
+          { id: '3', name: 'Запчасти и комплектующие', icon: 'spanner.png' },
+          { id: '4', name: 'Кальяны и комплектующие', icon: 'hookah.png' },
+          { id: '5', name: 'Самозамес', icon: 'test.png' },
+          { id: '6', name: 'Уценённый товар', icon: 'sale.png' }
+        ].map(cat => `
+          <div class="category-button" onclick="openCategory('${cat.id}')">
+            <img src="/static/${cat.icon}" alt="${cat.name}">
+            <div>${cat.name}</div>
+          </div>`).join('') + '</div>';
       bindSearch();
       scrollTop();
+    }
+
+    function getSearchBar() {
+      return '<input type="text" id="search-bar" placeholder="Поиск по каталогу">';
     }
 
     function openCategory(catId) {
       const category = catalogData[catId];
       if (!category) return;
-      navigationStack.push(() => openCategory(catId));
-      if (catId === '2' || !category.subcategories || Object.keys(category.subcategories).length === 0) {
+      navigationStack.push(() => showMainCategories());
+      if (!category.subcategories || Object.keys(category.subcategories).length === 0) {
         showProducts(category.products);
       } else {
-        const content = document.getElementById('content');
-        content.innerHTML = `
-          <input type="text" id="search-bar" placeholder="Поиск по каталогу">
-          <div class="grid">
-            ${Object.values(category.subcategories).map(sub => `
-              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
-                <img src="${fixImg(sub.icon)}">
-                <div>${sub.name}</div>
-              </div>`).join('')}
-          </div>`;
-        bindSearch();
-        scrollTop();
+        showSubcategories(category.subcategories);
       }
+    }
+
+    function showSubcategories(subcategories) {
+      navigationStack.push(() => showSubcategories(subcategories));
+      const content = document.getElementById('content');
+      content.innerHTML = getSearchBar() + '<div class="grid">' +
+        Object.values(subcategories).map(sub => `
+          <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
+            <img src="${fixImg(sub.icon)}">
+            <div>${sub.name}</div>
+          </div>`).join('') + '</div>';
+      bindSearch();
+      scrollTop();
     }
 
     function openSubcategory(sub) {
       navigationStack.push(() => openSubcategory(sub));
       if (sub.subcategories && Object.keys(sub.subcategories).length) {
-        const content = document.getElementById('content');
-        content.innerHTML = `
-          <input type="text" id="search-bar" placeholder="Поиск по каталогу">
-          <div class="grid">
-            ${Object.values(sub.subcategories).map(sub2 => `
-              <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
-                <img src="${fixImg(sub2.icon)}">
-                <div>${sub2.name}</div>
-              </div>`).join('')}
-          </div>`;
-        bindSearch();
-        scrollTop();
+        showSubcategories(sub.subcategories);
       } else {
         showProducts(sub.products);
       }
     }
 
     function showProducts(products) {
+      navigationStack.push(() => showProducts(products));
       const content = document.getElementById('content');
-      content.innerHTML = `
-        <input type="text" id="search-bar" placeholder="Поиск по каталогу">
-        <div class="grid">
-          ${products.map(p => `
-            <div class="product-card" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
-              <img src="${fixImg(p.image)}" alt="${p.title}">
-              <h4>${p.title}</h4>
-              <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
-              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-                   onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Добавить в корзину'}
-              </div>
-            </div>`).join('')}
-        </div>`;
+      content.innerHTML = getSearchBar() + '<div class="grid">' +
+        products.map(p => `
+          <div class="product-card" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
+            <img src="${fixImg(p.image)}" alt="${p.title}">
+            <h4>${p.title}</h4>
+            <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
+            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+                 onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+              ${p.available === 'out_of_stock' ? 'Недоступен' : 'Добавить в корзину'}
+            </div>
+          </div>`).join('') + '</div>';
       bindSearch();
       scrollTop();
     }
 
     function showProductDetail(product) {
-      navigationStack.push(() => showProducts(Object.values(catalogData).flatMap(cat => cat.products || [])));
+      navigationStack.push(() => showProducts([product]));
       const content = document.getElementById('content');
-      content.innerHTML = `
-        <input type="text" id="search-bar" placeholder="Поиск по каталогу">
-        <div class="product-card">
-          <img src="${fixImg(product.image)}" alt="${product.title}">
+      content.innerHTML = getSearchBar() + `
+        <div class="product-detail-card">
+          <img src="${fixImg(product.image)}" alt="${product.title}" style="width:100%; max-height:200px; object-fit:contain;">
           <h4>${product.title}</h4>
-          <p style="white-space: pre-wrap; text-align:left;">${product.description}</p>
+          <p>${product.description}</p>
           <p class="price">${parseFloat(product.price).toFixed(2)} BYN</p>
           <div class="${product.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
                onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
@@ -231,7 +246,6 @@
     }
 
     function goBack() {
-      if (navigationStack.length > 1) navigationStack.pop();
       const last = navigationStack.pop();
       if (last) last();
     }
