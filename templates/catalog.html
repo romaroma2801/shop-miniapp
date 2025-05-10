@@ -67,10 +67,11 @@
     .map-button, .add-button {
       width: 100%;
       box-sizing: border-box;
-      margin-top: auto;
       border-radius: 25px;
       padding: 10px;
       font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
     }
     .map-button {
       background: white;
@@ -80,7 +81,7 @@
     .add-button {
       background: #ff0000;
       color: white;
-      border: none;
+      border: 1px solid #ff0000;
     }
     .product-detail-card {
       border: 1px solid #eee;
@@ -92,6 +93,11 @@
       box-sizing: border-box;
       word-wrap: break-word;
       white-space: pre-wrap;
+    }
+    .product-detail-card p.price {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 12px 0;
     }
   </style>
 </head>
@@ -124,6 +130,7 @@
   <script>
     let catalogData = {};
     let navigationStack = [];
+    let lastProductList = [];
 
     async function loadCatalog() {
       const res = await fetch('/api/catalog');
@@ -139,18 +146,21 @@
       navigationStack = [];
       const content = document.getElementById('content');
       content.innerHTML = getSearchBar() + '<div class="grid">' +
-        [
-          { id: '1', name: 'Парогенераторы', icon: 'vape.png' },
-          { id: '2', name: 'Жидкости для вейпа', icon: 'juice.png' },
-          { id: '3', name: 'Запчасти и комплектующие', icon: 'spanner.png' },
-          { id: '4', name: 'Кальяны и комплектующие', icon: 'hookah.png' },
-          { id: '5', name: 'Самозамес', icon: 'test.png' },
-          { id: '6', name: 'Уценённый товар', icon: 'sale.png' }
-        ].map(cat => `
-          <div class="category-button" onclick="openCategory('${cat.id}')">
-            <img src="/static/${cat.icon}" alt="${cat.name}">
-            <div>${cat.name}</div>
-          </div>`).join('') + '</div>';
+        Object.entries({
+          '1': 'vape.png',
+          '2': 'juice.png',
+          '3': 'spanner.png',
+          '4': 'hookah.png',
+          '5': 'test.png',
+          '6': 'sale.png'
+        }).map(([id, icon]) => {
+          const name = catalogData[id]?.name || '';
+          return `
+            <div class="category-button" onclick="openCategory('${id}')">
+              <img src="/static/${icon}" alt="${name}">
+              <div>${name}</div>
+            </div>`;
+        }).join('') + '</div>';
       bindSearch();
       scrollTop();
     }
@@ -193,7 +203,8 @@
     }
 
     function showProducts(products) {
-      navigationStack.push(() => showProducts(products));
+      lastProductList = products;
+      navigationStack.push(() => showProducts(lastProductList));
       const content = document.getElementById('content');
       content.innerHTML = getSearchBar() + '<div class="grid">' +
         products.map(p => `
@@ -203,7 +214,7 @@
             <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
             <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
                  onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-              ${p.available === 'out_of_stock' ? 'Недоступен' : 'Добавить в корзину'}
+              ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
             </div>
           </div>`).join('') + '</div>';
       bindSearch();
@@ -211,7 +222,7 @@
     }
 
     function showProductDetail(product) {
-      navigationStack.push(() => showProducts([product]));
+      navigationStack.push(() => showProducts(lastProductList));
       const content = document.getElementById('content');
       content.innerHTML = getSearchBar() + `
         <div class="product-detail-card">
@@ -221,7 +232,7 @@
           <p class="price">${parseFloat(product.price).toFixed(2)} BYN</p>
           <div class="${product.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
                onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-            ${product.available === 'out_of_stock' ? 'Недоступен' : 'Добавить в корзину'}
+            ${product.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
           </div>
         </div>`;
       bindSearch();
@@ -246,6 +257,10 @@
     }
 
     function goBack() {
+      if (document.activeElement === document.getElementById('search-bar')) {
+        document.getElementById('search-bar').blur();
+        return;
+      }
       const last = navigationStack.pop();
       if (last) last();
     }
