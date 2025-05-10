@@ -1,128 +1,157 @@
 <!DOCTYPE html>
 <html>
-<head>    
-    <meta charset="UTF-8">
-    <title>Каталог</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        .category-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 16px;
-        }
-        .category-item, .product-card {
-            text-align: center;
-            background: #fff;
-            border-radius: 12px;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            cursor: pointer;
-        }
-        .category-item img, .product-card img {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-        }
-        .product-detail {
-            padding: 16px;
-        }
-        .back-button {
-            margin: 10px;
-            display: inline-block;
-            cursor: pointer;
-            color: blue;
-        }
-        .add-button {
-            margin-top: 10px;
-            background-color: #ddd;
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: inline-block;
-            cursor: pointer;
-        }
-    </style>
+<head>
+  <meta charset="UTF-8">
+  <title>Каталог</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    #search-bar {
+      padding: 10px;
+      width: calc(100% - 40px);
+      margin: 10px 20px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .subheader {
+      font-weight: bold;
+      margin: 10px 0;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <img src="/static/logo22.png" alt="Логотип" class="logo">
+  <div class="header">
+    <img src="/static/logo22.png" alt="Логотип" class="logo">
+  </div>
+
+  <button id="back-button" onclick="goBack()">
+    <img src="/static/back.svg" alt="Назад">
+  </button>
+
+  <div class="menu-vertical" id="content">
+    <input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">
+  </div>
+
+  <div class="footer-buttons">
+    <div id="home-button" onclick="location.href='/'">
+      <img src="/static/home.svg" alt="Домой">
     </div>
-
-    <div id="content" class="menu-vertical"></div>
-
-    <div class="footer-buttons">
-        <div id="home-button" onclick="window.location.href='/'">
-            <img src="/static/home.svg" alt="Домой">
-        </div>
-        <div id="login-button">
-            <img src="/static/login.svg" alt="Авторизация">
-        </div>
+    <div id="login-button" onclick="goToLogin()">
+      <img src="/static/login.svg" alt="Личный кабинет">
     </div>
+  </div>
 
-    <script>
+  <div class="cart-button-container">
+    <button class="cart-button" id="cart-button" onclick="openCart()">
+      <img src="/static/shop.svg" alt="Корзина">
+    </button>
+  </div>
+
+  <script>
+    let catalogData = {};
+    let navigationStack = [];
+
+    async function loadCatalog() {
+      const res = await fetch('/api/catalog');
+      catalogData = await res.json();
+      showCategories();
+    }
+
+    function showCategories() {
+      navigationStack = [];
+      const content = document.getElementById('content');
+      content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
+        '<div class="grid">' + [
+          { id: '1', name: 'Парогенераторы', icon: 'vape.png' },
+          { id: '2', name: 'Жидкости для вейпа', icon: 'juice.png' },
+          { id: '3', name: 'Запчасти и комплектующие', icon: 'spanner.png' },
+          { id: '4', name: 'Кальяны и комплектующие', icon: 'hookah.png' },
+          { id: '5', name: 'Самозамес', icon: 'test.png' },
+          { id: '6', name: 'Уценённый товар', icon: 'sale.png' },
+        ].map(cat => `
+          <div class="category-button" onclick="openCategory('${cat.id}')">
+            <img src="/static/icons/${cat.icon}" alt="${cat.name}">
+            <div>${cat.name}</div>
+          </div>
+        `).join('') + '</div>';
+    }
+
+    function openCategory(catId) {
+      navigationStack.push(() => showCategories());
+      const category = catalogData[catId];
+      if (!category) return;
+      if (category.subcategories && Object.keys(category.subcategories).length) {
         const content = document.getElementById('content');
+        content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
+          '<div class="grid">' +
+          Object.values(category.subcategories).map(sub => `
+            <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub)})'>
+              <img src="${sub.icon || '/static/icons/juice.png'}">
+              <div>${sub.name}</div>
+            </div>
+          `).join('') + '</div>';
+      } else {
+        showProducts(category.products);
+      }
+    }
 
-        const rootCategories = [
-            { id: "vape", name: "Парогенераторы", icon: "vape.png" },
-            { id: "juice", name: "Жидкости для вейпа", icon: "juice.png" },
-            { id: "parts", name: "Запчасти и комплектующие", icon: "spanner.png" },
-            { id: "hookah", name: "Кальяны и комплектующие", icon: "hookah.png" },
-            { id: "diy", name: "Самозамес", icon: "test.png" },
-            { id: "sale", name: "Уценённый товар", icon: "sale.png" }
-        ];
+    function openSubcategory(sub) {
+      navigationStack.push(() => openCategory(sub.parent_id));
+      if (sub.subcategories && Object.keys(sub.subcategories).length) {
+        const content = document.getElementById('content');
+        content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
+          '<div class="grid">' +
+          Object.values(sub.subcategories).map(sub2 => `
+            <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub2)})'>
+              <img src="${sub2.icon || '/static/icons/juice.png'}">
+              <div>${sub2.name}</div>
+            </div>
+          `).join('') + '</div>';
+      } else {
+        showProducts(sub.products);
+      }
+    }
 
-        function showCategories() {
-            content.innerHTML = '<div class="category-grid">' +
-                rootCategories.map(cat => `
-                    <div class="category-item" onclick="loadCategory('${cat.name}')">
-                        <img src="/static/icons/${cat.icon}" alt="${cat.name}">
-                        <div>${cat.name}</div>
-                    </div>
-                `).join('') +
-                '</div>';
-        }
+    function showProducts(products) {
+      navigationStack.push(() => showCategories());
+      const content = document.getElementById('content');
+      content.innerHTML = '<input type="text" id="search-bar" placeholder="Поиск по каталогу" oninput="searchCatalog(this.value)">' +
+        products.map(p => `
+          <div class="product-card">
+            <img src="${p.image}" alt="${p.title}">
+            <h4>${p.title}</h4>
+            <p>Цена: ${p.price} BYN</p>
+            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+                 onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+              ${p.available === 'out_of_stock' ? 'Нет в наличии' : 'Добавить в корзину'}
+            </div>
+          </div>
+        `).join('');
+    }
 
-        async function loadCategory(name) {
-            const res = await fetch('/api/catalog');
-            const data = await res.json();
+    function searchCatalog(query) {
+      query = query.toLowerCase();
+      const allProducts = Object.values(catalogData).flatMap(cat => cat.products);
+      const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query));
+      showProducts(filtered);
+    }
 
-            const entry = Object.values(data).find(c => c.name === name);
-            if (!entry) return showCategories();
+    function goBack() {
+      const last = navigationStack.pop();
+      if (last) last();
+    }
 
-            if (entry.products.length > 0) {
-                showProducts(entry.products, name);
-            } else {
-                content.innerHTML = `<div class="back-button" onclick="showCategories()">← Назад</div><p>Нет товаров в категории.</p>`;
-            }
-        }
+    function openCart() {
+      alert('Функция корзины в разработке!');
+    }
 
-        function showProducts(products, categoryName) {
-            content.innerHTML = `<div class="back-button" onclick="showCategories()">← Назад</div><div class="category-grid">` +
-                products.map(p => `
-                    <div class="product-card" onclick="showProductDetail(${encodeURIComponent(JSON.stringify(p))})">
-                        <img src="${p.image}" alt="${p.title}">
-                        <div>${p.title}</div>
-                        <div class="add-button" onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">Добавить в корзину</div>
-                    </div>
-                `).join('') +
-                '</div>';
-        }
+    function goToLogin() {
+      location.href = '/user';
+    }
 
-        function showProductDetail(encodedProduct) {
-            const p = JSON.parse(decodeURIComponent(encodedProduct));
-            content.innerHTML = `
-                <div class="back-button" onclick="showCategories()">← Назад</div>
-                <div class="product-detail">
-                    <img src="${p.image}" style="width:100%; max-width:300px;" alt="${p.title}">
-                    <h3>${p.title}</h3>
-                    <p>${p.description}</p>
-                    <div class="add-button" onclick="alert('Смотреть можно, трогать нельзя!')">Добавить в корзину</div>
-                </div>
-            `;
-        }
-
-        showCategories();
-    </script>
+    loadCatalog();
+  </script>
 </body>
 </html>
