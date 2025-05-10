@@ -141,14 +141,17 @@ def get_catalog():
         response.raise_for_status()
         data = response.json()
 
-        # Убедимся, что это словарь
-        if not isinstance(data, dict):
-            raise ValueError("Каталог должен быть в формате словаря")
+        if isinstance(data, list):
+            # Преобразуем список в словарь по id
+            data = {str(item['id']): item for item in data if isinstance(item, dict) and 'id' in item}
 
-        # Просто отдаем все, без переработки ID и фильтрации
+        if not isinstance(data, dict):
+            raise ValueError("Каталог имеет неподдерживаемую структуру")
+
         return jsonify(data)
 
     except Exception as e:
+        import logging
         logging.error(f"Ошибка при загрузке каталога: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
