@@ -102,7 +102,8 @@
   <script>
     let catalog = {};
     let navigation = [];
-    let lastProducts = [];
+    let productCache = [];
+
     const categoryIcons = {
       "Парогенераторы": "vape.png",
       "Жидкости": "juice.png",
@@ -155,16 +156,23 @@
       document.getElementById("content").innerHTML = `
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
         <div class="grid">
-          ${subs.map(sub => `
-            <div class="category-button" onclick='openSubcategory(${JSON.stringify(sub).replace(/'/g, "\'").replace(/"/g, '&quot;')})'>
+          ${subs.map((sub, i) => `
+            <div class="category-button" onclick="openSubcategory(${storeSubcategory(sub)})">
               <img src="${fixImg(sub.icon)}">
               <div>${sub.name}</div>
             </div>`).join('')}
         </div>`;
     }
 
-    function openSubcategory(sub) {
-      navigation.push(() => openSubcategory(sub));
+    function storeSubcategory(sub) {
+      const id = productCache.length;
+      productCache.push(sub);
+      return id;
+    }
+
+    function openSubcategory(index) {
+      const sub = productCache[index];
+      navigation.push(() => openSubcategory(index));
       if (sub.subcategories && Object.keys(sub.subcategories).length) {
         renderSubcategories(Object.values(sub.subcategories));
       } else {
@@ -175,11 +183,12 @@
     function renderProducts(products) {
       lastProducts = products;
       navigation.push(() => renderProducts(lastProducts));
+      productCache = products;
       document.getElementById("content").innerHTML = `
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
         <div class="grid">
-          ${products.map(p => `
-            <div class="product-card" onclick='viewProduct(${encodeURIComponent(JSON.stringify(p))})'>
+          ${products.map((p, i) => `
+            <div class="product-card" onclick='viewProduct(${i})'>
               <img src="${fixImg(p.image)}">
               <h4>${p.title}</h4>
               <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
@@ -191,9 +200,9 @@
         </div>`;
     }
 
-    function viewProduct(pEncoded) {
-      const p = JSON.parse(decodeURIComponent(pEncoded));
-      navigation.push(() => renderProducts(lastProducts));
+    function viewProduct(index) {
+      const p = productCache[index];
+      navigation.push(() => renderProducts(productCache));
       document.getElementById("content").innerHTML = `
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
         <div class="product-detail">
@@ -221,11 +230,9 @@
     }
 
     function goBack() {
-      if (navigation.length > 0) {
-        navigation.pop();
-        const fn = navigation[navigation.length - 1];
-        if (typeof fn === 'function') fn();
-      }
+      navigation.pop();
+      const fn = navigation[navigation.length - 1];
+      if (typeof fn === 'function') fn();
     }
 
     function openCart() {
