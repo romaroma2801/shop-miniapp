@@ -9,7 +9,7 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
     .category-button, .product-card {
       background: #fff;
@@ -17,7 +17,7 @@
       border-radius: 16px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       width: 100%;
-      height: 190px;
+      height: 180px;
       text-align: center;
       cursor: pointer;
       display: flex;
@@ -27,7 +27,7 @@
       transition: opacity 0.3s ease;
     }
     .category-button img, .category-icon {
-      height: 120px;
+      height: 100px;
       width: auto;
       object-fit: contain;
       margin-top: 12px;
@@ -39,10 +39,10 @@
       margin-top: auto;
     }
     .product-card {
-      height: 260px;
+      height: 250px;
     }
     .product-card img {
-      height: 120px;
+      height: 100px;
       width: auto;
       object-fit: contain;
       margin: 10px auto 0;
@@ -52,7 +52,7 @@
       flex-direction: column;
       justify-content: space-between;
       flex-grow: 1;
-      padding: 8px;
+      padding: 6px;
     }
     .product-card h4 {
       font-size: 13px;
@@ -60,16 +60,16 @@
       line-height: 1.2;
       height: 3.6em;
       overflow: hidden;
-      margin: 4px 0;
+      margin: 2px 0;
     }
     .product-card .price {
       font-size: 16px;
       font-weight: bold;
-      margin: 4px 0;
+      margin: 2px 0;
     }
     .add-button, .map-button {
       width: 100%;
-      padding: 10px 0;
+      padding: 8px 0;
       border-radius: 25px;
       font-size: 14px;
       box-sizing: border-box;
@@ -111,25 +111,32 @@
       100% { transform: scale(1); opacity: 0.9; }
     }
     .sort-buttons {
-      margin: 10px 0;
+      margin: 6px 0;
       display: flex;
-      gap: 10px;
+      gap: 8px;
       justify-content: space-between;
     }
     .sort-buttons button {
-      padding: 8px 12px;
+      padding: 6px 10px;
       font-size: 13px;
       white-space: nowrap;
       border-radius: 20px;
     }
     #search-bar {
       padding: 12px;
-      margin: 10px 0;
+      margin: 6px 0;
       width: 100%;
       border-radius: 25px;
       border: 1px solid #ddd;
       font-size: 16px;
       box-sizing: border-box;
+    }
+    .product-detail {
+      background: #fff;
+      padding: 16px;
+      margin: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
   </style>
 </head>
@@ -137,17 +144,13 @@
   <div id="loader" class="loader">
     <img src="/static/Eicon.png" alt="Loading">
   </div>
-
   <div class="header">
     <img src="/static/logo22.png" alt="Логотип" class="logo">
   </div>
-
   <button id="back-button" style="display:none" onclick="goBack()">
     <img src="/static/back.svg" alt="Назад">
   </button>
-
   <div class="menu-vertical" id="content"></div>
-
   <div class="footer-buttons">
     <div id="home-button" onclick="location.href='/'">
       <img src="/static/home.svg" alt="Домой">
@@ -156,18 +159,15 @@
       <img src="/static/login.svg" alt="Личный кабинет">
     </div>
   </div>
-
   <div class="cart-button-container">
     <button class="cart-button" onclick="openCart()">
       <img src="/static/shop.svg" alt="Корзина">
     </button>
   </div>
-
   <script>
     let catalog = {};
-    let breadcrumbs = [];
-    let productCache = [];
-
+    let historyStack = [];
+    let currentData = null;
     const categoryIcons = {
       "Парогенераторы": "vape.png",
       "Жидкости": "juice.png",
@@ -178,177 +178,134 @@
       "Уценённый товар": "sale.png",
       "Уценённые Парогенераторы": "sale.png"
     };
-
     async function loadCatalog() {
       showLoader(true);
       const response = await fetch("/api/catalog");
-      const data = await response.json();
-      catalog = data;
-      renderMainCategories();
+      catalog = await response.json();
       showLoader(false);
+      openView(renderMainCategories);
     }
-
-    function showLoader(show) {
-      document.getElementById("loader").style.display = show ? 'flex' : 'none';
+    function showLoader(state) {
+      document.getElementById("loader").style.display = state ? 'flex' : 'none';
     }
-
     function toggleBackButton() {
-      document.getElementById("back-button").style.display = breadcrumbs.length ? "block" : "none";
+      document.getElementById("back-button").style.display = historyStack.length ? 'block' : 'none';
     }
-
-    function transitionContent(html) {
-      const content = document.getElementById("content");
-      content.style.opacity = 0;
-      setTimeout(() => {
-        content.innerHTML = html;
-        content.style.opacity = 1;
-      }, 150);
-    }
-
-    function renderMainCategories() {
-      breadcrumbs = [];
+    function openView(viewFn) {
+      if (currentData) historyStack.push(currentData);
+      currentData = viewFn;
       toggleBackButton();
-      const topCategories = Object.values(catalog).filter(cat => cat.parent_id === "0");
-      transitionContent(`
-        <form onsubmit="search(event)">
-          <input type="text" id="search-bar" placeholder="Поиск по каталогу">
-        </form>
+      viewFn();
+    }
+    function goBack() {
+      if (historyStack.length) {
+        currentData = historyStack.pop();
+        toggleBackButton();
+        currentData();
+      }
+    }
+    function renderMainCategories() {
+      const top = Object.values(catalog).filter(c => c.parent_id === "0");
+      setContent(`
+        <form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
         <div class="grid">
-          ${topCategories.map(cat => `
-            <div class="category-button" onclick="openCategory('${cat.id}')">
-              <img class="category-icon" src="/static/${categoryIcons[cat.name] || 'vape.png'}" alt="${cat.name}">
-              <div>${cat.name}</div>
+          ${top.map(c => `
+            <div class="category-button" onclick="openCategory('${c.id}')">
+              <img class="category-icon" src="/static/${categoryIcons[c.name] || 'vape.png'}">
+              <div>${c.name}</div>
             </div>`).join('')}
         </div>`);
     }
-
     function openCategory(id) {
       const cat = catalog[id];
       if (!cat) return;
-      breadcrumbs.push(() => openCategory(id));
-      toggleBackButton();
       if (cat.subcategories && Object.keys(cat.subcategories).length) {
-        renderSubcategories(Object.values(cat.subcategories));
-      } else if (cat.products && cat.products.length) {
-        renderProducts(cat.products);
-      } else {
-        transitionContent('<p>Товаров нет</p>');
+        openView(() => renderSubcategories(cat.subcategories));
+      } else if (cat.products?.length) {
+        openView(() => renderProducts(cat.products));
       }
     }
-
     function renderSubcategories(subs) {
-      breadcrumbs.push(() => renderSubcategories(subs));
-      toggleBackButton();
-      transitionContent(`
-        <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
+      const values = Object.values(subs);
+      setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
         <div class="grid">
-          ${subs.map((sub, i) => `
-            <div class="category-button" onclick="openSubcategory(${storeSubcategory(sub)})">
-              <img class="category-icon" src="${fixImg(sub.icon)}">
-              <div>${sub.name}</div>
-            </div>`).join('')}
-        </div>`);
+        ${values.map((s, i) => `
+          <div class="category-button" onclick="openSubSub(${cache(s)})">
+            <img class="category-icon" src="${fixImg(s.icon)}">
+            <div>${s.name}</div>
+          </div>`).join('')}</div>`);
     }
-
-    function storeSubcategory(sub) {
-      const id = productCache.length;
-      productCache.push(sub);
-      return id;
-    }
-
-    function openSubcategory(index) {
-      const sub = productCache[index];
-      if (!sub) return renderMainCategories();
-      breadcrumbs.push(() => openSubcategory(index));
-      toggleBackButton();
-      if (sub.subcategories && Object.keys(sub.subcategories).length) {
-        renderSubcategories(Object.values(sub.subcategories));
+    const subCache = [];
+    function cache(obj) { subCache.push(obj); return subCache.length - 1; }
+    function openSubSub(index) {
+      const s = subCache[index];
+      if (!s) return;
+      if (s.subcategories && Object.keys(s.subcategories).length) {
+        openView(() => renderSubcategories(s.subcategories));
       } else {
-        renderProducts(sub.products || []);
+        openView(() => renderProducts(s.products || []));
       }
     }
-
-    function renderProducts(products) {
-      productCache = products;
-      breadcrumbs.push(() => renderProducts(products));
-      toggleBackButton();
-      transitionContent(`
-        <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
+    let productViewData = [];
+    function renderProducts(arr) {
+      productViewData = arr;
+      setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
         <div class="sort-buttons">
           <button onclick="sortBy('price')">По цене</button>
           <button onclick="sortBy('availability')">В наличии</button>
         </div>
         <div class="grid">
-          ${products.map((p, i) => `
-            <div class="product-card" onclick='viewProduct(${i})'>
-              <img src="${fixImg(p.image)}">
-              <div class="content">
-                <h4>${p.title}</h4>
-                <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
-                <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-                     onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
-                  ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
-                </div>
+        ${arr.map((p, i) => `
+          <div class="product-card" onclick="viewProduct(${i})">
+            <img src="${fixImg(p.image)}">
+            <div class="content">
+              <h4>${p.title}</h4>
+              <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
+              <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+                ${p.available==='out_of_stock'?'Недоступен':'Купить'}
               </div>
-            </div>`).join('')}
-        </div>`);
+            </div>
+          </div>`).join('')}</div>`);
     }
-
     function sortBy(type) {
-      let sorted = [...productCache];
-      if (type === 'price') {
-        sorted.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-      } else if (type === 'availability') {
-        sorted.sort((a, b) => (a.available === 'out_of_stock') - (b.available === 'out_of_stock'));
-      }
-      renderProducts(sorted);
+      const sorted = [...productViewData];
+      if (type === 'price') sorted.sort((a,b)=>a.price-b.price);
+      else if (type === 'availability') sorted.sort((a,b)=>(a.available==='out_of_stock')-(b.available==='out_of_stock'));
+      openView(() => renderProducts(sorted));
     }
-
-    function viewProduct(index) {
-      const p = productCache[index];
-      breadcrumbs.push(() => renderProducts(productCache));
-      toggleBackButton();
-      transitionContent(`
-        <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
-        <div class="product-detail">
-          <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
-          <h4>${p.title}</h4>
-          <p>${p.description}</p>
-          <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
-          <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-               onclick="alert('Смотреть можно, трогать нельзя!')">
-            ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
-          </div>
-        </div>`);
+    function viewProduct(i) {
+      const p = productViewData[i];
+      openView(() => {
+        setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
+          <div class="product-detail">
+            <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
+            <h4>${p.title}</h4>
+            <p style="white-space:pre-line">${p.description}</p>
+            <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
+            <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="alert('Смотреть можно, трогать нельзя!')">
+              ${p.available==='out_of_stock'?'Недоступен':'Купить'}
+            </div>
+          </div>`);
+      });
     }
-
     function fixImg(url) {
+      if (!url || typeof url !== 'string') return '/static/placeholder.png';
       return 'https://nekuri.by' + url.replace(/ /g, '%20').replace(/\\/g, '');
     }
-
-    function search(event) {
-      event.preventDefault();
+    function search(e) {
+      e.preventDefault();
       const val = document.getElementById('search-bar').value.toLowerCase();
-      const products = Object.values(catalog).flatMap(c => c.products || []);
-      const filtered = products.filter(p => p.title.toLowerCase().includes(val));
-      renderProducts(filtered);
+      const arr = Object.values(catalog).flatMap(c => c.products||[]);
+      const found = arr.filter(p => p.title.toLowerCase().includes(val));
+      openView(() => renderProducts(found));
     }
-
-    function goBack() {
-      breadcrumbs.pop();
-      const fn = breadcrumbs[breadcrumbs.length - 1];
-      if (typeof fn === 'function') fn();
-      toggleBackButton();
+    function setContent(html) {
+      const el = document.getElementById("content");
+      el.style.opacity = 0;
+      setTimeout(()=>{ el.innerHTML = html; el.style.opacity = 1; }, 100);
     }
-
-    function openCart() {
-      alert('Корзина пока не работает');
-    }
-
-    function goToLogin() {
-      location.href = '/user';
-    }
-
+    function openCart() { alert('Корзина пока не работает'); }
+    function goToLogin() { location.href='/user'; }
     loadCatalog();
   </script>
 </body>
