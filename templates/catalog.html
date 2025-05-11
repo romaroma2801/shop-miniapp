@@ -12,16 +12,11 @@
       padding: 0;
     }
     .grid {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
-      justify-content: space-between;
       padding: 0 10px;
       box-sizing: border-box;
-    }
-    .grid > .product-card,
-    .grid > .category-button {
-      width: calc(50% - 5px);
     }
     .menu-vertical {
       overflow-x: hidden;
@@ -129,7 +124,7 @@
       display: flex;
       gap: 10px;
       align-items: center;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
     }
     .sort-buttons span {
       font-size: 14px;
