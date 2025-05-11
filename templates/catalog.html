@@ -6,10 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="/static/css/style.css">
   <style>
+    body, html {
+      overflow-x: hidden;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 8px;
+    }
+    .menu-vertical {
+      overflow-x: hidden;
     }
     .category-button, .product-card {
       background: #fff;
@@ -27,7 +33,7 @@
       transition: opacity 0.3s ease;
     }
     .category-button img, .category-icon {
-      height: 100px;
+      height: 120px;
       width: auto;
       object-fit: contain;
       margin-top: 12px;
@@ -111,10 +117,15 @@
       100% { transform: scale(1); opacity: 0.9; }
     }
     .sort-buttons {
-      margin: 6px 0;
+      margin: 4px 0 4px 0;
       display: flex;
       gap: 8px;
-      justify-content: space-between;
+      align-items: center;
+    }
+    .sort-buttons span {
+      font-size: 14px;
+      color: #333;
+      margin-right: 6px;
     }
     .sort-buttons button {
       padding: 6px 10px;
@@ -124,7 +135,7 @@
     }
     #search-bar {
       padding: 12px;
-      margin: 6px 0;
+      margin: 6px 0 2px;
       width: 100%;
       border-radius: 25px;
       border: 1px solid #ddd;
@@ -137,6 +148,21 @@
       margin: 10px;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .product-detail p {
+      white-space: pre-line;
+      margin-bottom: 12px;
+    }
+    .product-detail .price {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .product-detail .add-button, .product-detail .map-button {
+      font-size: 15px;
+      height: 40px;
+      line-height: 40px;
+      padding: 0;
     }
   </style>
 </head>
