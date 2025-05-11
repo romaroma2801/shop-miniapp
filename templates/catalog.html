@@ -17,7 +17,7 @@
       border-radius: 16px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       width: 100%;
-      height: 200px;
+      height: 190px;
       text-align: center;
       cursor: pointer;
       display: flex;
@@ -27,7 +27,7 @@
       transition: opacity 0.3s ease;
     }
     .category-button img, .category-icon {
-      height: 90px;
+      height: 120px;
       width: auto;
       object-fit: contain;
       margin-top: 12px;
@@ -39,7 +39,7 @@
       margin-top: auto;
     }
     .product-card {
-      height: 280px;
+      height: 260px;
     }
     .product-card img {
       height: 120px;
@@ -101,14 +101,35 @@
       z-index: 999;
     }
     .loader img {
-      width: 80px;
-      height: 80px;
+      width: 160px;
+      height: 160px;
       animation: pulse 1.5s infinite ease-in-out;
     }
     @keyframes pulse {
       0% { transform: scale(1); opacity: 0.9; }
       50% { transform: scale(1.1); opacity: 1; }
       100% { transform: scale(1); opacity: 0.9; }
+    }
+    .sort-buttons {
+      margin: 10px 0;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    .sort-buttons button {
+      padding: 8px 12px;
+      font-size: 13px;
+      white-space: nowrap;
+      border-radius: 20px;
+    }
+    #search-bar {
+      padding: 12px;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 25px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -144,7 +165,7 @@
 
   <script>
     let catalog = {};
-    let navigation = [];
+    let breadcrumbs = [];
     let productCache = [];
 
     const categoryIcons = {
@@ -172,7 +193,7 @@
     }
 
     function toggleBackButton() {
-      document.getElementById("back-button").style.display = navigation.length ? "block" : "none";
+      document.getElementById("back-button").style.display = breadcrumbs.length ? "block" : "none";
     }
 
     function transitionContent(html) {
@@ -185,7 +206,7 @@
     }
 
     function renderMainCategories() {
-      navigation = [];
+      breadcrumbs = [];
       toggleBackButton();
       const topCategories = Object.values(catalog).filter(cat => cat.parent_id === "0");
       transitionContent(`
@@ -204,7 +225,7 @@
     function openCategory(id) {
       const cat = catalog[id];
       if (!cat) return;
-      navigation.push(() => openCategory(id));
+      breadcrumbs.push(() => openCategory(id));
       toggleBackButton();
       if (cat.subcategories && Object.keys(cat.subcategories).length) {
         renderSubcategories(Object.values(cat.subcategories));
@@ -216,7 +237,7 @@
     }
 
     function renderSubcategories(subs) {
-      navigation.push(() => renderSubcategories(subs));
+      breadcrumbs.push(() => renderSubcategories(subs));
       toggleBackButton();
       transitionContent(`
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
@@ -238,7 +259,7 @@
     function openSubcategory(index) {
       const sub = productCache[index];
       if (!sub) return renderMainCategories();
-      navigation.push(() => openSubcategory(index));
+      breadcrumbs.push(() => openSubcategory(index));
       toggleBackButton();
       if (sub.subcategories && Object.keys(sub.subcategories).length) {
         renderSubcategories(Object.values(sub.subcategories));
@@ -249,16 +270,14 @@
 
     function renderProducts(products) {
       productCache = products;
-      navigation.push(() => renderProducts(products));
+      breadcrumbs.push(() => renderProducts(products));
       toggleBackButton();
-      const sortControls = `
-        <div style="margin: 10px 0; display: flex; gap: 10px; justify-content: space-between;">
-          <button onclick="sortBy('price')">По цене</button>
-          <button onclick="sortBy('availability')">В наличии</button>
-        </div>`;
       transitionContent(`
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
-        ${sortControls}
+        <div class="sort-buttons">
+          <button onclick="sortBy('price')">По цене</button>
+          <button onclick="sortBy('availability')">В наличии</button>
+        </div>
         <div class="grid">
           ${products.map((p, i) => `
             <div class="product-card" onclick='viewProduct(${i})'>
@@ -287,7 +306,7 @@
 
     function viewProduct(index) {
       const p = productCache[index];
-      navigation.push(() => renderProducts(productCache));
+      breadcrumbs.push(() => renderProducts(productCache));
       toggleBackButton();
       transitionContent(`
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
@@ -316,8 +335,8 @@
     }
 
     function goBack() {
-      navigation.pop();
-      const fn = navigation[navigation.length - 1];
+      breadcrumbs.pop();
+      const fn = breadcrumbs[breadcrumbs.length - 1];
       if (typeof fn === 'function') fn();
       toggleBackButton();
     }
