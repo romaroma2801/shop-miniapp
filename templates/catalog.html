@@ -36,7 +36,7 @@
       transition: opacity 0.3s ease;
     }
     .category-button img, .category-icon {
-      height: 120px;
+      height: 140px;
       width: auto;
       object-fit: contain;
       margin-top: 12px;
@@ -78,11 +78,13 @@
     }
     .add-button, .map-button {
       width: 100%;
-      padding: 8px 0;
+      height: 36px;
+      padding: 0;
       border-radius: 25px;
       font-size: 14px;
       box-sizing: border-box;
       text-align: center;
+      line-height: 36px;
       margin-top: auto;
     }
     .add-button {
@@ -122,14 +124,10 @@
     .sort-buttons {
       margin: 2px 10px 4px;
       display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
       gap: 10px;
       align-items: center;
-      flex-wrap: wrap;
-    }
-    .sort-buttons span {
-      font-size: 14px;
-      color: #333;
-      white-space: nowrap;
     }
     .sort-buttons button {
       padding: 6px 10px;
@@ -170,6 +168,7 @@
     }
   </style>
 </head>
+
 <body>
   <div id="loader" class="loader">
     <img src="/static/Eicon.png" alt="Loading">
