@@ -25,21 +25,26 @@
       flex-direction: column;
       overflow: hidden;
     }
-    .product-card img {
+    .category-button img, .category-icon {
       height: 120px;
       width: auto;
       max-width: 100%;
       object-fit: contain;
       margin: 0 auto;
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
+    }
+    .product-card img {
+      height: 100px;
+      width: auto;
+      object-fit: contain;
+      margin: 0 auto;
+      padding-top: 10px;
     }
     .product-card .content {
-      padding: 8px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: 100%;
+      flex-grow: 1;
+      padding: 8px;
     }
     .product-card h4 {
       font-size: 13px;
@@ -47,6 +52,7 @@
       line-height: 1.2;
       height: 3.6em;
       overflow: hidden;
+      margin: 4px 0;
     }
     .product-card .price {
       font-size: 16px;
@@ -59,8 +65,8 @@
       border-radius: 25px;
       font-size: 14px;
       box-sizing: border-box;
-      margin-top: auto;
       text-align: center;
+      margin-top: auto;
     }
     .add-button {
       background: #ff0000;
@@ -107,12 +113,6 @@
       font-size: 16px;
       box-sizing: border-box;
     }
-    #back-button {
-      display: none;
-    }
-    .show-back #back-button {
-      display: block;
-    }
   </style>
 </head>
 <body>
@@ -120,7 +120,7 @@
     <img src="/static/logo22.png" alt="Логотип" class="logo">
   </div>
 
-  <button id="back-button" onclick="goBack()">
+  <button id="back-button" style="display:none" onclick="goBack()">
     <img src="/static/back.svg" alt="Назад">
   </button>
 
@@ -164,6 +164,10 @@
       renderMainCategories();
     }
 
+    function toggleBackButton() {
+      document.getElementById("back-button").style.display = navigation.length ? "block" : "none";
+    }
+
     function renderMainCategories() {
       navigation = [];
       toggleBackButton();
@@ -175,7 +179,7 @@
         <div class="grid">
           ${topCategories.map(cat => `
             <div class="category-button" onclick="openCategory('${cat.id}')">
-              <img src="/static/${categoryIcons[cat.name] || 'vape.png'}" alt="${cat.name}" style="height:100px; width:auto; margin:auto">
+              <img class="category-icon" src="/static/${categoryIcons[cat.name] || 'vape.png'}" alt="${cat.name}">
               <div style="padding: 8px; font-size:14px">${cat.name}</div>
             </div>`).join('')}
         </div>`;
@@ -203,7 +207,7 @@
         <div class="grid">
           ${subs.map((sub, i) => `
             <div class="category-button" onclick="openSubcategory(${storeSubcategory(sub)})">
-              <img src="${fixImg(sub.icon)}" style="height:100px; width:auto; margin:auto">
+              <img class="category-icon" src="${fixImg(sub.icon)}">
               <div style="padding: 8px; font-size:14px">${sub.name}</div>
             </div>`).join('')}
         </div>`;
@@ -284,15 +288,6 @@
       const fn = navigation[navigation.length - 1];
       if (typeof fn === 'function') fn();
       toggleBackButton();
-    }
-
-    function toggleBackButton() {
-      const backBtn = document.getElementById("back-button");
-      if (navigation.length === 0) {
-        backBtn.style.display = "none";
-      } else {
-        backBtn.style.display = "block";
-      }
     }
 
     function openCart() {
