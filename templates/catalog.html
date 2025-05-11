@@ -17,27 +17,35 @@
       border-radius: 16px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       width: 100%;
-      height: 220px;
-      padding: 0;
+      height: 200px;
       text-align: center;
       cursor: pointer;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       overflow: hidden;
+      transition: opacity 0.3s ease;
     }
     .category-button img, .category-icon {
-      height: 120px;
+      height: 90px;
       width: auto;
-      max-width: 100%;
       object-fit: contain;
-      margin: 0 auto;
+      margin-top: 12px;
+    }
+    .category-button div {
+      font-size: 14px;
+      padding: 4px;
+      background: #fff;
+      margin-top: auto;
+    }
+    .product-card {
+      height: 280px;
     }
     .product-card img {
-      height: 100px;
+      height: 120px;
       width: auto;
       object-fit: contain;
-      margin: 0 auto;
-      padding-top: 10px;
+      margin: 10px auto 0;
     }
     .product-card .content {
       display: flex;
@@ -80,42 +88,35 @@
       border: 1px solid #ff0000;
       box-shadow: none;
     }
-    .product-detail {
-      padding: 16px;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      margin: 12px;
-      word-wrap: break-word;
-    }
-    .product-detail p {
-      white-space: pre-wrap;
-      line-height: 1.5;
-      margin-bottom: 12px;
-    }
-    .product-detail .price {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .product-detail button {
-      padding: 10px 0;
-      font-size: 16px;
-      height: auto;
-      text-align: center;
-    }
-    #search-bar {
-      padding: 12px;
-      margin: 10px 0;
+    .loader {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      border-radius: 25px;
-      border: 1px solid #ddd;
-      font-size: 16px;
-      box-sizing: border-box;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .loader img {
+      width: 80px;
+      height: 80px;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.9; }
     }
   </style>
 </head>
 <body>
+  <div id="loader" class="loader">
+    <img src="/static/Eicon.png" alt="Loading">
+  </div>
+
   <div class="header">
     <img src="/static/logo22.png" alt="Логотип" class="logo">
   </div>
@@ -158,21 +159,36 @@
     };
 
     async function loadCatalog() {
+      showLoader(true);
       const response = await fetch("/api/catalog");
       const data = await response.json();
       catalog = data;
       renderMainCategories();
+      showLoader(false);
+    }
+
+    function showLoader(show) {
+      document.getElementById("loader").style.display = show ? 'flex' : 'none';
     }
 
     function toggleBackButton() {
       document.getElementById("back-button").style.display = navigation.length ? "block" : "none";
     }
 
+    function transitionContent(html) {
+      const content = document.getElementById("content");
+      content.style.opacity = 0;
+      setTimeout(() => {
+        content.innerHTML = html;
+        content.style.opacity = 1;
+      }, 150);
+    }
+
     function renderMainCategories() {
       navigation = [];
       toggleBackButton();
       const topCategories = Object.values(catalog).filter(cat => cat.parent_id === "0");
-      document.getElementById("content").innerHTML = `
+      transitionContent(`
         <form onsubmit="search(event)">
           <input type="text" id="search-bar" placeholder="Поиск по каталогу">
         </form>
@@ -180,9 +196,9 @@
           ${topCategories.map(cat => `
             <div class="category-button" onclick="openCategory('${cat.id}')">
               <img class="category-icon" src="/static/${categoryIcons[cat.name] || 'vape.png'}" alt="${cat.name}">
-              <div style="padding: 8px; font-size:14px">${cat.name}</div>
+              <div>${cat.name}</div>
             </div>`).join('')}
-        </div>`;
+        </div>`);
     }
 
     function openCategory(id) {
@@ -195,22 +211,22 @@
       } else if (cat.products && cat.products.length) {
         renderProducts(cat.products);
       } else {
-        document.getElementById("content").innerHTML = '<p>Товаров нет</p>';
+        transitionContent('<p>Товаров нет</p>');
       }
     }
 
     function renderSubcategories(subs) {
       navigation.push(() => renderSubcategories(subs));
       toggleBackButton();
-      document.getElementById("content").innerHTML = `
+      transitionContent(`
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
         <div class="grid">
           ${subs.map((sub, i) => `
             <div class="category-button" onclick="openSubcategory(${storeSubcategory(sub)})">
               <img class="category-icon" src="${fixImg(sub.icon)}">
-              <div style="padding: 8px; font-size:14px">${sub.name}</div>
+              <div>${sub.name}</div>
             </div>`).join('')}
-        </div>`;
+        </div>`);
     }
 
     function storeSubcategory(sub) {
@@ -235,8 +251,14 @@
       productCache = products;
       navigation.push(() => renderProducts(products));
       toggleBackButton();
-      document.getElementById("content").innerHTML = `
+      const sortControls = `
+        <div style="margin: 10px 0; display: flex; gap: 10px; justify-content: space-between;">
+          <button onclick="sortBy('price')">По цене</button>
+          <button onclick="sortBy('availability')">В наличии</button>
+        </div>`;
+      transitionContent(`
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
+        ${sortControls}
         <div class="grid">
           ${products.map((p, i) => `
             <div class="product-card" onclick='viewProduct(${i})'>
@@ -250,14 +272,24 @@
                 </div>
               </div>
             </div>`).join('')}
-        </div>`;
+        </div>`);
+    }
+
+    function sortBy(type) {
+      let sorted = [...productCache];
+      if (type === 'price') {
+        sorted.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      } else if (type === 'availability') {
+        sorted.sort((a, b) => (a.available === 'out_of_stock') - (b.available === 'out_of_stock'));
+      }
+      renderProducts(sorted);
     }
 
     function viewProduct(index) {
       const p = productCache[index];
       navigation.push(() => renderProducts(productCache));
       toggleBackButton();
-      document.getElementById("content").innerHTML = `
+      transitionContent(`
         <form onsubmit="search(event)"><input type="text" id="search-bar" placeholder="Поиск"></form>
         <div class="product-detail">
           <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
@@ -268,7 +300,7 @@
                onclick="alert('Смотреть можно, трогать нельзя!')">
             ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
           </div>
-        </div>`;
+        </div>`);
     }
 
     function fixImg(url) {
