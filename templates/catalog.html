@@ -331,18 +331,24 @@
     function viewProduct(i) {
       const p = productViewData[i];
       openView(() => {
-        setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
+        setContent(`<form onsubmit="search(event)">
+            <input id="search-bar" placeholder="Поиск">
+          </form>
           <div class="product-detail">
             <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
-            <h4>${p.title}</h4>
-            <p style="white-space:pre-line">${p.description}</p>
-            <p class="price" style="font-size: 15px; white-space: nowrap;">
-              ${p.special_price ? `<span class="old-price">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
+            <h4 style="margin-top: 10px;">${p.title}</h4>
+            <p style="white-space: pre-line; margin-bottom: 12px;">${p.description}</p>
+            <p class="price" style="font-size: 15px; white-space: nowrap; margin-bottom: 12px;">
+              ${p.special_price
+                ? `<span class="old-price" style="text-decoration: line-through; color: #999;">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price" style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
+                : `${parseFloat(p.price).toFixed(2)} BYN`}
             </p>
-            <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="alert('Смотреть можно, трогать нельзя!')">
-              ${p.available==='out_of_stock'?'Недоступен':'Купить'}
+            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+                 onclick="alert('Смотреть можно, трогать нельзя!')">
+              ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
             </div>
           </div>`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
     function fixImg(url) {
@@ -359,7 +365,11 @@
     function setContent(html) {
       const el = document.getElementById("content");
       el.style.opacity = 0;
-      setTimeout(()=>{ el.innerHTML = html; el.style.opacity = 1; }, 100);
+      setTimeout(() => {
+        el.innerHTML = html;
+        el.style.opacity = 1;
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // прокрутка при каждом переходе
+      }, 100);
     }
     function openCart() { alert('Корзина пока не работает'); }
     function goToLogin() { location.href='/user'; }
