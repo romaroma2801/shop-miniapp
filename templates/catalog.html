@@ -312,7 +312,7 @@
             ${p.special_price ? '<img src="/static/sale.png" class="sale-icon">' : ''}
             <div class="content">
               <h4>${p.title}</h4>
-              <p class="price">
+              <p class="price" style="font-size: 13px; white-space: nowrap;">
                 ${p.special_price ? `<span class="old-price">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
               </p>
               <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
@@ -336,7 +336,7 @@
             <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
             <h4>${p.title}</h4>
             <p style="white-space:pre-line">${p.description}</p>
-            <p class="price">
+            <p class="price" style="font-size: 15px; white-space: nowrap;">
               ${p.special_price ? `<span class="old-price">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
             </p>
             <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="alert('Смотреть можно, трогать нельзя!')">
