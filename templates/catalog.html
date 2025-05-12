@@ -15,7 +15,7 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
-      padding: 0 10px;
+      padding: 0 6px;
       box-sizing: border-box;
     }
     .menu-vertical {
@@ -33,6 +33,7 @@
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
+      position: relative;
       transition: opacity 0.3s ease;
     }
     .category-button img, .category-icon {
@@ -48,10 +49,10 @@
       margin-top: auto;
     }
     .product-card {
-      height: 250px;
+      height: 260px;
     }
     .product-card img {
-      height: 100px;
+      height: 120px;
       width: auto;
       object-fit: contain;
       margin: 10px auto 0;
@@ -75,6 +76,24 @@
       font-size: 16px;
       font-weight: bold;
       margin: 2px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .product-card .price .old-price {
+      text-decoration: line-through;
+      color: #999;
+    }
+    .product-card .price .new-price {
+      color: #a30000;
+    }
+    .product-card .sale-icon {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 32px;
+      height: 32px;
     }
     .add-button, .map-button {
       width: 100%;
@@ -170,6 +189,7 @@
     }
   </style>
 </head>
+
 
 <body>
   <div id="loader" class="loader">
@@ -289,15 +309,19 @@
         ${arr.map((p, i) => `
           <div class="product-card" onclick="viewProduct(${i})">
             <img src="${fixImg(p.image)}">
+            ${p.special_price ? '<img src="/static/sale.png" class="sale-icon">' : ''}
             <div class="content">
               <h4>${p.title}</h4>
-              <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
+              <p class="price">
+                ${p.special_price ? `<span class="old-price">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
+              </p>
               <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
                 ${p.available==='out_of_stock'?'Недоступен':'Купить'}
               </div>
             </div>
           </div>`).join('')}</div>`);
     }
+
     function sortBy(type) {
       const sorted = [...productViewData];
       if (type === 'price') sorted.sort((a,b)=>a.price-b.price);
@@ -312,7 +336,9 @@
             <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
             <h4>${p.title}</h4>
             <p style="white-space:pre-line">${p.description}</p>
-            <p class="price">${parseFloat(p.price).toFixed(2)} BYN</p>
+            <p class="price">
+              ${p.special_price ? `<span class="old-price">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
+            </p>
             <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="alert('Смотреть можно, трогать нельзя!')">
               ${p.available==='out_of_stock'?'Недоступен':'Купить'}
             </div>
