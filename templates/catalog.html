@@ -119,18 +119,82 @@
       border: 1px solid #ff0000;
       box-shadow: none;
     }
-    .product-detail img {
+    .loader {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      max-height: 200px;
-      object-fit: contain;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
     }
-    .option-box.selected {
-      border: 2px solid #ff0000 !important;
-      background-color: #fff4f4 !important;
+    .loader img {
+      width: 160px;
+      height: 160px;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.9; }
+    }
+    .sort-buttons {
+      margin: 2px 10px 4px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .sort-buttons button {
+      padding: 6px 10px;
+      font-size: 13px;
+      white-space: nowrap;
+      border-radius: 20px;
+    }
+    #search-bar {
+      padding: 12px;
+      margin: 2px 10px 2px;
+      width: calc(100% - 20px);
+      border-radius: 25px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .product-detail {
+      background: #fff;
+      padding: 16px;
+      margin: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .product-detail p {
+      white-space: pre-line;
+      margin-bottom: 12px;
+    }
+    .product-detail .price {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .product-detail .add-button, .product-detail .map-button {
+      font-size: 15px;
+      height: 40px;
+      line-height: 40px;
+      padding: 0;
+      margin-bottom: 0;
     }
   </style>
 </head>
+
+
 <body>
+  <div id="loader" class="loader">
+    <img src="/static/Eicon.png" alt="Loading">
+  </div>
   <div class="header">
     <img src="/static/logo22.png" alt="Логотип" class="logo">
   </div>
@@ -151,88 +215,165 @@
       <img src="/static/shop.svg" alt="Корзина">
     </button>
   </div>
-  <div id="loader" class="loader" style="display:none">
-    <img src="/static/Eicon.png" alt="Загрузка...">
-  </div>
   <script>
-    let selectedOptionName = '';
-    let selectedOptionImage = '';
+    let catalog = {};
+    let historyStack = [];
+    let currentData = null;
+    const categoryIcons = {
+      "Парогенераторы": "vape.png",
+      "Жидкости": "juice.png",
+      "Жидкости для вейпа": "juice.png",
+      "Запчасти и комплектующие": "spanner.png",
+      "Кальяны и комплектующие": "hookah.png",
+      "Самозамес": "test.png",
+      "Уценённый товар": "sale.png",
+      "Уценённые Парогенераторы": "sale.png"
+    };
+    async function loadCatalog() {
+      showLoader(true);
+      const response = await fetch("/api/catalog");
+      catalog = await response.json();
+      showLoader(false);
+      openView(renderMainCategories);
+    }
+    function showLoader(state) {
+      document.getElementById("loader").style.display = state ? 'flex' : 'none';
+    }
+    function toggleBackButton() {
+      document.getElementById("back-button").style.display = historyStack.length ? 'block' : 'none';
+    }
+    function openView(viewFn) {
+      if (currentData) historyStack.push(currentData);
+      currentData = viewFn;
+      toggleBackButton();
+      viewFn();
+    }
+    function goBack() {
+      if (historyStack.length) {
+        currentData = historyStack.pop();
+        toggleBackButton();
+        currentData();
+      }
+    }
+    function renderMainCategories() {
+      const top = Object.values(catalog).filter(c => c.parent_id === "0");
+      setContent(`
+        <form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
+        <div class="grid">
+          ${top.map(c => `
+            <div class="category-button" onclick="openCategory('${c.id}')">
+              <img class="category-icon" src="/static/${categoryIcons[c.name] || 'vape.png'}">
+              <div>${c.name}</div>
+            </div>`).join('')}
+        </div>`);
+    }
+    function openCategory(id) {
+      const cat = catalog[id];
+      if (!cat) return;
+      if (cat.subcategories && Object.keys(cat.subcategories).length) {
+        openView(() => renderSubcategories(cat.subcategories));
+      } else if (cat.products?.length) {
+        openView(() => renderProducts(cat.products));
+      }
+    }
+    function renderSubcategories(subs) {
+      const values = Object.values(subs);
+      setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
+        <div class="grid">
+        ${values.map((s, i) => `
+          <div class="category-button" onclick="openSubSub(${cache(s)})">
+            <img class="category-icon" src="${fixImg(s.icon)}">
+            <div>${s.name}</div>
+          </div>`).join('')}</div>`);
+    }
+    const subCache = [];
+    function cache(obj) { subCache.push(obj); return subCache.length - 1; }
+    function openSubSub(index) {
+      const s = subCache[index];
+      if (!s) return;
+      if (s.subcategories && Object.keys(s.subcategories).length) {
+        openView(() => renderSubcategories(s.subcategories));
+      } else {
+        openView(() => renderProducts(s.products || []));
+      }
+    }
     let productViewData = [];
+    function renderProducts(arr) {
+      productViewData = arr;
+      setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
+        <div class="sort-buttons">
+          <button onclick="sortBy('price')">По цене</button>
+          <button onclick="sortBy('availability')">В наличии</button>
+        </div>
+        <div class="grid">
+        ${arr.map((p, i) => `
+          <div class="product-card" onclick="viewProduct(${i})">
+            <img src="${fixImg(p.image)}">
+            ${p.special_price ? '<img src="/static/sale.png" class="sale-icon">' : ''}
+            <div class="content">
+              <h4>${p.title}</h4>
+              <p class="price" style="font-size: 13px; white-space: nowrap;">
+                ${p.special_price ? `<span class="old-price">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
+              </p>
+              <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+                ${p.available==='out_of_stock'?'Недоступен':'Купить'}
+              </div>
+            </div>
+          </div>`).join('')}</div>`);
+    }
 
+    function sortBy(type) {
+      const sorted = [...productViewData];
+      if (type === 'price') sorted.sort((a,b)=>a.price-b.price);
+      else if (type === 'availability') sorted.sort((a,b)=>(a.available==='out_of_stock')-(b.available==='out_of_stock'));
+      openView(() => renderProducts(sorted));
+    }
     function viewProduct(i) {
       const p = productViewData[i];
-      selectedOptionImage = p.image;
-      selectedOptionName = '';
-
-      function renderDetailView() {
-        const attributesTable = p.attributes?.length ? `
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
-            ${p.attributes.map(attr => `
-              <tr>
-                <td style="border-bottom: 1px solid #eee; padding: 6px; font-weight: bold; width: 40%;">${attr.name}</td>
-                <td style="border-bottom: 1px solid #eee; padding: 6px;">${attr.value}</td>
-              </tr>`).join('')}
-          </table>` : `<p style="white-space: pre-line; margin-bottom: 12px;">${p.description}</p>`;
-
-        const optionsBlock = p.options?.length ? `
-          <div style="margin-bottom: 12px;">
-            ${p.options.map(opt => `
-              <div style="margin-bottom: 8px; font-weight: bold;">${opt.name}:</div>
-              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                ${opt.values.map((val, idx) => `
-                  <div onclick="selectOption(${i}, '${opt.name}', ${idx})"
-                       class="option-box${selectedOptionName === val.name ? ' selected' : ''}"
-                       style="cursor: pointer; border: 1px solid ${selectedOptionName === val.name ? '#ff0000' : '#ccc'}; border-radius: 8px; padding: 6px; text-align: center; width: 80px; font-size: 12px; background: ${val.available ? '#fff' : '#f8f8f8'}">
-                    ${val.image ? `<img src="${fixImg(val.image)}" style="width: 100%; max-height: 40px; object-fit: contain;">` : ''}
-                    <div>${val.name}</div>
-                    <div style="font-size: 11px; color: ${val.available ? 'green' : 'red'}">${val.available ? 'В наличии' : 'Нет'}</div>
-                  </div>`).join('')}
-              </div>`).join('')}
-          </div>` : '';
-
-        setContent(`
-          <form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
+      openView(() => {
+        setContent(`<form onsubmit="search(event)">
+            <input id="search-bar" placeholder="Поиск">
+          </form>
           <div class="product-detail">
-            <img id="product-main-img" src="${fixImg(selectedOptionImage)}">
+            <img src="${fixImg(p.image)}" style="width:100%; max-height:200px; object-fit:contain;">
             <h4 style="margin-top: 10px;">${p.title}</h4>
-            ${selectedOptionName ? `<p style="font-size: 13px; color: #444; margin: 4px 0 10px;">Выбранный вариант: <strong>${selectedOptionName}</strong></p>` : ''}
-            ${attributesTable}
-            ${optionsBlock}
+            <p style="white-space: pre-line; margin-bottom: 12px;">${p.description}</p>
             <p class="price" style="font-size: 15px; white-space: nowrap; margin-bottom: 12px;">
-              ${p.special_price ? `<span class="old-price" style="text-decoration: line-through; color: #999;">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price" style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
+              ${p.special_price
+                ? `<span class="old-price" style="text-decoration: line-through; color: #999;">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price" style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
+                : `${parseFloat(p.price).toFixed(2)} BYN`}
             </p>
             <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-                 onclick="${p.options?.length ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` : `alert('Смотреть можно, трогать нельзя!')`}">
+                 onclick="alert('Смотреть можно, трогать нельзя!')">
               ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
             </div>
           </div>`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-
-      window.selectOption = function(productIndex, optionName, valueIndex) {
-        const opt = productViewData[productIndex].options.find(o => o.name === optionName);
-        const val = opt.values[valueIndex];
-        if (val.available) {
-          selectedOptionImage = val.image || p.image;
-          selectedOptionName = val.name;
-          renderDetailView();
-        }
-      }
-
-      renderDetailView();
+      });
     }
-
-    function setContent(html) {
-      document.getElementById('content').innerHTML = html;
-    }
-
     function fixImg(url) {
       if (!url || typeof url !== 'string') return '/static/placeholder.png';
-      return 'https://nekuri.by' + url.replace(/ /g, '%20').replace(/\/g, '');
+      return 'https://nekuri.by' + url.replace(/ /g, '%20').replace(/\\/g, '');
     }
-
-    function goToLogin() { location.href='/user'; }
+    function search(e) {
+      e.preventDefault();
+      const val = document.getElementById('search-bar').value.toLowerCase();
+      const arr = Object.values(catalog).flatMap(c => c.products||[]);
+      const found = arr.filter(p => p.title.toLowerCase().includes(val));
+      openView(() => renderProducts(found));
+    }
+    function setContent(html) {
+      const el = document.getElementById("content");
+      el.style.opacity = 0;
+      setTimeout(() => {
+        el.innerHTML = html;
+        el.style.opacity = 1;
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // прокрутка при каждом переходе
+      }, 100);
+    }
     function openCart() { alert('Корзина пока не работает'); }
+    function goToLogin() { location.href='/user'; }
+    loadCatalog();
   </script>
 </body>
 </html>
