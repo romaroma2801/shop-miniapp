@@ -170,9 +170,21 @@
       margin: 10px;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
+      /* Убрать фиксированную высоту и overflow */
+      min-height: 0; /* Важно для flex/grid контекста */
+      display: flex;
+      flex-direction: column;
+    }
+    .product-detail .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     
+    .product-detail .bottom-section {
+      margin-top: auto;
+      padding-top: 16px;
+    }
     .product-detail img#product-main-img {
       max-width: 100%;
       height: auto;
