@@ -254,10 +254,10 @@
     }
     
     .product-detail .option-values {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     
     .product-detail .option-value {
@@ -266,10 +266,14 @@
       border-radius: 8px;
       padding: 8px;
       text-align: center;
-      min-width: 70px;
-      font-size: 12px;
-      background: #fff;
+      aspect-ratio: 1/1; /* Делаем квадратными */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
       transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
     }
     
     .product-detail .option-value.selected {
@@ -354,6 +358,7 @@
   <script>
     let catalog = {};
     let historyStack = [];
+    let loadPromises = [];
     let currentData = null;
     const categoryIcons = {
       "Парогенераторы": "vape.png",
@@ -367,10 +372,17 @@
     };
     async function loadCatalog() {
       showLoader(true);
-      const response = await fetch("/api/catalog");
-      catalog = await response.json();
-      showLoader(false);
-      openView(renderMainCategories);
+      try {
+        const response = await fetch("/api/catalog");
+        catalog = await response.json();
+        // Очищаем промисы после загрузки
+        loadPromises = [];
+        showLoader(false);
+        openView(renderMainCategories);
+      } catch (error) {
+        console.error("Ошибка загрузки каталога:", error);
+        showLoader(false);
+      }
     }
     function showLoader(state) {
       document.getElementById("loader").style.display = state ? 'flex' : 'none';
@@ -379,6 +391,11 @@
       document.getElementById("back-button").style.display = historyStack.length ? 'block' : 'none';
     }
     function openView(viewFn) {
+      // Очищаем pending промисы
+      if (loadPromises.length) {
+        loadPromises.forEach(p => p.cancel?.());
+        loadPromises = [];
+      }
       if (currentData) historyStack.push(currentData);
       currentData = viewFn;
       toggleBackButton();
@@ -521,28 +538,34 @@
             <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 18px;">${p.title}</h4>
             ${attributesTable}
             ${optionsBlock}
-          </div>
-          <div class="product-footer">
-            <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 16px; text-align: center;">
-              ${p.special_price
-                ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
-                   <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
-                : `${parseFloat(p.price).toFixed(2)} BYN`}
-            </p>
-            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
-                 onclick="${p.options?.length 
-                   ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
-                   : `alert('Смотреть можно, трогать нельзя!')`}"
-                 style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
-                        ${p.available === 'out_of_stock' 
-                          ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
-                          : 'background: #ff0000; color: #fff; border: none;'}">
-              ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
+            
+            <!-- Перенесенные цена и кнопка -->
+            <div style="margin-top: 20px;">
+              <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 16px; text-align: center;">
+                ${p.special_price
+                  ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
+                     <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
+                  : `${parseFloat(p.price).toFixed(2)} BYN`}
+              </p>
+              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
+                   onclick="${p.options?.length 
+                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
+                     : `alert('Смотреть можно, трогать нельзя!')`}"
+                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
+                          ${p.available === 'out_of_stock' 
+                            ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
+                            : 'background: #ff0000; color: #fff; border: none;'}">
+                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
+              </div>
             </div>
           </div>
         `);
-    
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+        // Прокрутка в начало только при первом открытии
+        if (!window.productDetailScrolled) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.productDetailScrolled = true;
+        }
       }
     
       window.selectOption = function(productIndex, optionName, valueIndex) {
@@ -580,11 +603,27 @@
     }
     function setContent(html) {
       const el = document.getElementById("content");
+      // Сохраняем позицию скролла перед изменением контента
+      const scrollPositions = {
+        '/catalog': window.scrollY
+      };
+      
       el.style.opacity = 0;
       setTimeout(() => {
         el.innerHTML = html;
         el.style.opacity = 1;
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // прокрутка при каждом переходе
+        
+        // Восстанавливаем позицию только при возврате назад
+        if (historyStack.length > 0) {
+          const prevPath = Object.keys(scrollPositions)[0];
+          if (prevPath === '/catalog') {
+            window.scrollTo(0, scrollPositions[prevPath]);
+          }
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        window.productDetailScrolled = false;
       }, 100);
     }
     function openCart() { alert('Корзина пока не работает'); }
