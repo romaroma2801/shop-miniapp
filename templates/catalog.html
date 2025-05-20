@@ -255,7 +255,7 @@
       cursor: pointer;
       border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 3px;
+      padding: 1px;
       text-align: center;
       /* Заменяем aspect-ratio на проверенный метод */
       position: relative;
@@ -312,8 +312,12 @@
     }
     
     .product-detail .option-value div {
-      font-size: 11px;
+      font-size: 10px; /* Уменьшили размер шрифта */
+      padding: 0 2px;
+      text-align: center;
       width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
   </style>
