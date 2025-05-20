@@ -170,10 +170,19 @@
       margin: 10px;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      /* Убрать фиксированную высоту и overflow */
-      min-height: 0; /* Важно для flex/grid контекста */
       display: flex;
       flex-direction: column;
+      min-height: calc(100vh - 200px); /* Добавлено */
+      box-sizing: border-box; /* Добавлено */
+    }
+    
+    .product-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      position: sticky;
+      bottom: 0;
+      background: white;
+      padding-bottom: 10px;
     }
     .product-detail .content-wrapper {
       flex: 1;
@@ -458,73 +467,75 @@
       const p = productViewData[i];
       selectedOptionImage = p.image;
       selectedOptionName = '';
-    
+      const previousView = currentData;
+      const previousProducts = productViewData;
+      
       function renderDetailView() {
-          const attributesTable = p.attributes?.length ? `
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
-              ${p.attributes.map(attr => `
-                <tr>
-                  <td style="border-bottom: 1px solid #eee; padding: 8px; font-weight: bold; width: 40%;">${attr.name}</td>
-                  <td style="border-bottom: 1px solid #eee; padding: 8px;">${attr.value.replace(/,\s*/g, ', ')}</td>
-                </tr>`).join('')}
-            </table>` : `<p style="white-space: pre-line; margin-bottom: 16px;">${p.description}</p>`;
+        const attributesTable = p.attributes?.length ? `
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+            ${p.attributes.map(attr => `
+              <tr>
+                <td style="border-bottom: 1px solid #eee; padding: 8px; font-weight: bold; width: 40%;">${attr.name}</td>
+                <td style="border-bottom: 1px solid #eee; padding: 8px;">${attr.value.replace(/,\s*/g, ', ')}</td>
+              </tr>`).join('')}
+          </table>` : `<p style="white-space: pre-line; margin-bottom: 16px;">${p.description}</p>`;
       
-          const optionsBlock = p.options?.length ? `
-            <div style="margin-bottom: 16px;">
-              ${p.options.map(opt => `
-                <div style="margin-bottom: 8px; font-weight: bold;">${opt.name}:</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-                  ${opt.values.map((val, idx) => `
-                    <div onclick="selectOption(${i}, '${opt.name}', ${idx})" 
-                         style="cursor: pointer; 
-                                border: ${selectedOptionName === val.name ? '2px solid #ff0000' : '1px solid #ccc'}; 
-                                border-radius: 8px; 
-                                padding: 8px; 
-                                text-align: center; 
-                                min-width: 80px; 
-                                font-size: 12px; 
-                                background: ${val.available ? '#fff' : '#f8f8f8'};
-                                box-shadow: ${selectedOptionName === val.name ? '0 0 8px rgba(255,0,0,0.2)' : 'none'};
-                                position: relative;">
-                      ${val.image ? `<img src="${fixImg(val.image)}" style="width: 100%; max-height: 40px; object-fit: contain; margin-bottom: 4px;">` : ''}
-                      <div>${val.name}</div>
-                      <div style="font-size: 11px; color: ${val.available ? 'green' : 'red'}">
-                        ${val.available ? 'В наличии' : 'Нет'}
-                      </div>
-                      ${!val.available ? `<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.6); border-radius: 7px;"></div>` : ''}
-                    </div>`).join('')}
-                </div>`).join('')}
-            </div>` : '';
+        const optionsBlock = p.options?.length ? `
+          <div style="margin-bottom: 16px;">
+            ${p.options.map(opt => `
+              <div style="margin-bottom: 8px; font-weight: bold;">${opt.name}:</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                ${opt.values.map((val, idx) => `
+                  <div onclick="selectOption(${i}, '${opt.name}', ${idx})" 
+                       style="cursor: pointer; 
+                              border: ${selectedOptionName === val.name ? '2px solid #ff0000' : '1px solid #ccc'}; 
+                              border-radius: 8px; 
+                              padding: 8px; 
+                              text-align: center; 
+                              min-width: 80px; 
+                              font-size: 12px; 
+                              background: ${val.available ? '#fff' : '#f8f8f8'};
+                              box-shadow: ${selectedOptionName === val.name ? '0 0 8px rgba(255,0,0,0.2)' : 'none'};
+                              position: relative;">
+                    ${val.image ? `<img src="${fixImg(val.image)}" style="width: 100%; max-height: 40px; object-fit: contain; margin-bottom: 4px;">` : ''}
+                    <div>${val.name}</div>
+                    <div style="font-size: 11px; color: ${val.available ? 'green' : 'red'}">
+                      ${val.available ? 'В наличии' : 'Нет'}
+                    </div>
+                    ${!val.available ? `<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.6); border-radius: 7px;"></div>` : ''}
+                  </div>`).join('')}
+              </div>`).join('')}
+          </div>` : '';
       
-          setContent(`
-            <form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
-            <div class="product-detail" style="background: #fff; padding: 16px; margin: 10px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-              <img id="product-main-img" src="${fixImg(selectedOptionImage)}" style="max-width: 100%; height: auto; max-height: 250px; object-fit: contain; margin: 0 auto 16px; display: block;">
-              <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 18px;">${p.title}</h4>
-              ${attributesTable}
-              ${optionsBlock}
-              <div style="margin-top: auto;">
-                <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 16px;">
-                  ${p.special_price
-                    ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
-                       <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
-                    : `${parseFloat(p.price).toFixed(2)} BYN`}
-                </p>
-                <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
-                     onclick="${p.options?.length 
-                       ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
-                       : `alert('Смотреть можно, трогать нельзя!')`}"
-                     style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;
-                            ${p.available === 'out_of_stock' 
-                              ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
-                              : 'background: #ff0000; color: #fff; border: none;'}">
-                  ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
-                </div>
+        setContent(`
+          <form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
+          <div class="product-detail">
+            <img id="product-main-img" src="${fixImg(selectedOptionImage)}" style="max-width: 100%; height: auto; max-height: 250px; object-fit: contain; margin: 0 auto 16px; display: block;">
+            <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 18px;">${p.title}</h4>
+            ${attributesTable}
+            ${optionsBlock}
+            <div class="product-footer">
+              <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 16px;">
+                ${p.special_price
+                  ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
+                     <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
+                  : `${parseFloat(p.price).toFixed(2)} BYN`}
+              </p>
+              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
+                   onclick="${p.options?.length 
+                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
+                     : `alert('Смотреть можно, трогать нельзя!')`}"
+                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;
+                          ${p.available === 'out_of_stock' 
+                            ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
+                            : 'background: #ff0000; color: #fff; border: none;'}">
+                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
               </div>
             </div>
-          `);
+          </div>
+        `);
       
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     
       window.selectOption = function(productIndex, optionName, valueIndex) {
