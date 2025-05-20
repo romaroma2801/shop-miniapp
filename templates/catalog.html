@@ -200,7 +200,7 @@
       margin-bottom: 12px;
     }
     .product-detail .price {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
       margin-bottom: 12px;
     }
@@ -255,7 +255,7 @@
       cursor: pointer;
       border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 8px;
+      padding: 6px;
       text-align: center;
       /* Заменяем aspect-ratio на проверенный метод */
       position: relative;
@@ -272,10 +272,10 @@
 
     .product-detail .option-value-content {
       position: absolute;
-      top: 8px;
-      left: 8px;
-      right: 8px;
-      bottom: 8px;
+      top: 6px;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -305,10 +305,10 @@
     }
     
     .product-detail .option-value img {
-      width: 100%;
-      max-height: 40px;
+      width: 80%;
+      max-height: 30px;
       object-fit: contain;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     
     .product-detail .option-value div {
@@ -496,15 +496,15 @@
         const optionsBlock = p.options?.length ? `
           <div style="margin-bottom: 16px;">
             ${p.options.map(opt => `
-              <div style="margin-bottom: 8px; font-weight: bold;">${opt.name}:</div>
+              <div style="margin-bottom: 8px; font-weight: bold; font-size: 15px;">${opt.name}:</div>
               <div class="option-values">
                 ${opt.values.map((val, idx) => `
                   <div onclick="selectOption(${i}, '${opt.name}', ${idx})" 
                        class="option-value ${selectedOptionName === val.name ? 'selected' : ''} ${val.available ? '' : 'unavailable'}">
                     <div class="option-value-content">
-                      ${val.image ? `<img src="${fixImg(val.image)}">` : ''}
-                      <div>${val.name}</div>
-                      <div style="color: ${val.available ? 'green' : 'red'}">
+                      ${val.image ? `<img src="${fixImg(val.image)}" class="option-image">` : ''}
+                      <div style="font-size: 12px;">${val.name}</div>
+                      <div style="font-size: 11px; color: ${val.available ? 'green' : 'red'}">
                         ${val.available ? 'В наличии' : 'Нет'}
                       </div>
                     </div>
