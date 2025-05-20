@@ -172,21 +172,11 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
-      min-height: auto; /* Изменили с calc(100vh - 200px) на auto */
+      /* Убрано padding-bottom: 80px; */
       box-sizing: border-box;
-      padding-bottom: 80px; /* Место для кнопки */
     }
+
     
-    .product-footer {
-      position: fixed;
-      bottom: 60px; /* Учитываем нижнее меню */
-      left: 0;
-      right: 0;
-      background: white;
-      padding: 16px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-      z-index: 10;
-    }
     .product-detail .content-wrapper {
       flex: 1;
       display: flex;
@@ -258,6 +248,7 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin-bottom: 16px;
+      width: 100%;
     }
     
     .product-detail .option-value {
@@ -274,6 +265,9 @@
       transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
+      width: 100%; /* Добавлено */
+      height: auto; /* Добавлено */
+      min-height: 0; /* Добавлено */
     }
     
     .product-detail .option-value.selected {
@@ -539,9 +533,9 @@
             ${attributesTable}
             ${optionsBlock}
             
-            <!-- Перенесенные цена и кнопка -->
-            <div style="margin-top: 20px;">
-              <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 16px; text-align: center;">
+            <!-- Обновленный блок цены и кнопки -->
+            <div style="margin-top: 20px; margin-bottom: 10px;">
+              <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 12px; text-align: center;">
                 ${p.special_price
                   ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
                      <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
