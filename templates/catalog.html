@@ -172,17 +172,20 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
-      min-height: calc(100vh - 200px); /* Добавлено */
-      box-sizing: border-box; /* Добавлено */
+      min-height: auto; /* Изменили с calc(100vh - 200px) на auto */
+      box-sizing: border-box;
+      padding-bottom: 80px; /* Место для кнопки */
     }
     
     .product-footer {
-      margin-top: auto;
-      padding-top: 16px;
-      position: sticky;
-      bottom: 0;
+      position: fixed;
+      bottom: 60px; /* Учитываем нижнее меню */
+      left: 0;
+      right: 0;
       background: white;
-      padding-bottom: 10px;
+      padding: 16px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 10;
     }
     .product-detail .content-wrapper {
       flex: 1;
@@ -467,19 +470,23 @@
       const p = productViewData[i];
       selectedOptionImage = p.image;
       selectedOptionName = '';
-      const previousView = currentData;
-      const previousProducts = productViewData;
-      
+    
+      // Сохраняем текущие данные для возврата
+      const returnData = {
+        products: productViewData,
+        view: currentData
+      };
+    
       function renderDetailView() {
         const attributesTable = p.attributes?.length ? `
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
             ${p.attributes.map(attr => `
               <tr>
-                <td style="border-bottom: 1px solid #eee; padding: 8px; font-weight: bold; width: 40%;">${attr.name}</td>
+                <td style="border-bottom: 1px solid #eee; padding: 8px; font-weight: bold;">${attr.name}</td>
                 <td style="border-bottom: 1px solid #eee; padding: 8px;">${attr.value.replace(/,\s*/g, ', ')}</td>
               </tr>`).join('')}
           </table>` : `<p style="white-space: pre-line; margin-bottom: 16px;">${p.description}</p>`;
-      
+    
         const optionsBlock = p.options?.length ? `
           <div style="margin-bottom: 16px;">
             ${p.options.map(opt => `
@@ -506,7 +513,7 @@
                   </div>`).join('')}
               </div>`).join('')}
           </div>` : '';
-      
+    
         setContent(`
           <form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
           <div class="product-detail">
@@ -514,27 +521,27 @@
             <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 18px;">${p.title}</h4>
             ${attributesTable}
             ${optionsBlock}
-            <div class="product-footer">
-              <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 16px;">
-                ${p.special_price
-                  ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
-                     <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
-                  : `${parseFloat(p.price).toFixed(2)} BYN`}
-              </p>
-              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
-                   onclick="${p.options?.length 
-                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
-                     : `alert('Смотреть можно, трогать нельзя!')`}"
-                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;
-                          ${p.available === 'out_of_stock' 
-                            ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
-                            : 'background: #ff0000; color: #fff; border: none;'}">
-                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
-              </div>
+          </div>
+          <div class="product-footer">
+            <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 16px; text-align: center;">
+              ${p.special_price
+                ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
+                   <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
+                : `${parseFloat(p.price).toFixed(2)} BYN`}
+            </p>
+            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
+                 onclick="${p.options?.length 
+                   ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
+                   : `alert('Смотреть можно, трогать нельзя!')`}"
+                 style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
+                        ${p.available === 'out_of_stock' 
+                          ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
+                          : 'background: #ff0000; color: #fff; border: none;'}">
+              ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
             </div>
           </div>
         `);
-      
+    
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     
@@ -548,6 +555,17 @@
         }
       }
     
+      // Временная перезапись функции goBack
+      const originalGoBack = window.goBack;
+      window.goBack = function() {
+        productViewData = returnData.products;
+        currentData = returnData.view;
+        originalGoBack();
+        window.goBack = originalGoBack; // Восстанавливаем оригинальную функцию
+      };
+    
+      openView(renderDetailView);
+    }
       renderDetailView();
     }
 
