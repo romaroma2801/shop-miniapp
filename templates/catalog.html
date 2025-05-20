@@ -257,19 +257,30 @@
       border-radius: 8px;
       padding: 8px;
       text-align: center;
-      aspect-ratio: 1/1; /* Делаем квадратными */
+      /* Заменяем aspect-ratio на проверенный метод */
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 0;
+      padding-bottom: 100%; /* Это создаст квадрат */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .product-detail .option-value-content {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-      width: 100%; /* Добавлено */
-      height: auto; /* Добавлено */
-      min-height: 0; /* Добавлено */
     }
-    
     .product-detail .option-value.selected {
       border: 2px solid #ff0000;
       box-shadow: 0 0 8px rgba(255,0,0,0.2);
@@ -302,6 +313,7 @@
     
     .product-detail .option-value div {
       font-size: 11px;
+      width: 100%;
     }
 
   </style>
@@ -485,25 +497,17 @@
           <div style="margin-bottom: 16px;">
             ${p.options.map(opt => `
               <div style="margin-bottom: 8px; font-weight: bold;">${opt.name}:</div>
-              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+              <div class="option-values">
                 ${opt.values.map((val, idx) => `
                   <div onclick="selectOption(${i}, '${opt.name}', ${idx})" 
-                       style="cursor: pointer; 
-                              border: ${selectedOptionName === val.name ? '2px solid #ff0000' : '1px solid #ccc'}; 
-                              border-radius: 8px; 
-                              padding: 8px; 
-                              text-align: center; 
-                              min-width: 80px; 
-                              font-size: 12px; 
-                              background: ${val.available ? '#fff' : '#f8f8f8'};
-                              box-shadow: ${selectedOptionName === val.name ? '0 0 8px rgba(255,0,0,0.2)' : 'none'};
-                              position: relative;">
-                    ${val.image ? `<img src="${fixImg(val.image)}" style="width: 100%; max-height: 40px; object-fit: contain; margin-bottom: 4px;">` : ''}
-                    <div>${val.name}</div>
-                    <div style="font-size: 11px; color: ${val.available ? 'green' : 'red'}">
-                      ${val.available ? 'В наличии' : 'Нет'}
+                       class="option-value ${selectedOptionName === val.name ? 'selected' : ''} ${val.available ? '' : 'unavailable'}">
+                    <div class="option-value-content">
+                      ${val.image ? `<img src="${fixImg(val.image)}">` : ''}
+                      <div>${val.name}</div>
+                      <div style="color: ${val.available ? 'green' : 'red'}">
+                        ${val.available ? 'В наличии' : 'Нет'}
+                      </div>
                     </div>
-                    ${!val.available ? `<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.6); border-radius: 7px;"></div>` : ''}
                   </div>`).join('')}
               </div>`).join('')}
           </div>` : '';
