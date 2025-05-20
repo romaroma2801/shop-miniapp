@@ -170,6 +170,16 @@
       margin: 10px;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .product-detail img#product-main-img {
+      max-width: 100%;
+      height: auto;
+      max-height: 250px;
+      object-fit: contain;
+      margin: 0 auto 15px;
+      display: block;
     }
     .product-detail p {
       white-space: pre-line;
@@ -194,10 +204,19 @@
       font-size: 14px;
     }
     
+    .product-detail table tr {
+      display: block;
+      margin-bottom: 8px;
+    }
+    
     .product-detail table td {
-      border-bottom: 1px solid #eee;
-      padding: 6px;
-      vertical-align: top;
+      display: block;
+      padding: 4px 0;
+      border-bottom: none;
+    }
+    .product-detail table td:first-child {
+      font-weight: bold;
+      color: #555;
     }
     
     .product-detail .option-block {
@@ -213,23 +232,43 @@
     .product-detail .option-values {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
+      margin-bottom: 12px;
     }
     
     .product-detail .option-value {
       cursor: pointer;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 6px;
+      padding: 8px;
       text-align: center;
-      width: 80px;
+      min-width: 70px;
       font-size: 12px;
       background: #fff;
+      transition: all 0.2s ease;
+    }
+    
+    .product-detail .option-value.selected {
+      border: 2px solid #ff0000;
+      box-shadow: 0 0 8px rgba(255,0,0,0.2);
     }
     
     .product-detail .option-value.unavailable {
+      position: relative;
       background: #f8f8f8;
       color: #aaa;
+      border-color: #eee;
+    }
+    
+    .product-detail .option-value.unavailable::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.6);
+      border-radius: 7px;
     }
     
     .product-detail .option-value img {
@@ -237,6 +276,23 @@
       max-height: 40px;
       object-fit: contain;
       margin-bottom: 4px;
+    }
+    
+    @media (min-width: 480px) {
+      .product-detail table tr {
+        display: table-row;
+        margin-bottom: 0;
+      }
+      
+      .product-detail table td {
+        display: table-cell;
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      
+      .product-detail table td:first-child {
+        width: 40%;
+      }
     }
     
     .product-detail .option-value div {
@@ -393,13 +449,13 @@
     
       function renderDetailView() {
         const attributesTable = p.attributes?.length ? `
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+          <table>
             ${p.attributes.map(attr => `
               <tr>
-                <td style="border-bottom: 1px solid #eee; padding: 6px; font-weight: bold; width: 40%;">${attr.name}</td>
-                <td style="border-bottom: 1px solid #eee; padding: 6px;">${attr.value}</td>
+                <td>${attr.name}</td>
+                <td>${attr.value.replace(/,\s*/g, ', ')}</td>
               </tr>`).join('')}
-          </table>` : `<p style="white-space: pre-line; margin-bottom: 12px;">${p.description}</p>`;
+          </table>` : `<p style="white-space: pre-line;">${p.description}</p>`;
     
         const optionsBlock = p.options?.length ? `
           <div style="margin-bottom: 12px;">
