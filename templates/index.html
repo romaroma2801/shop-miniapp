@@ -629,20 +629,55 @@
             function showPromotionDetail(promoData) {
                 currentState = "promotionDetail";
                 
-                // Очищаем описание от лишних пробелов и переносов
-                const cleanDescription = promoData.description 
-                    ? promoData.description.replace(/\n\t+/g, '\n').trim()
-                    : 'Нет описания';
+                // Обрабатываем контент новости
+                let processedContent = promoData.full_content || promoData.description || 'Нет содержания';
+                
+                // Удаляем все ссылки (теги <a>), но сохраняем их текст
+                processedContent = processedContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1');
+                
+                // Оставляем только разрешенные теги (p, br, img, h3, h4, ul, li, strong, em)
+                processedContent = processedContent.replace(/<(?!\/?(p|br|img|h3|h4|ul|li|strong|em)(?=>|\s.*>))\/?.*?>/gi, '');
+                
+                // Оптимизируем изображения
+                processedContent = processedContent.replace(/<img([^>]+)src="([^"]+)"/gi, (match, attrs, src) => {
+                    // Добавляем стили для изображений
+                    return `<img${attrs}src="${src}" style="max-width:100%; height:auto; border-radius:8px; margin:10px 0;"`;
+                });
             
                 showContent(`
                     <div class="promotion-detail">
+                        <!-- Превью изображение -->
                         <img src="${promoData.image}" alt="${promoData.title}" 
-                             style="width: 100%; border-radius: 12px; margin-bottom: 15px;"
+                             style="width:100%; border-radius:12px; margin-bottom:15px;"
                              onerror="this.onerror=null;this.src='/static/no-image.png'">
-                        <h3>${promoData.title}</h3>
-                        <div style="white-space: pre-line; margin-bottom: 20px;">${cleanDescription}</div>
+                        
+                        <!-- Заголовок -->
+                        <h3 style="margin-bottom:15px; color:#333;">${promoData.title}</h3>
+                        
+                        <!-- Контент новости -->
+                        <div class="news-content" style="
+                            white-space: pre-line; 
+                            line-height:1.5; 
+                            font-size:16px; 
+                            color:#444;
+                            margin-bottom:20px;
+                        ">
+                            ${processedContent}
+                        </div>
+                        
+                        <!-- Кнопка "Посмотреть на сайте" -->
                         <button onclick="window.open('${promoData.link}', '_blank')" 
-                                style="margin-top: 20px;">
+                                style="
+                                    margin-top:20px;
+                                    padding:12px 24px;
+                                    background:#ff0000;
+                                    color:white;
+                                    border:none;
+                                    border-radius:25px;
+                                    font-size:16px;
+                                    cursor:pointer;
+                                    width:100%;
+                                ">
                             Посмотреть на сайте
                         </button>
                     </div>
