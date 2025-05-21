@@ -190,6 +190,12 @@
                     goBack();
                     return;
                 }
+                const promoItem = e.target.closest('[data-action="showPromoDetail"]');
+                if (promoItem) {
+                    const promoData = JSON.parse(promoItem.dataset.promo);
+                    showPromotionDetail(promoData);
+                    return;
+                }
                 const btn = e.target.closest('button');
                 if (!btn) return;
 
@@ -597,7 +603,7 @@
                     showContent(`<p>Нет данных об акциях</p><button data-action="goHome">На главную</button>`, true);
                     return;
                 }
-
+            
                 const promotionsHTML = promotions.map(promo => {
                     // Очищаем описание от лишних символов
                     const cleanDescription = promo.description 
@@ -605,7 +611,7 @@
                         : '';
             
                     return `
-                        <div class="promotion-item" onclick="window.open('${promo.link}', '_blank')">
+                        <div class="promotion-item" data-action="showPromoDetail" data-promo='${JSON.stringify(promo).replace(/'/g, "\\'")}'>
                             <img src="${promo.image}" alt="${promo.title}" 
                                  onerror="this.onerror=null;this.src='/static/no-image.png'">
                             <h4>${promo.title}</h4>
@@ -613,11 +619,33 @@
                         </div>
                     `;
                 }).join('');
-
+            
                 showContent(`
                     <h3>Актуальные акции</h3>
                     ${promotionsHTML.length ? promotionsHTML : '<p>Нет доступных акций</p>'}
                     <button data-action="goHome" style="margin-top: 20px;">На главную</button>
+                `, true);
+            }
+            function showPromotionDetail(promoData) {
+                currentState = "promotionDetail";
+                
+                // Очищаем описание от лишних пробелов и переносов
+                const cleanDescription = promoData.description 
+                    ? promoData.description.replace(/\n\t+/g, '\n').trim()
+                    : 'Нет описания';
+            
+                showContent(`
+                    <div class="promotion-detail">
+                        <img src="${promoData.image}" alt="${promoData.title}" 
+                             style="width: 100%; border-radius: 12px; margin-bottom: 15px;"
+                             onerror="this.onerror=null;this.src='/static/no-image.png'">
+                        <h3>${promoData.title}</h3>
+                        <div style="white-space: pre-line; margin-bottom: 20px;">${cleanDescription}</div>
+                        <button onclick="window.open('${promoData.link}', '_blank')" 
+                                style="margin-top: 20px;">
+                            Посмотреть на сайте
+                        </button>
+                    </div>
                 `, true);
             }
             function goHome() {
