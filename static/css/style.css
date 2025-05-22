@@ -637,3 +637,73 @@ button.secondary:hover {
     margin-bottom: 15px;
     text-align: center;
 }
+/* Добавьте в конец файла */
+.promotions-carousel {
+    width: 100%;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel-container {
+    display: flex;
+    transition: transform 0.5s ease;
+    width: 100%;
+    height: 150px;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.carousel-banner {
+    background: white;
+    border-radius: 12px;
+    padding: 10px;
+    height: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: 2px solid #ff0000;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.carousel-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+.carousel-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    margin: 0 4px;
+    cursor: pointer;
+}
+
+.carousel-indicator.active {
+    background: #ff0000;
+}
