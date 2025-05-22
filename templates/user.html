@@ -208,7 +208,40 @@
             transform: translateY(0);
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        #success-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
         
+        #success-screen.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        #success-animation {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+        }
+        
+        #success-message {
+            font-size: 20px;
+            color: #ff0000;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -254,9 +287,6 @@
                 <button id="edit-profile-btn" class="edit-btn">✏️ Редактировать данные</button>
             </div>
         </div>
-
-        <!-- Форма редактирования -->
-        <!-- Замените блок edit-form на этот -->
         <div id="edit-form" style="display: none; opacity: 0;">
             <div class="user-header">
                 <h2>Редактирование профиля</h2>
@@ -295,7 +325,12 @@
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
-
+    <div id="success-screen">
+        <video id="success-animation" autoplay loop muted>
+            <source src="/static/great.webm" type="video/webm">
+        </video>
+        <div id="success-message">Данные успешно сохранены</div>
+    </div>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
         // Проверяем авторизацию Telegram
@@ -392,6 +427,7 @@
         });
 
         document.getElementById('save-profile-btn').addEventListener('click', async () => {
+            const userData = JSON.parse(localStorage.getItem(`user_${Telegram.WebApp.initDataUnsafe.user.id}`));
             await saveProfile(userData);
         });
     });
@@ -468,13 +504,30 @@
     async function saveProfile(user) {
         const name = document.getElementById('edit-name').value.trim();
         const phone = document.getElementById('edit-phone').value.trim();
-
+    
         if (!name) {
             showToast("Введите ваше имя");
             return;
         }
-
+    
+        // Проверка формата номера телефона (пример для Беларуси)
+        const phoneRegex = /^\+375(24|25|29|33|44)\d{7}$/;
+        if (!phoneRegex.test(phone)) {
+            showToast("Введите номер в формате +375XXXXXXXXX");
+            return;
+        }
+    
         try {
+            // Проверяем, существует ли уже такой номер
+            const checkResponse = await fetch(`/api/check-phone?phone=${encodeURIComponent(phone)}`);
+            const checkResult = await checkResponse.json();
+            
+            // Если номер уже занят другим пользователем
+            if (checkResult.exists && checkResult.username !== user.username) {
+                showToast("Данный номер уже зарегистрирован");
+                return;
+            }
+    
             // Обновляем данные на сервере
             const response = await fetch('/api/save-user', {
                 method: 'POST',
@@ -485,7 +538,7 @@
                     phone: phone
                 })
             });
-
+    
             const result = await response.json();
             
             if (result.status === 'success') {
@@ -494,11 +547,15 @@
                 user.phone = phone;
                 localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
                 
-                // Показываем кабинет с обновленными данными
-                showPersonalCabinet(user);
-                document.getElementById('edit-form').style.display = 'none';
+                // Показываем экран успешного сохранения
+                showSuccessScreen();
                 
-                showToast("Данные успешно сохранены");
+                // Через 3 секунды возвращаем в личный кабинет
+                setTimeout(() => {
+                    hideSuccessScreen();
+                    showPersonalCabinet(user);
+                    document.getElementById('edit-form').style.display = 'none';
+                }, 3000);
             } else {
                 throw new Error(result.message || 'Ошибка сохранения');
             }
@@ -506,6 +563,22 @@
             console.error('Ошибка сохранения:', error);
             showToast("Ошибка при сохранении данных");
         }
+    }
+    
+    function showSuccessScreen() {
+        const successScreen = document.getElementById('success-screen');
+        const animation = document.getElementById('success-animation');
+        
+        // Перезапускаем анимацию
+        animation.currentTime = 0;
+        animation.play();
+        
+        successScreen.classList.add('show');
+    }
+    
+    function hideSuccessScreen() {
+        const successScreen = document.getElementById('success-screen');
+        successScreen.classList.remove('show');
     }
 
     function showToast(message, duration = 2000) {
