@@ -153,6 +153,7 @@ p {
     z-index: 1;
     width: 100%;
     box-sizing: border-box;
+    padding-bottom: 100px;
 }
 
 #content.hidden {
@@ -639,22 +640,23 @@ button.secondary:hover {
 }
 /* Добавьте в конец файла */
 .promotions-carousel {
-    width: 100%;
-    margin-top: 20px;
+    width: calc(100% - 20px); /* Добавляем отступы по бокам */
+    margin: 20px 10px 30px; /* Увеличиваем нижний отступ */
     position: relative;
     overflow: hidden;
+    border-radius: 12px;
 }
 
 .carousel-container {
     display: flex;
     transition: transform 0.5s ease;
     width: 100%;
-    height: 150px;
-}
+    height: 180px; /* Увеличиваем высоту */
+
 
 .carousel-slide {
     min-width: 100%;
-    padding: 0 10px;
+    padding: 0 5px;
     box-sizing: border-box;
 }
 
@@ -663,7 +665,7 @@ button.secondary:hover {
     border-radius: 12px;
     padding: 10px;
     height: 100%;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(255,0,0,0.1);
     border: 2px solid #ff0000;
     position: relative;
     overflow: hidden;
