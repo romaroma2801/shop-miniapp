@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify, render_template
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import re
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
@@ -47,43 +47,6 @@ def get_sheet():
     client = gspread.authorize(creds)
     return client.open("USERS").sheet1
 
-
-@app.route('/api/check-phone', methods=['GET'])
-def check_phone():
-    phone = request.args.get('phone')
-    username = request.args.get('username', '')
-    
-    if not phone:
-        return jsonify({'status': 'error', 'message': 'Phone number is required'}), 400
-
-    try:
-        # Кэшируем данные из Google Sheets на короткое время
-        if not hasattr(app, 'phone_check_cache') or \
-           (datetime.now() - getattr(app, 'last_phone_check_time', datetime.min)).seconds > 30:
-            sheet = get_sheet()
-            app.phone_check_cache = sheet.get_all_records()
-            app.last_phone_check_time = datetime.now()
-        
-        # Ищем в кэшированных данных
-        user_with_phone = next(
-            (u for u in app.phone_check_cache 
-             if u.get('phone', '') == phone 
-             and u.get('Username', '').lower() != username.lower()),
-            None
-        )
-        
-        return jsonify({
-            'status': 'success',
-            'exists': user_with_phone is not None,
-            'username': user_with_phone.get('Username') if user_with_phone else None
-        })
-
-    except Exception as e:
-        logging.error(f"Error in check_phone: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
 # --- Flask Routes ---
 @app.route('/')
 def index():
@@ -142,30 +105,6 @@ def save_user():
         # Проверяем существование пользователя
         user_index = next((i for i, u in enumerate(records) if u.get('Username', '').lower() == data['username'].lower()), None)
         
-        if data.get('phone'):
-            # Простая проверка формата для Беларуси
-            if not re.match(r'^\+375(24|25|29|33|44)\d{7}$', data['phone']):
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Номер телефона должен быть в формате +375XXXXXXXXX'
-                }), 400
-            
-            # Проверяем, не занят ли номер другим пользователем
-            check_response = requests.get(
-                f'http://{request.host}/api/check-phone',
-                params={
-                    'phone': data['phone'],
-                    'username': data['username']
-                }
-            )
-            check_data = check_response.json()
-            
-            if check_data.get('exists') and check_data.get('username') != data['username']:
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Этот номер телефона уже зарегистрирован другим пользователем'
-                }), 400
-
         if user_index is not None:
             # Обновляем существующего пользователя
             row = user_index + 2
