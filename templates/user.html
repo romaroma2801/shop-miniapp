@@ -519,7 +519,7 @@
     
         try {
             // Проверяем, существует ли уже такой номер
-            const checkResponse = await fetch(`/api/check-phone?phone=${encodeURIComponent(phone)}`);
+            const checkResponse = await fetch(`/api/check-phone?phone=${encodeURIComponent(phone)}&username=${encodeURIComponent(user.username)}`);
             const checkResult = await checkResponse.json();
             
             // Если номер уже занят другим пользователем
