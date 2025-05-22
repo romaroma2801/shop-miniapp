@@ -144,7 +144,6 @@ def save_user():
                     'status': 'error',
                     'message': 'Номер телефона должен быть в формате +375XXXXXXXXX'
                 }), 400
-         if data.get('phone'):
             # Проверяем, не занят ли номер другим пользователем
             check_response = check_phone()
             check_data = check_response.get_json()
