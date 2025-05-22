@@ -51,18 +51,22 @@ def get_sheet():
 @app.route('/api/check-phone', methods=['GET'])
 def check_phone():
     phone = request.args.get('phone')
-    username = request.args.get('username', '')  # Текущий пользователь (для исключения его из проверки)
+    username = request.args.get('username', '')
     
     if not phone:
         return jsonify({'status': 'error', 'message': 'Phone number is required'}), 400
 
     try:
-        sheet = get_sheet()
-        records = sheet.get_all_records()
+        # Кэшируем данные из Google Sheets на короткое время
+        if not hasattr(app, 'phone_check_cache') or \
+           (datetime.now() - getattr(app, 'last_phone_check_time', datetime.min)).seconds > 30:
+            sheet = get_sheet()
+            app.phone_check_cache = sheet.get_all_records()
+            app.last_phone_check_time = datetime.now()
         
-        # Ищем пользователя с таким номером телефона
+        # Ищем в кэшированных данных
         user_with_phone = next(
-            (u for u in records 
+            (u for u in app.phone_check_cache 
              if u.get('phone', '') == phone 
              and u.get('Username', '').lower() != username.lower()),
             None
