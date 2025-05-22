@@ -499,7 +499,7 @@
         }, 300);
     });
 
-    let phoneCheckCache = null;
+let phoneCheckCache = null;
 let lastPhoneCheckTime = 0;
 
 async function saveProfile(user) {
@@ -571,15 +571,7 @@ async function saveProfile(user) {
     }
 }
 
-function showSuccessScreen() {
-    const successScreen = document.getElementById('success-screen');
-    const animation = document.getElementById('success-animation');
-    
-    // Сбрасываем анимацию
-    animation.src = '/static/great.gif?' + new Date().getTime();
-    
-    successScreen.classList.add('show');
-}
+
 
 function hideSuccessScreen() {
     const successScreen = document.getElementById('success-screen');
@@ -590,9 +582,8 @@ function hideSuccessScreen() {
         const successScreen = document.getElementById('success-screen');
         const animation = document.getElementById('success-animation');
         
-        // Перезапускаем анимацию
-        animation.currentTime = 0;
-        animation.play();
+        // Сбрасываем анимацию
+        animation.src = '/static/great.gif?' + new Date().getTime();
         
         successScreen.classList.add('show');
     }
