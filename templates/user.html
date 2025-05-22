@@ -222,7 +222,7 @@
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.3s ease;
         }
         
         #success-screen.show {
@@ -231,8 +231,8 @@
         }
         
         #success-animation {
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             margin-bottom: 20px;
         }
         
@@ -326,9 +326,7 @@
         </button>
     </div>
     <div id="success-screen">
-        <video id="success-animation" autoplay loop muted>
-            <source src="/static/great.webm" type="video/webm">
-        </video>
+        <img id="success-animation" src="/static/great.gif" alt="Success" style="width: 120px; height: 120px;">
         <div id="success-message">Данные успешно сохранены</div>
     </div>
     <script>
@@ -501,69 +499,92 @@
         }, 300);
     });
 
-    async function saveProfile(user) {
-        const name = document.getElementById('edit-name').value.trim();
-        const phone = document.getElementById('edit-phone').value.trim();
-    
-        if (!name) {
-            showToast("Введите ваше имя");
-            return;
-        }
-    
-        // Проверка формата номера телефона (пример для Беларуси)
-        const phoneRegex = /^\+375(24|25|29|33|44)\d{7}$/;
-        if (!phoneRegex.test(phone)) {
-            showToast("Введите номер в формате +375XXXXXXXXX");
-            return;
-        }
-    
-        try {
-            // Проверяем, существует ли уже такой номер
-            const checkResponse = await fetch(`/api/check-phone?phone=${encodeURIComponent(phone)}&username=${encodeURIComponent(user.username)}`);
-            const checkResult = await checkResponse.json();
-            
-            // Если номер уже занят другим пользователем
-            if (checkResult.exists && checkResult.username !== user.username) {
-                showToast("Данный номер уже зарегистрирован");
-                return;
-            }
-    
-            // Обновляем данные на сервере
-            const response = await fetch('/api/save-user', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    username: user.username,
-                    name: name,
-                    phone: phone
-                })
-            });
-    
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                // Обновляем локальные данные
-                user.first_name = name;
-                user.phone = phone;
-                localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
-                
-                // Показываем экран успешного сохранения
-                showSuccessScreen();
-                
-                // Через 3 секунды возвращаем в личный кабинет
-                setTimeout(() => {
-                    hideSuccessScreen();
-                    showPersonalCabinet(user);
-                    document.getElementById('edit-form').style.display = 'none';
-                }, 3000);
-            } else {
-                throw new Error(result.message || 'Ошибка сохранения');
-            }
-        } catch (error) {
-            console.error('Ошибка сохранения:', error);
-            showToast("Ошибка при сохранении данных");
-        }
+    let phoneCheckCache = null;
+let lastPhoneCheckTime = 0;
+
+async function saveProfile(user) {
+    const name = document.getElementById('edit-name').value.trim();
+    const phone = document.getElementById('edit-phone').value.trim();
+
+    if (!name) {
+        showToast("Введите ваше имя");
+        return;
     }
+
+    // Проверка формата номера телефона
+    const phoneRegex = /^\+375(24|25|29|33|44)\d{7}$/;
+    if (!phoneRegex.test(phone)) {
+        showToast("Введите номер в формате +375XXXXXXXXX");
+        return;
+    }
+
+    try {
+        // Используем кэшированные данные, если они свежие (менее 30 секунд)
+        const now = Date.now();
+        if (!phoneCheckCache || (now - lastPhoneCheckTime) > 30000) {
+            const response = await fetch(`/api/get-user?username=${encodeURIComponent(user.username)}`);
+            phoneCheckCache = await response.json();
+            lastPhoneCheckTime = now;
+        }
+
+        // Проверяем номер в кэшированных данных
+        if (phoneCheckCache.exists && phoneCheckCache.user.phone === phone && 
+            phoneCheckCache.user.Username !== user.username) {
+            showToast("Данный номер уже зарегистрирован");
+            return;
+        }
+
+        // Обновляем данные
+        const saveResponse = await fetch('/api/save-user', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: user.username,
+                name: name,
+                phone: phone
+            })
+        });
+
+        const result = await saveResponse.json();
+        
+        if (result.status === 'success') {
+            // Обновляем локальные данные
+            user.first_name = name;
+            user.phone = phone;
+            localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
+            
+            // Показываем экран успеха
+            showSuccessScreen();
+            
+            // Возвращаем в личный кабинет через 2 секунды
+            setTimeout(() => {
+                hideSuccessScreen();
+                showPersonalCabinet(user);
+                document.getElementById('edit-form').style.display = 'none';
+            }, 2000);
+        } else {
+            throw new Error(result.message || 'Ошибка сохранения');
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения:', error);
+        showToast("Ошибка при сохранении данных");
+    }
+}
+
+function showSuccessScreen() {
+    const successScreen = document.getElementById('success-screen');
+    const animation = document.getElementById('success-animation');
+    
+    // Сбрасываем анимацию
+    animation.src = '/static/great.gif?' + new Date().getTime();
+    
+    successScreen.classList.add('show');
+}
+
+function hideSuccessScreen() {
+    const successScreen = document.getElementById('success-screen');
+    successScreen.classList.remove('show');
+}
     
     function showSuccessScreen() {
         const successScreen = document.getElementById('success-screen');
