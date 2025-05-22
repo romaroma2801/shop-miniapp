@@ -640,11 +640,13 @@ button.secondary:hover {
 }
 /* Добавьте в конец файла */
 .promotions-carousel {
-    width: calc(100% - 20px); /* Добавляем отступы по бокам */
-    margin: 20px 10px 30px; /* Увеличиваем нижний отступ */
+    width: calc(100% - 5px); /* Добавляем отступы по бокам */
+    margin: 10px 10px 20px; /* Увеличиваем нижний отступ */
     position: relative;
     overflow: hidden;
     border-radius: 12px;
+    box-shadow: 0 0px 8px rgba(255,0,0,0.5);
+    border: 2px solid red;
 }
 
 .carousel-container {
@@ -656,17 +658,15 @@ button.secondary:hover {
 
 .carousel-slide {
     min-width: 100%;
-    padding: 0 5px;
+    padding: 0px;
     box-sizing: border-box;
 }
 
 .carousel-banner {
     background: white;
-    border-radius: 12px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 0px;
     height: 100%;
-    box-shadow: 0 4px 8px rgba(255,0,0,0.1);
-    border: 2px solid #ff0000;
     position: relative;
     overflow: hidden;
     cursor: pointer;
