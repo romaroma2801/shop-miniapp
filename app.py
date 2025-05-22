@@ -171,7 +171,7 @@ def get_stores(region, city):
 @app.route('/api/promotions')
 def get_promotions():
     try:
-        response = requests.get('https://nekuri.by/api/news-feed.php')
+        response = requests.get('https://nekuri.by/api/news-feed.json')
         response.raise_for_status()
         return jsonify(response.json())
     except Exception as e:
