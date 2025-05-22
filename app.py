@@ -137,6 +137,7 @@ def save_user():
         
         # Проверяем существование пользователя
         user_index = next((i for i, u in enumerate(records) if u.get('Username', '').lower() == data['username'].lower()), None)
+        
         if data.get('phone'):
             # Простая проверка формата для Беларуси
             if not re.match(r'^\+375(24|25|29|33|44)\d{7}$', data['phone']):
@@ -144,9 +145,16 @@ def save_user():
                     'status': 'error',
                     'message': 'Номер телефона должен быть в формате +375XXXXXXXXX'
                 }), 400
+            
             # Проверяем, не занят ли номер другим пользователем
-            check_response = check_phone()
-            check_data = check_response.get_json()
+            check_response = requests.get(
+                f'http://{request.host}/api/check-phone',
+                params={
+                    'phone': data['phone'],
+                    'username': data['username']
+                }
+            )
+            check_data = check_response.json()
             
             if check_data.get('exists') and check_data.get('username') != data['username']:
                 return jsonify({
@@ -154,8 +162,6 @@ def save_user():
                     'message': 'Этот номер телефона уже зарегистрирован другим пользователем'
                 }), 400
 
-        sheet = get_sheet()
-        records = sheet.get_all_records()
         if user_index is not None:
             # Обновляем существующего пользователя
             row = user_index + 2
