@@ -17,7 +17,7 @@
     </style>
 </head>
 <body>
-    
+    <body style="overflow-x: hidden;">
     <button id="back-button" onclick="goBack()" style="display: none;">
         <img src="/static/back.svg" alt="Назад">
     </button>
@@ -381,6 +381,16 @@
                 let currentTranslate = 0;
                 let prevTranslate = 0;
                 
+                // Предотвращаем горизонтальный скролл страницы при свайпе
+                function preventHorizontalScroll(e) {
+                    if (isDragging) {
+                        e.preventDefault();
+                    }
+                }
+                
+                // Добавляем обработчик для предотвращения скролла
+                container.addEventListener('touchmove', preventHorizontalScroll, { passive: false });
+                
                 // Автопрокрутка
                 function startAutoSlide() {
                     intervalId = setInterval(() => {
@@ -413,7 +423,7 @@
                     if (!isDragging) return;
                     const currentPosition = e.touches[0].clientX;
                     const diff = currentPosition - startPos;
-                    container.style.transform = `translateX(calc(-${currentIndex * 100}% + ${diff}px))`;
+                    container.style.transform = `translateX(calc(-${currentIndex * 100}% + ${diff}px)`;
                 });
                 
                 container.addEventListener('touchend', (e) => {
@@ -474,10 +484,6 @@
                     showHome();
                 }
             }
-
-
-
-
             async function showRegions() {
                 currentState = "regions";
                 const regions = await loadData('regions');
