@@ -48,10 +48,30 @@
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
+    <div class="cart-overlay" id="cartOverlay">
+        <div class="cart-header">
+            <span>Ваша корзина</span>
+            <span id="cartItemCount">0 товаров</span>
+        </div>
+        <div class="cart-content" id="cartContent">
+            <!-- Товары будут добавляться сюда динамически -->
+        </div>
+        <div class="cart-summary">
+            <div class="cart-summary-row">
+                <span>Скидка 3% за регистрацию</span>
+                <span id="cartDiscount">-0.00 BYN</span>
+            </div>
+            <div class="cart-summary-row cart-summary-total">
+                <span>Итого</span>
+                <span id="cartTotal">0.00 BYN</span>
+            </div>
+            <button class="cart-checkout-btn" onclick="checkout()">Оформить заказ</button>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
                 function openCart() {
-                    alert("Функция корзины в разработке!");
+                    toggleCart(); // Используем нашу новую функцию для открытия/закрытия корзины
                 }
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
@@ -239,7 +259,211 @@
                     return null;
                 }
             }
-
+            // Глобальные переменные для корзины
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            let cartOpen = false;
+            
+            // Функция для обновления корзины в localStorage
+            function saveCart() {
+                localStorage.setItem('cart', JSON.stringify(cart));
+            }
+            
+            // Функция для обновления отображения корзины
+            function updateCartUI() {
+                const cartContent = document.getElementById('cartContent');
+                const cartItemCount = document.getElementById('cartItemCount');
+                const cartDiscount = document.getElementById('cartDiscount');
+                const cartTotal = document.getElementById('cartTotal');
+                const cartBadge = document.querySelector('.cart-badge');
+                
+                // Очищаем содержимое корзины
+                cartContent.innerHTML = '';
+                
+                // Добавляем товары
+                let total = 0;
+                cart.forEach((item, index) => {
+                    const price = item.special_price || item.price;
+                    total += parseFloat(price);
+                    
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'cart-item';
+                    itemElement.innerHTML = `
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.title}</div>
+                            ${item.selectedOption ? `<div class="cart-item-option">${item.selectedOption}</div>` : ''}
+                        </div>
+                        <div class="cart-item-price">${parseFloat(price).toFixed(2)} BYN</div>
+                        <button class="cart-item-remove" onclick="removeFromCart(${index})"></button>
+                    `;
+                    cartContent.appendChild(itemElement);
+                });
+                
+                // Обновляем счетчик товаров
+                const itemCount = cart.length;
+                cartItemCount.textContent = `${itemCount} ${itemCount === 1 ? 'товар' : itemCount < 5 ? 'товара' : 'товаров'}`;
+                
+                // Рассчитываем скидку и итого
+                const discount = total * 0.03;
+                const finalTotal = total - discount;
+                
+                cartDiscount.textContent = `-${discount.toFixed(2)} BYN`;
+                cartTotal.textContent = `${finalTotal.toFixed(2)} BYN`;
+                
+                // Обновляем бейдж
+                if (cartBadge) {
+                    cartBadge.textContent = itemCount;
+                    cartBadge.style.display = itemCount > 0 ? 'flex' : 'none';
+                }
+            }
+            
+            // Функция для открытия/закрытия корзины
+            function toggleCart() {
+                cartOpen = !cartOpen;
+                const cartOverlay = document.getElementById('cartOverlay');
+                
+                if (cartOverlay) {
+                    cartOverlay.classList.toggle('open', cartOpen);
+                    
+                    if (cartOpen) {
+                        updateCartUI();
+                    }
+                }
+            }
+            
+            // Функция для добавления товара в корзину
+            function addToCart(product, selectedOption = null) {
+                // Создаем копию товара с выбранной опцией
+                const cartItem = {...product};
+                if (selectedOption) {
+                    cartItem.selectedOption = selectedOption;
+                }
+                
+                // Добавляем в корзину
+                cart.push(cartItem);
+                saveCart();
+                
+                // Анимация добавления
+                animateAddToCart();
+                
+                // Обновляем UI
+                updateCartUI();
+            }
+            
+            // Функция для удаления товара из корзины
+            function removeFromCart(index) {
+                cart.splice(index, 1);
+                saveCart();
+                updateCartUI();
+            }
+            
+            // Функция для оформления заказа
+            function checkout() {
+                alert('Функция оформления заказа в разработке');
+            }
+            
+            // Анимация добавления в корзину
+            function animateAddToCart() {
+                const addButton = document.activeElement;
+                const cartButton = document.querySelector('.cart-button');
+                
+                if (!addButton || !cartButton) return;
+                
+                // Создаем летающий бейдж
+                const flyingBadge = document.createElement('div');
+                flyingBadge.className = 'flying-badge';
+                document.body.appendChild(flyingBadge);
+                
+                // Получаем координаты кнопок
+                const addButtonRect = addButton.getBoundingClientRect();
+                const cartButtonRect = cartButton.getBoundingClientRect();
+                
+                // Начальная позиция
+                const startX = addButtonRect.left + addButtonRect.width / 2;
+                const startY = addButtonRect.top + addButtonRect.height / 2;
+                
+                // Конечная позиция
+                const endX = cartButtonRect.right - 10;
+                const endY = cartButtonRect.top + 5;
+                
+                // Устанавливаем начальную позицию
+                flyingBadge.style.left = `${startX}px`;
+                flyingBadge.style.top = `${startY}px`;
+                
+                // Анимация полета
+                const duration = 800;
+                const startTime = performance.now();
+                
+                function animate(time) {
+                    const elapsed = time - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Кривая Безье для плавного движения
+                    const bezierProgress = cubicBezier(progress, 0.1, 0.8, 0.2, 1);
+                    
+                    // Промежуточные координаты
+                    const x = startX + (endX - startX) * bezierProgress;
+                    const y = startY + (endY - startY) * bezierProgress * 2 - 50 * Math.sin(progress * Math.PI);
+                    
+                    flyingBadge.style.left = `${x}px`;
+                    flyingBadge.style.top = `${y}px`;
+                    flyingBadge.style.transform = `scale(${1 + progress * 0.5})`;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        // Завершение анимации
+                        flyingBadge.remove();
+                        
+                        // Пульсация бейджа
+                        const cartBadge = document.querySelector('.cart-badge');
+                        if (cartBadge) {
+                            cartBadge.style.transform = 'scale(1.5)';
+                            setTimeout(() => {
+                                cartBadge.style.transform = 'scale(1)';
+                            }, 300);
+                        }
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            // Функция для кривой Безье
+            function cubicBezier(t, p0, p1, p2, p3) {
+                const u = 1 - t;
+                return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3;
+            }
+            
+            // Инициализация корзины при загрузке
+            document.addEventListener('DOMContentLoaded', () => {
+                // Добавляем бейдж к кнопке корзины
+                const cartButton = document.querySelector('.cart-button');
+                if (cartButton) {
+                    const badge = document.createElement('div');
+                    badge.className = 'cart-badge';
+                    badge.style.display = cart.length > 0 ? 'flex' : 'none';
+                    badge.textContent = cart.length;
+                    cartButton.appendChild(badge);
+                }
+                
+                // Обновляем обработчик кнопки корзины
+                const cartBtn = document.querySelector('.cart-button');
+                if (cartBtn) {
+                    cartBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        toggleCart();
+                    };
+                }
+                
+                // Закрываем корзину при клике вне ее
+                document.addEventListener('click', (e) => {
+                    const cartOverlay = document.getElementById('cartOverlay');
+                    if (cartOverlay && cartOpen && !cartOverlay.contains(e.target) && 
+                        !e.target.closest('.cart-button')) {
+                        toggleCart();
+                    }
+                });
+            });
             function showToast(message, duration = 2000) {
                 const toast = document.createElement('div');
                 toast.textContent = message;
