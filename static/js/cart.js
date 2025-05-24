@@ -11,7 +11,7 @@ const cart = {
 
   add(product, option = null) {
     // Создаем уникальный ключ для товара с опцией
-    const key = product.id + (option ? `_${option}` : '');
+    const key = product.id + (option ? `_${option.replace(/\s+/g, '_')}` : '');
     
     // Проверяем есть ли уже такой товар в корзине
     const existingItem = this.items.find(item => item.key === key);
@@ -26,12 +26,13 @@ const cart = {
         price: parseFloat(product.special_price || product.price || product.regular_price),
         option,
         quantity: 1,
-        optionName: option // сохраняем название опции для отображения
+        optionName: option
       });
     }
     
     this.save();
     this.animateAdd();
+    this.render(); // Добавляем принудительный рендер после добавления
   },
 
   remove(key, event) {
@@ -75,6 +76,7 @@ const cart = {
         <div class="cart-item-info">
           <div class="cart-item-title">${item.title}</div>
           ${item.option ? `<div class="cart-item-option">${item.option}</div>` : ''}
+          <div class="cart-item-quantity">Количество: ${item.quantity}</div>
         </div>
         <div class="cart-item-right">
           <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</div>
