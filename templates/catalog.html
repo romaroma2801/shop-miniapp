@@ -323,136 +323,7 @@
       line-height: 1;
       margin: 0;
     }
-    /* Стили для корзины */
-    .cart-overlay {
-        position: fixed;
-        bottom: 60px;
-        left: 0;
-        right: 0;
-        height: 70vh;
-        background: white;
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
-        z-index: 90;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-    
-    .cart-overlay.open {
-        transform: translateY(0);
-    }
-    
-    .cart-header {
-        padding: 15px;
-        border-bottom: 1px solid #eee;
-        font-weight: bold;
-        font-size: 18px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .cart-content {
-        flex: 1;
-        overflow-y: auto;
-        padding: 15px;
-    }
-    
-    .cart-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #f5f5f5;
-    }
-    
-    .cart-item-info {
-        flex: 1;
-        margin-right: 10px;
-    }
-    
-    .cart-item-name {
-        font-size: 14px;
-        margin-bottom: 5px;
-    }
-    
-    .cart-item-option {
-        font-size: 12px;
-        color: #666;
-    }
-    
-    .cart-item-price {
-        font-weight: bold;
-        white-space: nowrap;
-    }
-    
-    .cart-item-remove {
-        width: 24px;
-        height: 24px;
-        margin-left: 10px;
-        background: url('/static/remove.png') no-repeat center;
-        background-size: contain;
-        border: none;
-        cursor: pointer;
-    }
-    
-    .cart-summary {
-        padding: 15px;
-        border-top: 1px solid #eee;
-        background: #f9f9f9;
-    }
-    
-    .cart-summary-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
-    
-    .cart-summary-total {
-        font-weight: bold;
-        font-size: 16px;
-        margin-top: 10px;
-    }
-    
-    .cart-checkout-btn {
-        width: 100%;
-        padding: 12px;
-        background: #ff0000;
-        color: white;
-        border: none;
-        border-radius: 25px;
-        font-weight: bold;
-        margin-top: 15px;
-        cursor: pointer;
-    }
-    
-    .cart-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: #ff0000;
-        color: white;
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .flying-badge {
-        position: fixed;
-        width: 10px;
-        height: 10px;
-        background: #ff0000;
-        border-radius: 50%;
-        z-index: 1001;
-        pointer-events: none;
-    }
+
   </style>
 </head>
 
@@ -480,26 +351,6 @@
     <button class="cart-button" onclick="openCart()">
       <img src="/static/shop.svg" alt="Корзина">
     </button>
-  </div>
-  <div class="cart-overlay" id="cartOverlay">
-      <div class="cart-header">
-          <span>Ваша корзина</span>
-          <span id="cartItemCount">0 товаров</span>
-      </div>
-      <div class="cart-content" id="cartContent">
-          <!-- Товары будут добавляться сюда динамически -->
-      </div>
-      <div class="cart-summary">
-          <div class="cart-summary-row">
-              <span>Скидка 3% за регистрацию</span>
-              <span id="cartDiscount">-0.00 BYN</span>
-          </div>
-          <div class="cart-summary-row cart-summary-total">
-              <span>Итого</span>
-              <span id="cartTotal">0.00 BYN</span>
-          </div>
-          <button class="cart-checkout-btn" onclick="checkout()">Оформить заказ</button>
-      </div>
   </div>
   <script>
     let catalog = {};
@@ -616,9 +467,8 @@
               <p class="price" style="font-size: 13px; white-space: nowrap;">
                 ${p.special_price ? `<span class="old-price">${parseFloat(p.regular_price).toFixed(2)} BYN</span> <span class="new-price">${parseFloat(p.special_price).toFixed(2)} BYN</span>` : `${parseFloat(p.price).toFixed(2)} BYN`}
               </p>
-              <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" 
-                   onclick="event.stopPropagation(); ${p.available==='out_of_stock'?'alert(\'К сожалению товар недоступен\')':'addToCart(productViewData['+i+'], null, this)'}">
-                  ${p.available==='out_of_stock'?'Недоступен':'Купить'}
+              <div class="${p.available==='out_of_stock'?'map-button':'add-button'}" onclick="event.stopPropagation(); alert('Смотреть можно, трогать нельзя!')">
+                ${p.available==='out_of_stock'?'Недоступен':'Купить'}
               </div>
             </div>
           </div>`).join('')}</div>`);
@@ -688,10 +538,13 @@
               </p>
               <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
                    onclick="${p.options?.length 
-                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { addToCart(productViewData[${i}], selectedOptionName, this) }` 
-                     : `addToCart(productViewData[${i}], null, this)`}"
-                   style="...">
-                  ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
+                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
+                     : `alert('Смотреть можно, трогать нельзя!')`}"
+                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
+                          ${p.available === 'out_of_stock' 
+                            ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
+                            : 'background: #ff0000; color: #fff; border: none;'}">
+                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
               </div>
             </div>
           </div>
@@ -762,222 +615,7 @@
         window.productDetailScrolled = false;
       }, 100);
     }
-    function openCart() {
-        toggleCart(); // Используем нашу новую функцию для открытия/закрытия корзины
-    }
-    // Глобальные переменные для корзины
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    let cartOpen = false;
-    
-    // Функция для обновления корзины в localStorage
-    function saveCart() {
-        localStorage.setItem('cart', JSON.stringify(cart));
-    }
-    
-    // Функция для обновления отображения корзины
-    function updateCartUI() {
-        const cartContent = document.getElementById('cartContent');
-        const cartItemCount = document.getElementById('cartItemCount');
-        const cartDiscount = document.getElementById('cartDiscount');
-        const cartTotal = document.getElementById('cartTotal');
-        const cartBadge = document.querySelector('.cart-badge');
-        
-        // Очищаем содержимое корзины
-        cartContent.innerHTML = '';
-        
-        // Добавляем товары
-        let total = 0;
-        cart.forEach((item, index) => {
-            const price = item.special_price || item.price;
-            total += parseFloat(price);
-            
-            const itemElement = document.createElement('div');
-            itemElement.className = 'cart-item';
-            itemElement.innerHTML = `
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${item.title}</div>
-                    ${item.selectedOption ? `<div class="cart-item-option">${item.selectedOption}</div>` : ''}
-                </div>
-                <div class="cart-item-price">${parseFloat(price).toFixed(2)} BYN</div>
-                <button class="cart-item-remove" onclick="removeFromCart(${index})"></button>
-            `;
-            cartContent.appendChild(itemElement);
-        });
-        
-        // Обновляем счетчик товаров
-        const itemCount = cart.length;
-        cartItemCount.textContent = `${itemCount} ${itemCount === 1 ? 'товар' : itemCount < 5 ? 'товара' : 'товаров'}`;
-        
-        // Рассчитываем скидку и итого
-        const discount = total * 0.03;
-        const finalTotal = total - discount;
-        
-        cartDiscount.textContent = `-${discount.toFixed(2)} BYN`;
-        cartTotal.textContent = `${finalTotal.toFixed(2)} BYN`;
-        
-        // Обновляем бейдж
-        if (cartBadge) {
-            cartBadge.textContent = itemCount;
-            cartBadge.style.display = itemCount > 0 ? 'flex' : 'none';
-        }
-    }
-    
-    // Функция для открытия/закрытия корзины
-    function toggleCart() {
-        cartOpen = !cartOpen;
-        const cartOverlay = document.getElementById('cartOverlay');
-        
-        if (cartOverlay) {
-            cartOverlay.classList.toggle('open', cartOpen);
-            
-            if (cartOpen) {
-                updateCartUI();
-            }
-        }
-    }
-    
-    // Функция для добавления товара в корзину
-    function addToCart(product, selectedOption = null) {
-        // Создаем копию товара с выбранной опцией
-        const cartItem = {...product};
-        if (selectedOption) {
-            cartItem.selectedOption = selectedOption;
-        }
-        
-        // Добавляем в корзину
-        cart.push(cartItem);
-        saveCart();
-        
-        // Анимация добавления
-        animateAddToCart();
-        
-        // Обновляем UI
-        updateCartUI();
-    }
-    
-    // Функция для удаления товара из корзины
-    function removeFromCart(index, event) {
-        event.stopPropagation(); // Предотвращаем закрытие корзины
-        cart.splice(index, 1);
-        saveCart();
-        updateCartUI();
-        updateCartBadge();
-    }
-    
-    // Функция для оформления заказа
-    function checkout() {
-        if (cart.length === 0) {
-            alert('Корзина пуста!');
-            return;
-        }
-        alert('Функция оформления заказа в разработке!');
-    }
-    
-    // Анимация добавления в корзину
-    function animateAddToCart(productElement) {
-        const cartButton = document.querySelector('.cart-button');
-        if (!cartButton) return;
-    
-        // Создаем летающий бейдж
-        const flyingBadge = document.createElement('div');
-        flyingBadge.className = 'flying-badge';
-        document.body.appendChild(flyingBadge);
-    
-        // Получаем координаты
-        const productRect = productElement.getBoundingClientRect();
-        const cartButtonRect = cartButton.getBoundingClientRect();
-    
-        // Начальная позиция (центр кнопки "Купить")
-        const startX = productRect.left + productRect.width / 2;
-        const startY = productRect.top + productRect.height / 2;
-    
-        // Конечная позиция (кружок на кнопке корзины)
-        const endX = cartButtonRect.right - 15;
-        const endY = cartButtonRect.top + 15;
-    
-        // Устанавливаем начальную позицию
-        flyingBadge.style.left = `${startX}px`;
-        flyingBadge.style.top = `${startY}px`;
-    
-        // Анимация
-        const duration = 600;
-        const startTime = performance.now();
-    
-        function animate(time) {
-            const elapsed = time - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            // Кривая для более естественного движения
-            const easeProgress = 1 - Math.pow(1 - progress, 2);
-            
-            // Промежуточные координаты
-            const x = startX + (endX - startX) * easeProgress;
-            const y = startY + (endY - startY) * easeProgress;
-            
-            // Небольшой подъем в середине анимации
-            const lift = Math.sin(progress * Math.PI) * 30;
-            
-            flyingBadge.style.left = `${x}px`;
-            flyingBadge.style.top = `${y - lift}px`;
-            flyingBadge.style.transform = `scale(${1 + progress * 0.5})`;
-            
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                flyingBadge.remove();
-                pulseCartBadge();
-            }
-        }
-    
-        requestAnimationFrame(animate);
-    }
-    
-    function pulseCartBadge() {
-        const cartBadge = document.querySelector('.cart-badge');
-        if (cartBadge) {
-            cartBadge.style.transform = 'scale(1.5)';
-            setTimeout(() => {
-                cartBadge.style.transform = 'scale(1)';
-            }, 300);
-        }
-    }
-    
-    // Функция для кривой Безье
-    function cubicBezier(t, p0, p1, p2, p3) {
-        const u = 1 - t;
-        return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3;
-    }
-    
-    // Инициализация корзины при загрузке
-    document.addEventListener('DOMContentLoaded', () => {
-        // Добавляем бейдж к кнопке корзины
-        const cartButton = document.querySelector('.cart-button');
-        if (cartButton) {
-            const badge = document.createElement('div');
-            badge.className = 'cart-badge';
-            badge.style.display = cart.length > 0 ? 'flex' : 'none';
-            badge.textContent = cart.length;
-            cartButton.appendChild(badge);
-        }
-        
-        // Обновляем обработчик кнопки корзины
-        const cartBtn = document.querySelector('.cart-button');
-        if (cartBtn) {
-            cartBtn.onclick = function(e) {
-                e.stopPropagation();
-                toggleCart();
-            };
-        }
-        
-        // Закрываем корзину при клике вне ее
-        document.addEventListener('click', (e) => {
-            const cartOverlay = document.getElementById('cartOverlay');
-            if (cartOverlay && cartOpen && !cartOverlay.contains(e.target) && 
-                !e.target.closest('.cart-button')) {
-                toggleCart();
-            }
-        });
-    });
+    function openCart() { alert('Корзина пока не работает'); }
     function goToLogin() { location.href='/user'; }
     loadCatalog();
   </script>
