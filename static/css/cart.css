@@ -207,3 +207,8 @@
 .pulse {
   animation: pulseAnim 0.3s ease;
 }
+.cart-item-quantity {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
