@@ -497,10 +497,9 @@
     function viewProduct(i) {
       const p = productViewData[i];
       selectedOptionImage = p.image;
-      selectedOptionName = '';
+      // ❗ Не сбрасываем selectedOptionName здесь, чтобы сохранить выбор при перерисовке
       let selectedOptionAvailable = false;
     
-      // Сохраняем текущие данные для возврата
       const returnData = {
         products: productViewData,
         view: currentData
@@ -515,7 +514,7 @@
                 <td style="border-bottom: 1px solid #eee; padding: 8px;">${attr.value.replace(/,\s*/g, ', ')}</td>
               </tr>`).join('')}
           </table>` : `<p style="white-space: pre-line; margin-bottom: 16px;">${p.description}</p>`;
-      
+    
         const optionsBlock = p.options?.length ? `
           <div style="margin-bottom: 16px;">
             ${p.options.map(opt => `
@@ -534,7 +533,7 @@
                   </div>`).join('')}
               </div>`).join('')}
           </div>` : '';
-      
+    
         setContent(`
           <form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
           <div class="product-detail">
@@ -542,7 +541,7 @@
             <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 18px;">${p.title}</h4>
             ${attributesTable}
             ${optionsBlock}
-            
+    
             <div style="margin-top: 20px; margin-bottom: 10px;">
               <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 12px; text-align: center;">
                 ${p.special_price
@@ -556,55 +555,65 @@
             </div>
           </div>
         `);
-      
-        // Навешиваем обработчик кнопки "Купить"
+    
+        // Навешиваем обработчик на кнопку "Купить"
         setTimeout(() => {
           const btn = document.getElementById('buy-btn');
           if (!btn) return;
-      
+    
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
-      
+    
             if (p.available === 'out_of_stock') {
               alert('К сожалению, товар недоступен');
               return;
             }
-      
+    
             if (p.options?.length && !selectedOptionName) {
               alert('Пожалуйста, выберите вариант товара');
               return;
             }
-      
+    
             addProductToCart(p, selectedOptionName);
-      
+    
             if (window.Telegram && Telegram.WebApp) {
               Telegram.WebApp.showAlert('Товар добавлен в корзину');
             } else {
               alert('Товар добавлен в корзину');
             }
-      
+    
             if (window.cart && typeof cart.animateAdd === 'function') {
               cart.animateAdd(e);
             }
           });
         }, 50);
-      
-        // Функция выбора опции
-        window.selectOption = function(productIndex, optionName, valueIndex) {
-          const opt = productViewData[productIndex].options.find(o => o.name === optionName);
-          const val = opt.values[valueIndex];
-          if (val.available) {
-            selectedOptionImage = val.image || productViewData[productIndex].image;
-            selectedOptionName = val.name;
-            selectedOptionAvailable = true;
-            renderDetailView();
-          } else {
-            alert('Этот вариант товара недоступен');
-          }
-        };
       }
-
     
+      // Обработка выбора опции
+      window.selectOption = function(productIndex, optionName, valueIndex) {
+        const opt = productViewData[productIndex].options.find(o => o.name === optionName);
+        const val = opt.values[valueIndex];
+        if (val.available) {
+          selectedOptionImage = val.image || productViewData[productIndex].image;
+          selectedOptionName = val.name;
+          selectedOptionAvailable = true;
+          renderDetailView(); // перерисовываем карточку с отмеченной опцией
+        } else {
+          alert('Этот вариант товара недоступен');
+        }
+      };
+    
+      // Перехват кнопки "Назад"
+      const originalGoBack = window.goBack;
+      window.goBack = function() {
+        productViewData = returnData.products;
+        currentData = returnData.view;
+        originalGoBack();
+        window.goBack = originalGoBack;
+      };
+    
+      openView(renderDetailView);
+    }
     
       // Временная перезапись функции goBack
       const originalGoBack = window.goBack;
