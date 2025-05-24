@@ -11,7 +11,7 @@ const cart = {
 
   add(product, option = null) {
     // Создаем уникальный ключ для товара с опцией
-    const key = product.id + (option ? `_${option.replace(/\s+/g, '_')}` : '');
+    const key = product.id + '_' + product.title + (option ? `_${option.replace(/\s+/g, '_')}` : '');
     
     // Проверяем есть ли уже такой товар в корзине
     const existingItem = this.items.find(item => item.key === key);
