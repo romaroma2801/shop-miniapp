@@ -574,35 +574,34 @@
               return;
             }
         
-            // Добавление в корзину
             addProductToCart(p, selectedOptionName);
         
-            // Уведомление
             if (window.Telegram && Telegram.WebApp) {
               Telegram.WebApp.showAlert('Товар добавлен в корзину');
             } else {
               alert('Товар добавлен в корзину');
             }
         
-            // Анимация
             if (window.cart && typeof cart.animateAdd === 'function') {
-              cart.animateAdd(e);  // Важно: передаем событие
+              cart.animateAdd(e);
             }
           });
         }, 50);
-
-      window.selectOption = function(productIndex, optionName, valueIndex) {
-        const opt = productViewData[productIndex].options.find(o => o.name === optionName);
-        const val = opt.values[valueIndex];
-        if (val.available) {
-          selectedOptionImage = val.image || productViewData[productIndex].image;
-          selectedOptionName = val.name;
-          selectedOptionAvailable = true;
-          renderDetailView(); // это перерисует карточку с отмеченной опцией
-        } else {
-          alert('Этот вариант товара недоступен');
+        
+        // ⛔ ЭТОТ БЛОК ДОЛЖЕН БЫТЬ СНАРУЖИ!
+        window.selectOption = function(productIndex, optionName, valueIndex) {
+          const opt = productViewData[productIndex].options.find(o => o.name === optionName);
+          const val = opt.values[valueIndex];
+          if (val.available) {
+            selectedOptionImage = val.image || productViewData[productIndex].image;
+            selectedOptionName = val.name;
+            selectedOptionAvailable = true;
+            renderDetailView();
+          } else {
+            alert('Этот вариант товара недоступен');
+          }
         }
-      }
+
 
     
     
