@@ -291,6 +291,16 @@
                     }
                 }
                 // ===== КОНЕЦ ВСТАВКИ =====
+            // Обновление бейджа при загрузке
+            const cartButton = document.querySelector('.cart-button');
+            if (cartButton && !cartButton.querySelector('.cart-badge')) {
+              const badge = document.createElement('div');
+              badge.className = 'cart-badge';
+              badge.textContent = cart.length;
+              badge.style.display = cart.length > 0 ? 'flex' : 'none';
+              cartButton.appendChild(badge);
+            }
+
             const setFullHeight = () => {
                 document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
             };
@@ -1187,6 +1197,8 @@
             window.goBack = goBack;
             window.showSection = showSection;
             window.copyPhoneNumber = copyPhoneNumber;
+            window.removeFromCart = removeFromCart;
+
 
             // Функции для магазинов
             window.showRegions = showRegions;
