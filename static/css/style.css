@@ -72,7 +72,7 @@ body {
 
 .cart-button-container {
     position: fixed;
-    bottom: 10px; /* Поднята над футером */
+    bottom: 0px; /* Поднята над футером */
     left: 50%;
     transform: translateX(-50%);
     z-index: 110;
