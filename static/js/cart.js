@@ -6,21 +6,26 @@ const cart = {
 
   save() {
     localStorage.setItem('cart', JSON.stringify(this.items));
-    this.updateIcon();
+    this.updateBadge();
   },
 
-  add(item) {
-    const key = item.id + (item.option ? `_${item.option}` : '');
-    const existing = this.items.find(i => i.key === key);
+  add(product, option = null) {
+    // Создаем уникальный ключ для товара с опцией
+    const key = product.id + (option ? `_${option}` : '');
     
-    if (existing) {
-      existing.qty++;
+    // Проверяем есть ли уже такой товар в корзине
+    const existingItem = this.items.find(item => item.key === key);
+    
+    if (existingItem) {
+      existingItem.quantity++;
     } else {
-      this.items.push({ 
-        ...item, 
-        key, 
-        qty: 1,
-        price: parseFloat(item.price)
+      this.items.push({
+        key,
+        id: product.id,
+        title: product.title,
+        price: parseFloat(product.special_price || product.price || product.regular_price),
+        option,
+        quantity: 1
       });
     }
     
@@ -29,13 +34,13 @@ const cart = {
   },
 
   remove(key) {
-    this.items = this.items.filter(i => i.key !== key);
+    this.items = this.items.filter(item => item.key !== key);
     this.save();
     this.render();
   },
 
   getTotal() {
-    return this.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    return this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
   },
 
   getDiscount() {
@@ -46,72 +51,78 @@ const cart = {
     return this.getTotal() - this.getDiscount();
   },
 
-  updateIcon() {
-    const counter = document.getElementById('cart-count');
-    if (!counter) return;
+  updateBadge() {
+    const badge = document.getElementById('cart-badge');
+    if (!badge) return;
     
-    const totalQty = this.items.reduce((sum, i) => sum + i.qty, 0);
-    counter.textContent = totalQty;
-    counter.style.display = totalQty ? 'flex' : 'none';
+    const totalItems = this.items.reduce((sum, item) => sum + item.quantity, 0);
+    badge.textContent = totalItems;
+    badge.style.display = totalItems > 0 ? 'flex' : 'none';
   },
 
   render() {
-    const panel = document.getElementById('cart-panel');
-    if (!panel) return;
+    const cartItems = document.getElementById('cart-items');
+    const cartDiscount = document.getElementById('cart-discount');
+    const cartTotal = document.getElementById('cart-total');
     
-    const list = document.getElementById('cart-items');
-    const discountEl = document.getElementById('cart-discount');
-    const totalEl = document.getElementById('cart-total');
-
-    list.innerHTML = this.items.map(item => `
+    if (!cartItems || !cartDiscount || !cartTotal) return;
+    
+    // Очищаем и заполняем список товаров
+    cartItems.innerHTML = this.items.map(item => `
       <div class="cart-item">
-        <div>
-          <div class="cart-title">${item.title}</div>
-          ${item.option ? `<div class="cart-option">${item.option}</div>` : ''}
+        <div class="cart-item-info">
+          <div class="cart-item-title">${item.title}</div>
+          ${item.option ? `<div class="cart-item-option">${item.option}</div>` : ''}
         </div>
-        <div class="cart-price">${(item.price * item.qty).toFixed(2)} BYN</div>
-        <button class="remove-button" onclick="cart.remove('${item.key}')">
-          <img src="/static/remove.png" alt="Удалить">
-        </button>
+        <div class="cart-item-right">
+          <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</div>
+          <button class="cart-item-remove" onclick="cart.remove('${item.key}')"></button>
+        </div>
       </div>
     `).join('');
-
-    discountEl.textContent = `-${this.getDiscount().toFixed(2)} BYN`;
-    totalEl.textContent = `${this.getFinalTotal().toFixed(2)} BYN`;
+    
+    // Обновляем суммы
+    cartDiscount.textContent = `-${this.getDiscount().toFixed(2)} BYN`;
+    cartTotal.textContent = `${this.getFinalTotal().toFixed(2)} BYN`;
   },
 
   toggle() {
-    const panel = document.getElementById('cart-panel');
-    if (!panel) return;
+    const cartOverlay = document.getElementById('cart-overlay');
+    if (!cartOverlay) return;
     
-    const shown = panel.classList.toggle('show');
-    if (shown) this.render();
+    cartOverlay.classList.toggle('show');
+    
+    if (cartOverlay.classList.contains('show')) {
+      this.render();
+    }
   },
 
   animateAdd() {
-    const cartIcon = document.querySelector('.cart-button');
-    const badge = document.getElementById('cart-count');
-    if (!cartIcon || !badge || !event.target) return;
-
-    const ball = document.createElement('div');
-    ball.className = 'cart-fly';
-    document.body.appendChild(ball);
-
-    const startRect = event.target.getBoundingClientRect();
-    const endRect = badge.getBoundingClientRect();
+    const cartButton = document.querySelector('.cart-button');
+    const badge = document.getElementById('cart-badge');
     
-    // Начальная позиция (центр кнопки "Купить")
-    const startX = startRect.left + startRect.width / 2;
-    const startY = startRect.top + startRect.height / 2;
+    if (!cartButton || !badge || !event || !event.target) return;
     
-    // Конечная позиция (центр бейджа)
-    const endX = endRect.left + endRect.width / 2;
-    const endY = endRect.top + endRect.height / 2;
-
-    ball.style.left = `${startX - 6}px`;
-    ball.style.top = `${startY - 6}px`;
-
-    const animation = ball.animate([
+    const fly = document.createElement('div');
+    fly.className = 'cart-fly';
+    document.body.appendChild(fly);
+    
+    // Позиция кнопки "Купить"
+    const buttonRect = event.target.getBoundingClientRect();
+    const startX = buttonRect.left + buttonRect.width / 2;
+    const startY = buttonRect.top + buttonRect.height / 2;
+    
+    // Позиция бейджа корзины
+    const badgeRect = badge.getBoundingClientRect();
+    const endX = badgeRect.left + badgeRect.width / 2;
+    const endY = badgeRect.top + badgeRect.height / 2;
+    
+    // Начальная позиция
+    fly.style.left = `${startX - 6}px`;
+    fly.style.top = `${startY - 6}px`;
+    
+    // Анимация полета
+    const animation = fly.animate([
       { transform: `translate(0, 0) scale(1)` },
       { transform: `translate(${endX - startX}px, ${endY - startY - 50}px) scale(1.5)` },
       { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(1)` }
@@ -119,68 +130,67 @@ const cart = {
       duration: 600,
       easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
     });
-
+    
+    // После завершения анимации
     animation.onfinish = () => {
-      ball.remove();
+      fly.remove();
       badge.classList.add('pulse');
       setTimeout(() => badge.classList.remove('pulse'), 300);
-      this.updateIcon();
+      this.updateBadge();
     };
   }
 };
 
-// Инициализация при загрузке
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-  // Вставка HTML корзины если его нет
-  if (!document.getElementById('cart-panel')) {
-    const panelHTML = `
-      <div id="cart-panel" class="cart-slide">
+  // Создаем HTML корзины если его нет
+  if (!document.getElementById('cart-overlay')) {
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="cart-overlay" class="cart-overlay">
         <div class="cart-header">
           Ваша корзина
-          <button class="close-cart" onclick="cart.toggle()">×</button>
         </div>
-        <div class="cart-content">
-          <div id="cart-items"></div>
+        <div class="cart-content" id="cart-items">
+          <!-- Товары будут здесь -->
         </div>
         <div class="cart-summary">
-          <div class="row">
-            <span>Скидка 3%</span>
+          <div class="cart-summary-row">
+            <span>Скидка 3% за регистрацию</span>
             <span id="cart-discount">-0.00 BYN</span>
           </div>
-          <div class="row total">
+          <div class="cart-summary-row cart-summary-total">
             <span>Итого:</span>
             <span id="cart-total">0.00 BYN</span>
           </div>
-          <button class="checkout-btn">Оформить заказ</button>
+          <button class="cart-checkout-btn">Оформить заказ</button>
         </div>
       </div>
       
       <div class="cart-button-container">
         <button class="cart-button" onclick="cart.toggle()">
           <img src="/static/shop.svg" alt="Корзина">
-          <span id="cart-count" class="cart-count-badge"></span>
+          <span id="cart-badge" class="cart-badge"></span>
         </button>
-      </div>`;
-    
-    document.body.insertAdjacentHTML('beforeend', panelHTML);
+      </div>
+    `);
   }
-
+  
   // Инициализация корзины
-  cart.updateIcon();
+  cart.updateBadge();
   
   // Закрытие корзины при клике вне ее
-  document.addEventListener('click', (e) => {
-    const panel = document.getElementById('cart-panel');
-    if (!panel || !panel.classList.contains('show')) return;
+  document.addEventListener('click', (event) => {
+    const cartOverlay = document.getElementById('cart-overlay');
+    if (!cartOverlay || !cartOverlay.classList.contains('show')) return;
     
-    const isCartButton = e.target.closest('.cart-button');
-    const isInsideCart = e.target.closest('#cart-panel');
+    const isClickInside = cartOverlay.contains(event.target);
+    const isCartButton = event.target.closest('.cart-button');
     
-    if (!isInsideCart && !isCartButton) {
-      panel.classList.remove('show');
+    if (!isClickInside && !isCartButton) {
+      cartOverlay.classList.remove('show');
     }
   });
 });
 
-// Экспорт в глобальную область видимости
+// Делаем корзину доступной глобально
 window.cart = cart;
