@@ -549,41 +549,25 @@
                      <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
                   : `${parseFloat(p.price).toFixed(2)} BYN`}
               </p>
-              <button id="buy-btn" class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
-                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px;
+              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
+                   onclick="${p.options?.length 
+                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { addProductToCart(productViewData[${i}], selectedOptionName); if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.showAlert('Товар добавлен в корзину'); } else { alert('Товар добавлен в корзину'); } }` 
+                     : `addProductToCart(productViewData[${i}]); if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.showAlert('Товар добавлен в корзину'); } else { alert('Товар добавлен в корзину'); }`}"
+                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
                           ${p.available === 'out_of_stock' 
                             ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
                             : 'background: #ff0000; color: #fff; border: none;'}">
                 ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
-              </button>
+              </div>
             </div>
           </div>
         `);
-    
-        // Обработчик для кнопки "Купить"
-        document.getElementById('buy-btn')?.addEventListener('click', function(e) {
-          e.stopPropagation();
-          
-          if (p.available === 'out_of_stock') {
-            alert('К сожалению, товар недоступен');
-            return;
-          }
-    
-          if (p.options?.length && !selectedOptionName) {
-            alert('Пожалуйста, выберите вариант товара');
-            return;
-          }
-    
-          // Добавляем товар в корзину вместо заглушки
-          addProductToCart(p, selectedOptionName);
-          
-          // Показываем уведомление о добавлении
-          if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.showAlert('Товар добавлен в корзину');
-          } else {
-            alert('Товар добавлен в корзину');
-          }
-        });
+      
+        // Прокрутка в начало только при первом открытии
+        if (!window.productDetailScrolled) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.productDetailScrolled = true;
+        }
       }
     
       window.selectOption = function(productIndex, optionName, valueIndex) {
@@ -607,7 +591,6 @@
     
       openView(renderDetailView);
     }
-
     function fixImg(url) {
       if (!url || typeof url !== 'string') return '/static/placeholder.png';
       return 'https://nekuri.by' + url.replace(/ /g, '%20').replace(/\\/g, '');
