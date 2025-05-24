@@ -211,9 +211,6 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-                function openCart() {
-                    toggleCart(); // Используем нашу новую функцию для открытия/закрытия корзины
-                }
                 updateCartBadge();
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
@@ -255,7 +252,10 @@
                         fallbackCopy();
                     }
                 }
-                document.querySelector('.cart-button').addEventListener('click', openCart);
+                document.querySelector('.cart-button').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleCart();
+                });
                 // ===== НАЧАЛО ВСТАВКИ =====
                 // Фоновая регистрация пользователя при загрузке
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
