@@ -498,7 +498,7 @@
       const p = productViewData[i];
       selectedOptionImage = p.image;
       selectedOptionName = '';
-    
+      
       // Сохраняем текущие данные для возврата
       const returnData = {
         products: productViewData,
@@ -542,7 +542,6 @@
             ${attributesTable}
             ${optionsBlock}
             
-            <!-- Обновленный блок цены и кнопки -->
             <div style="margin-top: 20px; margin-bottom: 10px;">
               <p class="price" style="font-size: 16px; font-weight: bold; white-space: nowrap; margin-bottom: 12px; text-align: center;">
                 ${p.special_price
@@ -550,25 +549,41 @@
                      <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
                   : `${parseFloat(p.price).toFixed(2)} BYN`}
               </p>
-              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
-                   onclick="${p.options?.length 
-                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { alert('Смотреть можно, трогать нельзя!') }` 
-                     : `alert('Смотреть можно, трогать нельзя!')`}"
-                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
+              <button id="buy-btn" class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
+                   style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px;
                           ${p.available === 'out_of_stock' 
                             ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
                             : 'background: #ff0000; color: #fff; border: none;'}">
                 ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
-              </div>
+              </button>
             </div>
           </div>
         `);
-      
-        // Прокрутка в начало только при первом открытии
-        if (!window.productDetailScrolled) {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          window.productDetailScrolled = true;
-        }
+    
+        // Обработчик для кнопки "Купить"
+        document.getElementById('buy-btn')?.addEventListener('click', function(e) {
+          e.stopPropagation();
+          
+          if (p.available === 'out_of_stock') {
+            alert('К сожалению, товар недоступен');
+            return;
+          }
+    
+          if (p.options?.length && !selectedOptionName) {
+            alert('Пожалуйста, выберите вариант товара');
+            return;
+          }
+    
+          // Добавляем товар в корзину вместо заглушки
+          addProductToCart(p, selectedOptionName);
+          
+          // Показываем уведомление о добавлении
+          if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.showAlert('Товар добавлен в корзину');
+          } else {
+            alert('Товар добавлен в корзину');
+          }
+        });
       }
     
       window.selectOption = function(productIndex, optionName, valueIndex) {
@@ -587,7 +602,7 @@
         productViewData = returnData.products;
         currentData = returnData.view;
         originalGoBack();
-        window.goBack = originalGoBack; // Восстанавливаем оригинальную функцию
+        window.goBack = originalGoBack;
       };
     
       openView(renderDetailView);
