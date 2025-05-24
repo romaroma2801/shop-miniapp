@@ -374,9 +374,9 @@
       cart.add({
         id: product.id,
         title: product.title,
-        option: selectedOption,
-        price
-      });
+        price: price,
+        option: selectedOption
+      }, selectedOption);
     }
     async function loadCatalog() {
       showLoader(true);
@@ -498,6 +498,7 @@
       const p = productViewData[i];
       selectedOptionImage = p.image;
       selectedOptionName = '';
+      let selectedOptionAvailable = false;
     
       // Сохраняем текущие данные для возврата
       const returnData = {
@@ -572,14 +573,14 @@
             }
         
             addProductToCart(p, selectedOptionName);
+            // Показываем уведомление о добавлении в корзину
+            if (window.Telegram && window.Telegram.WebApp) {
+              window.Telegram.WebApp.showAlert('Товар добавлен в корзину');
+            } else {
+              alert('Товар добавлен в корзину');
+            }
           });
         }, 50);
-
-        // Прокрутка в начало только при первом открытии
-        if (!window.productDetailScrolled) {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          window.productDetailScrolled = true;
-        }
       }
     
       window.selectOption = function(productIndex, optionName, valueIndex) {
@@ -588,9 +589,11 @@
         if (val.available) {
           selectedOptionImage = val.image || p.image;
           selectedOptionName = val.name;
+          selectedOptionAvailable = true;
           renderDetailView();
         }
       }
+    
     
       // Временная перезапись функции goBack
       const originalGoBack = window.goBack;
