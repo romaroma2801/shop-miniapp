@@ -551,8 +551,8 @@
               </p>
               <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
                    onclick="${p.options?.length 
-                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { addProductToCart(productViewData[${i}], selectedOptionName); if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.showAlert('Товар добавлен в корзину'); } else { alert('Товар добавлен в корзину'); } }` 
-                     : `addProductToCart(productViewData[${i}]); if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.showAlert('Товар добавлен в корзину'); } else { alert('Товар добавлен в корзину'); }`}"
+                     ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { addProductToCart(productViewData[${i}], selectedOptionName); }` 
+                     : `addProductToCart(productViewData[${i}]);`}"
                    style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
                           ${p.available === 'out_of_stock' 
                             ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
