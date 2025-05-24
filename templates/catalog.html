@@ -353,6 +353,7 @@
       <img src="/static/shop.svg" alt="Корзина">
     </button>
   </div>
+  <script src="/static/js/cart.js" defer></script>
   <script>
     let catalog = {};
     let historyStack = [];
@@ -549,18 +550,31 @@
                      <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
                   : `${parseFloat(p.price).toFixed(2)} BYN`}
               </p>
-              <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}" 
-                   onclick="${p.available === 'out_of_stock' 
-                     ? `alert('К сожалению, товар недоступен')`
-                     : p.options?.length 
-                       ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } addProductToCart(productViewData[${i}], selectedOptionName);`
-                       : `addProductToCart(productViewData[${i}])`}">
+              <div id="buy-btn" class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}">
                 ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
               </div>
             </div>
           </div>
         `);
-      
+        setTimeout(() => {
+          const btn = document.getElementById('buy-btn');
+          if (!btn) return;
+        
+          btn.addEventListener('click', () => {
+            if (p.available === 'out_of_stock') {
+              alert('К сожалению, товар недоступен');
+              return;
+            }
+        
+            if (p.options?.length && !selectedOptionName) {
+              alert('Пожалуйста, выберите вариант товара');
+              return;
+            }
+        
+            addProductToCart(p, selectedOptionName);
+          });
+        }, 50);
+
         // Прокрутка в начало только при первом открытии
         if (!window.productDetailScrolled) {
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -632,6 +646,6 @@
     function goToLogin() { location.href='/user'; }
     loadCatalog();
   </script>
-  <script src="/static/js/cart.js" defer></script>
+  
 </body>
 </html>
