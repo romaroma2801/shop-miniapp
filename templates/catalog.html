@@ -616,7 +616,9 @@
         window.productDetailScrolled = false;
       }, 100);
     }
-    function openCart() { alert('Корзина пока не работает'); }
+    function openCart() {
+        toggleCart(); // теперь открывает выезжающую панель
+    }
     function goToLogin() { location.href='/user'; }
     loadCatalog();
   </script>
