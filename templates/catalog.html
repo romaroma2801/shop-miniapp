@@ -563,31 +563,30 @@
         
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            
+          
             if (p.available === 'out_of_stock') {
               alert('К сожалению, товар недоступен');
               return;
             }
-        
+          
             if (p.options?.length && !selectedOptionName) {
               alert('Пожалуйста, выберите вариант товара');
               return;
             }
-        
+          
             addProductToCart(p, selectedOptionName);
-            
-            // Показываем уведомление о добавлении в корзину
+          
             if (window.Telegram && window.Telegram.WebApp) {
               window.Telegram.WebApp.showAlert('Товар добавлен в корзину');
             } else {
               alert('Товар добавлен в корзину');
             }
-            
-            // Анимация добавления
+          
             if (window.cart) {
               window.cart.animateAdd();
             }
           });
+
         }, 50);
       }
     
@@ -595,14 +594,15 @@
         const opt = productViewData[productIndex].options.find(o => o.name === optionName);
         const val = opt.values[valueIndex];
         if (val.available) {
-          selectedOptionImage = val.image || p.image;
+          selectedOptionImage = val.image || productViewData[productIndex].image;
           selectedOptionName = val.name;
           selectedOptionAvailable = true;
-          renderDetailView();
+          renderDetailView(); // это перерисует карточку с отмеченной опцией
         } else {
           alert('Этот вариант товара недоступен');
         }
       }
+
     
     
       // Временная перезапись функции goBack
