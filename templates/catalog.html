@@ -561,7 +561,9 @@
           const btn = document.getElementById('buy-btn');
           if (!btn) return;
         
-          btn.addEventListener('click', () => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
             if (p.available === 'out_of_stock') {
               alert('К сожалению, товар недоступен');
               return;
@@ -573,11 +575,17 @@
             }
         
             addProductToCart(p, selectedOptionName);
+            
             // Показываем уведомление о добавлении в корзину
             if (window.Telegram && window.Telegram.WebApp) {
               window.Telegram.WebApp.showAlert('Товар добавлен в корзину');
             } else {
               alert('Товар добавлен в корзину');
+            }
+            
+            // Анимация добавления
+            if (window.cart) {
+              window.cart.animateAdd();
             }
           });
         }, 50);
@@ -591,6 +599,8 @@
           selectedOptionName = val.name;
           selectedOptionAvailable = true;
           renderDetailView();
+        } else {
+          alert('Этот вариант товара недоступен');
         }
       }
     
