@@ -301,7 +301,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
         // Проверяем авторизацию Telegram
         function openCart() {
-            alert("Функция корзины в разработке!");
+            toggleCart(); // теперь открывает выезжающую панель
         }
         if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
             window.location.href = 'index.html';
