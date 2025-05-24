@@ -25,7 +25,8 @@ const cart = {
         title: product.title,
         price: parseFloat(product.special_price || product.price || product.regular_price),
         option,
-        quantity: 1
+        quantity: 1,
+        optionName: option // сохраняем название опции для отображения
       });
     }
     
@@ -33,7 +34,8 @@ const cart = {
     this.animateAdd();
   },
 
-  remove(key) {
+  remove(key, event) {
+    if (event) event.stopPropagation(); // предотвращаем всплытие события
     this.items = this.items.filter(item => item.key !== key);
     this.save();
     this.render();
@@ -76,7 +78,7 @@ const cart = {
         </div>
         <div class="cart-item-right">
           <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</div>
-          <button class="cart-item-remove" onclick="cart.remove('${item.key}')"></button>
+          <button class="cart-item-remove" onclick="cart.remove('${item.key}', event)"></button>
         </div>
       </div>
     `).join('');
