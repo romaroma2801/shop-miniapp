@@ -85,9 +85,20 @@
             height: 24px;
             margin-left: 10px;
             background: url('/static/remove.png') no-repeat center;
-            background-size: contain;
+            background-size: 60%;
             border: none;
             cursor: pointer;
+            background-color: #f5f5f5;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .cart-item-remove:hover {
+            background-color: #eee;
         }
         
         .cart-summary {
@@ -203,6 +214,7 @@
                 function openCart() {
                     toggleCart(); // Используем нашу новую функцию для открытия/закрытия корзины
                 }
+                updateCartBadge();
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
                     
@@ -461,34 +473,41 @@
             }
             
             // Функция для добавления товара в корзину
-            function addToCart(product, selectedOption = null) {
-                // Создаем копию товара с выбранной опцией
+            function addToCart(product, selectedOption = null, element = null) {
                 const cartItem = {...product};
                 if (selectedOption) {
                     cartItem.selectedOption = selectedOption;
                 }
                 
-                // Добавляем в корзину
                 cart.push(cartItem);
                 saveCart();
                 
-                // Анимация добавления
-                animateAddToCart();
+                if (element) {
+                    animateAddToCart(element);
+                } else {
+                    pulseCartBadge();
+                }
                 
-                // Обновляем UI
                 updateCartUI();
+                updateCartBadge();
             }
             
             // Функция для удаления товара из корзины
-            function removeFromCart(index) {
+            function removeFromCart(index, event) {
+                event.stopPropagation(); // Предотвращаем закрытие корзины
                 cart.splice(index, 1);
                 saveCart();
                 updateCartUI();
+                updateCartBadge();
             }
             
             // Функция для оформления заказа
             function checkout() {
-                alert('Функция оформления заказа в разработке');
+                if (cart.length === 0) {
+                    alert('Корзина пуста!');
+                    return;
+                }
+                alert('Функция оформления заказа в разработке!');
             }
             
             // Анимация добавления в корзину
@@ -1044,10 +1063,6 @@
                     window.reviewStars = 0;
                 });
             }
-
-
-
-
 
             function selectStars(count) {
                 window.reviewStars = count;
