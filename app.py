@@ -183,22 +183,30 @@ def create_order():
     try:
         data = request.json
         if not data.get('username'):
-            return jsonify({'status': 'error', 'message': 'Username is required'}), 400
+            # Получаем username из данных Telegram, если не передан
+            if Telegram.WebApp.initDataUnsafe and Telegram.WebApp.initDataUnsafe.user:
+                data['username'] = Telegram.WebApp.initDataUnsafe.user.username or f"id{Telegram.WebApp.initDataUnsafe.user.id}"
+            else:
+                return jsonify({'status': 'error', 'message': 'Username is required'}), 400
 
         sheet = get_orders_sheet()
         records = sheet.get_all_records()
         
-        # Генерируем order_id (последний order_id + 1 или 1 если нет заказов)
+        # Проверяем, не был ли уже добавлен этот заказ
+        existing_order = next((o for o in records if 
+                             o.get('username') == data['username'] and 
+                             abs((datetime.strptime(o['order_date'], "%Y-%m-%d %H:%M:%S") - 
+                                 datetime.now()).total_seconds()) < 60), None)
+        if existing_order:
+            return jsonify({"status": "error", "message": "Order already exists"}), 400
+            
         last_order_id = records[-1]['order_id'] if records else 0
         order_id = last_order_id + 1
         
-        # Форматируем дату
         order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        # Форматируем товары
         items_str = json.dumps(data['items'], ensure_ascii=False)
         
-        # Добавляем заказ
+        # Добавляем заказ только один раз
         sheet.append_row([
             order_id,
             data['username'],
@@ -208,7 +216,7 @@ def create_order():
             data['discount'],
             data['delivery'],
             data['final_total'],
-            'в обработке',  # Статус по умолчанию
+            'в обработке',
             data.get('customer_name', ''),
             data.get('city', ''),
             data.get('postcode', ''),
@@ -216,9 +224,7 @@ def create_order():
             data.get('phone', '')
         ])
         
-        # Отправляем уведомление в Telegram
         send_order_notification(order_id, data)
-        
         return jsonify({"status": "success", "order_id": order_id})
     
     except Exception as e:
