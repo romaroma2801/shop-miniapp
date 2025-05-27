@@ -874,4 +874,26 @@ button.secondary:hover {
   background: #ffebee;
   color: #c62828;
 }
-    
+#orders-screen, #order-detail-screen {
+    transition: opacity 0.3s ease;
+}
+
+.order-item {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.order-item:active {
+    transform: scale(0.98);
+}
+
+.order-status {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
