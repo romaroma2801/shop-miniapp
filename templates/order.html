@@ -288,46 +288,48 @@
     }
     
     async function submitOrder() {
-      const userData = await loadUserData();
-      const orderData = {
-        items: cart.items,
-        total: cart.getTotal(),
-        discount: cart.getDiscount(),
-        delivery: cart.getTotal() >= 100 ? 0 : 4,
-        final_total: cart.getFinalTotal() + (cart.getTotal() >= 100 ? 0 : 4),
-        customer_name: `${document.getElementById('last-name').value} ${document.getElementById('first-name').value}`,
-        city: document.getElementById('city').value,
-        postcode: document.getElementById('postcode').value,
-        address: document.getElementById('address').value,
-        phone: document.getElementById('phone').value,
-        username: userData?.username || `id${userData?.id}`
-      };
-      
-      try {
-        const response = await fetch('/api/create-order', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(orderData)
-        });
-        
-        const result = await response.json();
-        
-        if (result.status === 'success') {
-          // Очищаем корзину
-          cart.items = [];
-          cart.save();
-          
-          // Перенаправляем в личный кабинет
-          window.location.href = '/user';
-        } else {
-          alert('Ошибка при оформлении заказа: ' + (result.message || 'Неизвестная ошибка'));
+        const userData = await loadUserData();
+        if (!userData) {
+            showToast("Ошибка: данные пользователя не загружены");
+            return;
         }
-      } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при отправке заказа');
-      }
+    
+        const orderData = {
+            items: cart.items,
+            total: cart.getTotal(),
+            discount: cart.getDiscount(),
+            delivery: cart.getTotal() >= 100 ? 0 : 4,
+            final_total: cart.getFinalTotal() + (cart.getTotal() >= 100 ? 0 : 4),
+            customer_name: `${document.getElementById('last-name').value} ${document.getElementById('first-name').value}`,
+            city: document.getElementById('city').value,
+            postcode: document.getElementById('postcode').value,
+            address: document.getElementById('address').value,
+            phone: document.getElementById('phone').value,
+            username: userData.username || `id${userData.id}`
+        };
+        
+        try {
+            const response = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                cart.items = [];
+                cart.save();
+                window.location.href = '/user';
+            } else {
+                showToast(result.message || "Ошибка при оформлении заказа");
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showToast("Произошла ошибка при отправке заказа");
+        }
     }
     
     function goBack() {
