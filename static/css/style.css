@@ -844,3 +844,34 @@ button.secondary:hover {
     z-index: 1001;
     pointer-events: none;
 }
+/* Стили для заказов */
+.order-item {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.order-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-processing {
+  background: #fff3e0;
+  color: #ff6d00;
+}
+
+.status-shipped {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-cancelled {
+  background: #ffebee;
+  color: #c62828;
+}
+    
