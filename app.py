@@ -54,7 +54,9 @@ def index():
 @app.route('/user')
 def user_page():
     return render_template('user.html')
-
+@app.route('/order')
+def order_page():
+    return render_template('order.html')
 @app.route('/api/get-user')
 def get_user():
     username = request.args.get('username')
