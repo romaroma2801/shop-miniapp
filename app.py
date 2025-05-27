@@ -176,7 +176,113 @@ def get_promotions():
         return jsonify(response.json())
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@app.route('/api/create-order', methods=['POST'])
+def create_order():
+    try:
+        data = request.json
+        if not data.get('username'):
+            return jsonify({'status': 'error', 'message': 'Username is required'}), 400
 
+        sheet = get_orders_sheet()
+        records = sheet.get_all_records()
+        
+        # Генерируем order_id (последний order_id + 1 или 1 если нет заказов)
+        last_order_id = records[-1]['order_id'] if records else 0
+        order_id = last_order_id + 1
+        
+        # Форматируем дату
+        order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Форматируем товары
+        items_str = json.dumps(data['items'], ensure_ascii=False)
+        
+        # Добавляем заказ
+        sheet.append_row([
+            order_id,
+            data['username'],
+            order_date,
+            items_str,
+            data['total'],
+            data['discount'],
+            data['delivery'],
+            data['final_total'],
+            'в обработке',  # Статус по умолчанию
+            data.get('customer_name', ''),
+            data.get('city', ''),
+            data.get('postcode', ''),
+            data.get('address', ''),
+            data.get('phone', '')
+        ])
+        
+        # Отправляем уведомление в Telegram
+        send_order_notification(order_id, data)
+        
+        return jsonify({"status": "success", "order_id": order_id})
+    
+    except Exception as e:
+        logging.error(f"Error in create_order: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+def get_orders_sheet():
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict({
+        "type": "service_account",
+        "project_id": os.getenv("GSHEETS_PROJECT_ID"),
+        "private_key_id": os.getenv("GSHEETS_PRIVATE_KEY_ID"),
+        "private_key": os.getenv("GSHEETS_PRIVATE_KEY").replace('\\n', '\n'),
+        "client_email": os.getenv("GSHEETS_CLIENT_EMAIL"),
+        "client_id": os.getenv("GSHEETS_CLIENT_ID"),
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": os.getenv("GSHEETS_CLIENT_CERT_URL")
+    }, scope)
+    client = gspread.authorize(creds)
+    return client.open("ORDERS").sheet1
+
+def send_order_notification(order_id, order_data):
+    try:
+        message = f"🛒 <b>Новый заказ №{order_id}</b>\n"
+        message += f"📅 Дата: {datetime.now().strftime('%d.%m.%Y %H:%M')}\n"
+        message += f"👤 Пользователь: @{order_data['username']}\n\n"
+        
+        message += "🛍️ <b>Товары:</b>\n"
+        for item in order_data['items']:
+            message += f"- {item['title']}"
+            if item.get('option'):
+                message += f" ({item['option']})"
+            message += f" × {item['quantity']} = {item['price'] * item['quantity']:.2f} BYN\n"
+        
+        message += "\n💰 <b>Суммы:</b>\n"
+        message += f"Скидка 3%: -{order_data['discount']:.2f} BYN\n"
+        message += f"Доставка: {order_data['delivery']:.2f} BYN\n"
+        message += f"Итого: {order_data['final_total']:.2f} BYN\n\n"
+        
+        if order_data.get('customer_name'):
+            message += f"👤 <b>Клиент:</b> {order_data['customer_name']}\n"
+        if order_data.get('city'):
+            message += f"🏙️ <b>Город:</b> {order_data['city']}\n"
+        if order_data.get('postcode'):
+            message += f"📮 <b>Индекс:</b> {order_data['postcode']}\n"
+        if order_data.get('address'):
+            message += f"🏠 <b>Адрес:</b> {order_data['address']}\n"
+        if order_data.get('phone'):
+            message += f"📱 <b>Телефон:</b> {order_data['phone']}\n"
+        
+        # Отправляем сообщение в Telegram (используем тот же чат, что и для отзывов)
+        requests.post(
+            'https://api.telegram.org/bot7210822073:AAFM7PAj5D9PEJrvwArF8rSaU4FqsyT-3ns/sendMessage',
+            json={
+                'chat_id': '568416622',
+                'text': message,
+                'parse_mode': 'HTML'
+            }
+        )
+    except Exception as e:
+        logging.error(f"Error sending Telegram notification: {str(e)}")
 # --- Telegram Bot Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Добро пожаловать! Напишите название города, чтобы найти магазин.")
@@ -197,7 +303,27 @@ async def handle_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
             break
     if not found:
         await update.message.reply_text("Город не найден. Попробуйте снова.")
+@app.route('/api/get-orders')
+def get_orders():
+    username = request.args.get('username')
+    if not username:
+        return jsonify({'status': 'error', 'message': 'No username provided'}), 400
 
+    try:
+        sheet = get_orders_sheet()
+        records = sheet.get_all_records()
+        
+        # Фильтруем заказы пользователя и сортируем по дате (новые сначала)
+        user_orders = [
+            order for order in records 
+            if order.get('username', '').lower() == username.lower()
+        ]
+        user_orders.sort(key=lambda x: x['order_date'], reverse=True)
+        
+        return jsonify(user_orders)
+    except Exception as e:
+        logging.error(f"Error in get_orders: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 # --- Telegram Setup ---
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
