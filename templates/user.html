@@ -250,7 +250,12 @@
                     <span class="data-value" id="user-phone"></span>
                 </div>
             </div>
-    
+            <div class="user-orders" style="margin-top: 20px;">
+              <h3 style="text-align: center; margin-bottom: 15px;">Мои заказы</h3>
+              <div id="orders-list">
+                <!-- Заказы будут здесь -->
+              </div>
+            </div>
             <div class="action-buttons">
                 <button id="edit-profile-btn" class="edit-btn">✏️ Редактировать данные</button>
             </div>
@@ -396,7 +401,42 @@
             await saveProfile(userData);
         });
     });
-
+    async function loadUserOrders() {
+      try {
+        const response = await fetch(`/api/get-orders?username=${encodeURIComponent(userData.username)}`);
+        const orders = await response.json();
+        
+        const ordersList = document.getElementById('orders-list');
+        if (!ordersList) return;
+        
+        if (!orders.length) {
+          ordersList.innerHTML = '<p style="text-align: center;">У вас пока нет заказов</p>';
+          return;
+        }
+        
+        ordersList.innerHTML = orders.map(order => `
+          <div class="order-item" style="background: #f9f9f9; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-weight: bold;">Заказ №${order.order_id}</span>
+              <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
+            </div>
+            <div style="margin-bottom: 8px;">${new Date(order.order_date).toLocaleDateString()}</div>
+            <div style="font-weight: bold;">${parseFloat(order.final_total).toFixed(2)} BYN</div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Ошибка загрузки заказов:', error);
+      }
+    }
+    
+    function getStatusColor(status) {
+      switch(status.toLowerCase()) {
+        case 'в обработке': return '#ff9900';
+        case 'отправлен': return '#009900';
+        case 'отменён': return '#ff0000';
+        default: return '#333';
+      }
+    }
     function showPersonalCabinet(user) {
         const welcomeScreen = document.getElementById('welcome-screen');
         const personalCabinet = document.getElementById('personal-cabinet');
