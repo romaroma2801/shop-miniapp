@@ -88,6 +88,16 @@ const cart = {
     // Обновляем суммы
     cartDiscount.textContent = `-${this.getDiscount().toFixed(2)} BYN`;
     cartTotal.textContent = `${this.getFinalTotal().toFixed(2)} BYN`;
+    const checkoutBtn = document.querySelector('.cart-checkout-btn');
+      if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+          if (this.items.length === 0) {
+            showToast("Ваша корзина пуста");
+            return;
+          }
+          window.location.href = '/order';
+        });
+      }
   },
 
   toggle() {
