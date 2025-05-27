@@ -298,16 +298,30 @@
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
-    <div id="orders-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-      <div style="background: white; border-radius: 15px; padding: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h3 style="margin: 0;">Мои заказы</h3>
-          <button onclick="document.getElementById('orders-modal').style.display = 'none'" style="background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+    <div id="orders-screen" style="display: none; opacity: 0; padding: 70px 15px 60px; height: calc(100% - 130px); overflow-y: auto;">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <button onclick="goBackToProfile()" style="background: none; border: none; margin-right: 10px;">
+                <img src="/static/back.svg" alt="Назад" style="width: 24px;">
+            </button>
+            <h2 style="margin: 0; color: #ff0000;">Мои заказы</h2>
         </div>
+        
         <div id="orders-list">
-          <!-- Заказы будут здесь -->
+            <!-- Заказы будут здесь -->
         </div>
-      </div>
+    </div>
+    
+    <div id="order-detail-screen" style="display: none; opacity: 0; padding: 70px 15px 60px; height: calc(100% - 130px); overflow-y: auto;">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <button onclick="goBackToOrders()" style="background: none; border: none; margin-right: 10px;">
+                <img src="/static/back.svg" alt="Назад" style="width: 24px;">
+            </button>
+            <h2 style="margin: 0; color: #ff0000;">Детали заказа</h2>
+        </div>
+        
+        <div id="order-detail-content">
+            <!-- Детали заказа будут здесь -->
+        </div>
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -408,6 +422,126 @@
             await saveProfile(userData);
         });
     });
+    function showOrdersScreen() {
+        document.getElementById('personal-cabinet').style.display = 'none';
+        document.getElementById('orders-screen').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('orders-screen').style.opacity = '1';
+            loadUserOrders();
+        }, 50);
+    }
+    
+    function goBackToProfile() {
+        document.getElementById('orders-screen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('orders-screen').style.display = 'none';
+            document.getElementById('personal-cabinet').style.display = 'block';
+            document.getElementById('personal-cabinet').style.opacity = '1';
+        }, 300);
+    }
+    
+    function viewOrderDetail(orderId) {
+        document.getElementById('orders-screen').style.opacity = '0';
+        document.getElementById('order-detail-screen').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('order-detail-screen').style.opacity = '1';
+            loadOrderDetail(orderId);
+        }, 300);
+    }
+    
+    function goBackToOrders() {
+        document.getElementById('order-detail-screen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('order-detail-screen').style.display = 'none';
+            document.getElementById('orders-screen').style.display = 'block';
+            document.getElementById('orders-screen').style.opacity = '1';
+        }, 300);
+    }
+    
+    async function loadOrderDetail(orderId) {
+        try {
+            const response = await fetch(`/api/get-order/${orderId}`);
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                const order = result.order;
+                const items = order.items || [];
+                
+                let content = `
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: bold;">Номер заказа:</span>
+                            <span>${order.order_id}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: bold;">Дата:</span>
+                            <span>${new Date(order.order_date).toLocaleString('ru-RU')}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: bold;">Статус:</span>
+                            <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-bottom: 10px;">Товары:</h3>
+                    <div style="margin-bottom: 20px; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                `;
+                
+                items.forEach(item => {
+                    content += `
+                        <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                            <div>
+                                <div>${item.title}</div>
+                                ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
+                                <div style="font-size: 12px;">Количество: ${item.quantity}</div>
+                            </div>
+                            <div>${(item.price * item.quantity).toFixed(2)} BYN</div>
+                        </div>
+                    `;
+                });
+                
+                content += `
+                    </div>
+                    
+                    <h3 style="margin-bottom: 10px;">Детали доставки:</h3>
+                    <div style="margin-bottom: 20px;">
+                        <div style="margin-bottom: 5px;"><strong>Получатель:</strong> ${order.customer_name || 'Не указано'}</div>
+                        <div style="margin-bottom: 5px;"><strong>Телефон:</strong> ${order.phone || 'Не указан'}</div>
+                        <div style="margin-bottom: 5px;"><strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</div>
+                    </div>
+                    
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Сумма заказа:</span>
+                            <span>${parseFloat(order.total).toFixed(2)} BYN</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Скидка 3%:</span>
+                            <span>-${parseFloat(order.discount).toFixed(2)} BYN</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Доставка:</span>
+                            <span>${parseFloat(order.delivery).toFixed(2)} BYN</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #ddd;">
+                            <span>Итого:</span>
+                            <span>${parseFloat(order.final_total).toFixed(2)} BYN</span>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('order-detail-content').innerHTML = content;
+            } else {
+                document.getElementById('order-detail-content').innerHTML = `<p style="text-align: center; color: red;">${result.message || 'Ошибка загрузки заказа'}</p>`;
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки деталей заказа:', error);
+            document.getElementById('order-detail-content').innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки деталей заказа</p>';
+        }
+    }
+    
+    // Обновите обработчик кнопки "Мои заказы"
+    document.getElementById('my-orders-btn').addEventListener('click', showOrdersScreen);
     async function loadUserOrders() {
       try {
         const response = await fetch(`/api/get-orders?username=${encodeURIComponent(userData.username)}`);
