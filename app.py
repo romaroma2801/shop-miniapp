@@ -326,6 +326,27 @@ def get_orders():
     except Exception as e:
         logging.error(f"Error in get_orders: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/get-order/<int:order_id>')
+def get_order(order_id):
+    try:
+        sheet = get_orders_sheet()
+        records = sheet.get_all_records()
+        
+        order = next((o for o in records if o['order_id'] == order_id), None)
+        if not order:
+            return jsonify({'status': 'error', 'message': 'Order not found'}), 404
+            
+        # Преобразуем строку с товарами обратно в JSON
+        try:
+            order['items'] = json.loads(order['items'])
+        except:
+            order['items'] = []
+            
+        return jsonify({'status': 'success', 'order': order})
+    except Exception as e:
+        logging.error(f"Error in get_order: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 # --- Telegram Setup ---
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
