@@ -250,11 +250,8 @@
                     <span class="data-value" id="user-phone"></span>
                 </div>
             </div>
-            <div class="user-orders" style="margin-top: 20px;">
-              <h3 style="text-align: center; margin-bottom: 15px;">Мои заказы</h3>
-              <div id="orders-list">
-                <!-- Заказы будут здесь -->
-              </div>
+            <div class="action-buttons">
+              <button id="my-orders-btn" class="edit-btn">📦 Мои заказы</button>
             </div>
             <div class="action-buttons">
                 <button id="edit-profile-btn" class="edit-btn">✏️ Редактировать данные</button>
@@ -301,7 +298,17 @@
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
-
+    <div id="orders-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+      <div style="background: white; border-radius: 15px; padding: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3 style="margin: 0;">Мои заказы</h3>
+          <button onclick="document.getElementById('orders-modal').style.display = 'none'" style="background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+        </div>
+        <div id="orders-list">
+          <!-- Заказы будут здесь -->
+        </div>
+      </div>
+    </div>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
         // Проверяем авторизацию Telegram
@@ -466,7 +473,51 @@
             }, 50);
         }, 500);
     }
-
+    document.getElementById('my-orders-btn').addEventListener('click', async function() {
+      const modal = document.getElementById('orders-modal');
+      modal.style.display = 'flex';
+      
+      try {
+        const userData = JSON.parse(localStorage.getItem(`user_${Telegram.WebApp.initDataUnsafe.user.id}`));
+        const response = await fetch(`/api/get-orders?username=${encodeURIComponent(userData.username)}`);
+        const orders = await response.json();
+        
+        const ordersList = document.getElementById('orders-list');
+        if (!orders.length) {
+          ordersList.innerHTML = '<p style="text-align: center;">У вас пока нет заказов</p>';
+          return;
+        }
+        
+        ordersList.innerHTML = orders.map(order => `
+          <div class="order-item" onclick="viewOrderDetail(${order.order_id})" style="background: #f9f9f9; border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-weight: bold;">Заказ №${order.order_id}</span>
+              <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
+            </div>
+            <div style="margin-bottom: 8px;">${new Date(order.order_date).toLocaleDateString('ru-RU')}</div>
+            <div style="font-weight: bold;">${parseFloat(order.final_total).toFixed(2)} BYN</div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Ошибка загрузки заказов:', error);
+        ordersList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки заказов</p>';
+      }
+    });
+    
+    function getStatusColor(status) {
+      switch(status.toLowerCase()) {
+        case 'в обработке': return '#ff9900';
+        case 'отправлен': return '#009900';
+        case 'отменён': return '#ff0000';
+        default: return '#333';
+      }
+    }
+    
+    function viewOrderDetail(orderId) {
+      // Здесь будет код для просмотра деталей заказа
+      alert(`Просмотр заказа №${orderId}`);
+      // Можно реализовать отдельный модальный попап для деталей заказа
+    }
  
     function showEditForm(user) {
         const personalCabinet = document.getElementById('personal-cabinet');
