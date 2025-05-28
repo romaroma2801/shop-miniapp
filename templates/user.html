@@ -323,15 +323,17 @@
         }
         /* Общие стили для экранов */
         .screen-header {
-            position: sticky;
-            top: 0;
+            position: fixed;
+            top: 60px; /* Под основным хедером */
+            left: 0;
+            right: 0;
             background: white;
-            padding: 15px;
+            padding: 12px 15px;
             text-align: center;
-            z-index: 100;
+            z-index: 90;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
+                
         .screen-header h2 {
             margin: 0;
             color: #ff0000;
@@ -339,8 +341,8 @@
         }
         
         .screen-content {
-            padding: 20px 15px;
-            padding-top: 70px; /* Отступ под заголовком */
+            padding: 15px;
+            padding-top: 120px; /* Хедер + заголовок экрана */
             padding-bottom: 100px; /* Отступ над футером */
         }
         
@@ -600,65 +602,60 @@
         }, 300);
     }
     
+    function formatPrice(price) {
+        // Приводим к числу, заменяя запятые на точки
+        let num = typeof price === 'string' 
+            ? parseFloat(price.replace(',', '.')) 
+            : Number(price);
+        
+        // Проверяем, нужно ли делить на 100
+        if (num > 10000) { // Эвристика: если число слишком большое, вероятно в копейках
+            num = num / 100;
+        }
+        
+        return num.toFixed(2);
+    }
+    
     async function viewOrderDetail(orderId) {
-        document.getElementById('orders-screen').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('orders-screen').style.display = 'none';
-            document.getElementById('order-detail-screen').style.display = 'block';
+        // ... остальной код
+        
+        let content = `
+            <div style="margin-bottom: 20px;">
+                <div><strong>Номер заказа:</strong> ${order.order_id}</div>
+                <div><strong>Дата:</strong> ${new Date(order.order_date).toLocaleString('ru-RU')}</div>
+                <div><strong>Статус:</strong> <span style="color: ${getStatusColor(order.status)}">${order.status}</span></div>
+            </div>
             
-            setTimeout(async () => {
-                document.getElementById('order-detail-screen').style.opacity = '1';
-                
-                try {
-                    const response = await fetch(`/api/get-order/${orderId}`);
-                    const result = await response.json();
-                    
-                    if (result.status !== 'success') {
-                        document.getElementById('order-detail-content').innerHTML =
-                            `<p style="text-align: center; color: red;">${result.message || 'Ошибка загрузки заказа'}</p>`;
-                        return;
-                    }
-                    
-                    const order = result.order;
-                    const items = order.items || [];
-                    
-                    let content = `
-                        <div style="margin-bottom: 20px;">
-                            <div><strong>Номер заказа:</strong> ${order.order_id}</div>
-                            <div><strong>Дата:</strong> ${new Date(order.order_date).toLocaleString('ru-RU')}</div>
-                            <div><strong>Статус:</strong> <span style="color: ${getStatusColor(order.status)}">${order.status}</span></div>
-                        </div>
-                        
-                        <h3>Товары:</h3>
-                        <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden; margin-left: 0;">`;
-                    
-                    items.forEach(item => {
-                        content += `
-                            <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                                <div>
-                                    <div>${item.title}</div>
-                                    ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
-                                    <div style="font-size: 12px;">Количество: ${item.quantity}</div>
-                                </div>
-                                <div>${(item.price * item.quantity).toFixed(2)} BYN</div>
-                            </div>`;
-                    });
-                    
-                    content += `</div>
-                        <h3>Доставка:</h3>
-                        <p style="margin-left: 0;"><strong>Получатель:</strong> ${order.customer_name || '—'}<br>
-                        <strong>Телефон:</strong> ${order.phone || '—'}<br>
-                        <strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
-                        
-                        <h3>Суммы:</h3>
-                        <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-left: 0;">
-                            <div>Сумма заказа: ${(parseFloat(order.total.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
-                            <div>Скидка 3%: -${(parseFloat(order.discount.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
-                            <div>Доставка: ${(parseFloat(order.delivery.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
-                            <div><strong>Итого: ${(parseFloat(order.final_total.toString().replace(',', '.'))/100).toFixed(2)} BYN</strong></div>
-                        </div>`;
-                    
-                    document.getElementById('order-detail-content').innerHTML = content;
+            <h3>Товары:</h3>
+            <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden;">`;
+        
+        items.forEach(item => {
+            content += `
+                <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                    <div>
+                        <div>${item.title}</div>
+                        ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
+                        <div style="font-size: 12px;">Количество: ${item.quantity}</div>
+                    </div>
+                    <div>${formatPrice(item.price * item.quantity)} BYN</div>
+                </div>`;
+        });
+        
+        content += `</div>
+            <h3>Доставка:</h3>
+            <p><strong>Получатель:</strong> ${order.customer_name || '—'}<br>
+            <strong>Телефон:</strong> ${order.phone || '—'}<br>
+            <strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
+            
+            <h3>Суммы:</h3>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
+                <div>Сумма заказа: ${formatPrice(order.total)} BYN</div>
+                <div>Скидка 3%: -${formatPrice(order.discount)} BYN</div>
+                <div>Доставка: ${formatPrice(order.delivery)} BYN</div>
+                <div><strong>Итого: ${formatPrice(order.final_total)} BYN</strong></div>
+            </div>`;
+        
+        document.getElementById('order-detail-content').innerHTML = content;
                 } catch (error) {
                     console.error('Ошибка загрузки деталей заказа:', error);
                     document.getElementById('order-detail-content').innerHTML =
@@ -691,7 +688,7 @@
                         <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
                     </div>
                     <div style="margin-bottom: 8px;">${new Date(order.order_date).toLocaleDateString('ru-RU')}</div>
-                    <div style="font-weight: bold;">${(parseFloat(order.final_total)/100).toFixed(2)} BYN</div>
+                    <div style="font-weight: bold;">${formatPrice(order.final_total)} BYN</div>
                 </div>
             `).join('');
         } catch (error) {
