@@ -603,17 +603,21 @@
     }
     
     function formatPrice(price) {
-        // Приводим к числу, заменяя запятые на точки
-        let num = typeof price === 'string' 
-            ? parseFloat(price.replace(',', '.')) 
-            : Number(price);
+        if (price === null || price === undefined) return '0.00';
         
-        // Проверяем, нужно ли делить на 100
-        if (num > 10000) { // Эвристика: если число слишком большое, вероятно в копейках
-            num = num / 100;
+        // Если число уже в правильном формате (с точкой)
+        if (typeof price === 'number' || (typeof price === 'string' && price.includes('.'))) {
+            return parseFloat(price).toFixed(2);
         }
         
-        return num.toFixed(2);
+        // Если число с запятой
+        if (typeof price === 'string' && price.includes(',')) {
+            return parseFloat(price.replace(',', '.')).toFixed(2);
+        }
+        
+        // Если число целое и больше 100, вероятно в копейках
+        const num = parseFloat(price);
+        return (num > 100 ? num / 100 : num).toFixed(2);
     }
     
     async function viewOrderDetail(orderId) {
