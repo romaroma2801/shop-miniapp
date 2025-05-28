@@ -514,35 +514,35 @@
               <div><strong>Дата:</strong> ${new Date(order.order_date).toLocaleString('ru-RU')}</div>
               <div><strong>Статус:</strong> <span style="color: ${getStatusColor(order.status)}">${order.status}</span></div>
             </div>
-    
+        
             <h3>Товары:</h3>
             <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden;">`;
-    
-          items.forEach(item => {
-            content += `
-              <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                <div>
-                  <div>${item.title}</div>
-                  ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
-                  <div style="font-size: 12px;">Количество: ${item.quantity}</div>
-                </div>
-                <div>${(item.price * item.quantity).toFixed(2)} BYN</div>
-              </div>`;
-          });
-    
-          content += `</div>
-            <h3>Доставка:</h3>
-            <p><strong>Получатель:</strong> ${order.customer_name || '—'}<br>
-            <strong>Телефон:</strong> ${order.phone || '—'}<br>
-            <strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
-    
-            <h3>Суммы:</h3>
-            <div style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
-              <div>Сумма заказа: ${parseFloat(order.total.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
-              <div>Скидка 3%: -${parseFloat(order.discount.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
-              <div>Доставка: ${parseFloat(order.delivery.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
-              <div><strong>Итого: ${parseFloat(order.final_total.toString().replace(',', '.'))/100).toFixed(2)} BYN</strong></div>
+        
+        items.forEach(item => {
+          content += `
+            <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+              <div>
+                <div>${item.title}</div>
+                ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
+                <div style="font-size: 12px;">Количество: ${item.quantity}</div>
+              </div>
+              <div>${(item.price * item.quantity).toFixed(2)} BYN</div>
             </div>`;
+        });
+        
+        content += `</div>
+          <h3>Доставка:</h3>
+          <p><strong>Получатель:</strong> ${order.customer_name || '—'}<br>
+          <strong>Телефон:</strong> ${order.phone || '—'}<br>
+          <strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
+        
+          <h3>Суммы:</h3>
+          <div style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
+            <div>Сумма заказа: ${(parseFloat(order.total.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
+            <div>Скидка 3%: -${(parseFloat(order.discount.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
+            <div>Доставка: ${(parseFloat(order.delivery.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
+            <div><strong>Итого: ${(parseFloat(order.final_total.toString().replace(',', '.'))/100).toFixed(2)} BYN</strong></div>
+          </div>`;
     
           document.getElementById('order-detail-content').innerHTML = content;
         } catch (error) {
