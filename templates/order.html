@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="/static/css/cart.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root { --vh: 1vh; }
     html, body { height: calc(var(--vh, 1vh) * 100); }
@@ -279,12 +280,21 @@
     }
     
     async function loadUserData() {
-      if (!window.Telegram?.WebApp?.initDataUnsafe?.user) return null;
-      
+      if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
+        console.error("Telegram WebApp user not found");
+        return null;
+      }
+    
       const tgUser = Telegram.WebApp.initDataUnsafe.user;
       const userKey = `user_${tgUser.id}`;
-      return JSON.parse(localStorage.getItem(userKey)) || null;
+      return JSON.parse(localStorage.getItem(userKey)) || {
+        id: tgUser.id,
+        username: tgUser.username || `id${tgUser.id}`,
+        first_name: tgUser.first_name || '',
+        phone: tgUser.phone_number || ''
+      };
     }
+
     function showToast(message, duration = 2000) {
         const toast = document.createElement('div');
         toast.textContent = message;
