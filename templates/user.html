@@ -248,6 +248,63 @@
         .order-item:active {
             transform: scale(0.98);
         }
+        .orders-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .orders-header h2 {
+            margin: 0;
+            color: #ff0000;
+            flex-grow: 1;
+            text-align: center;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        
+        .orders-list-container {
+            padding: 15px;
+            padding-top: 70px; /* Отступ для заголовка */
+            margin-bottom: 60px; /* Отступ для нижних кнопок */
+        }
+        
+        .order-item {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .order-item:active {
+            transform: scale(0.98);
+        }
+        .order-detail-container {
+            padding: 15px;
+            padding-top: 70px;
+            margin-bottom: 60px;
+        }
+        
+        .order-detail-container > div {
+            margin-bottom: 20px;
+        }
+        
+        .order-detail-container h3 {
+            color: #ff0000;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -336,28 +393,28 @@
             <img src="/static/shop.svg" alt="Корзина">
         </button>
     </div>
-    <div id="orders-screen" style="display: none; opacity: 0; padding: 70px 15px 60px; height: calc(100% - 130px); overflow-y: auto;">
-        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-            <button onclick="goBackToProfile()" style="background: none; border: none; margin-right: 10px;">
-                <img src="/static/back.svg" alt="Назад" style="width: 24px;">
+    <div id="orders-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
+        <div class="orders-header">
+            <button onclick="goBackToProfile()" class="back-button">
+                <img src="/static/back.svg" alt="Назад">
             </button>
-            <h2 style="margin: 0; color: #ff0000;">Мои заказы</h2>
+            <h2>Мои заказы</h2>
         </div>
         
-        <div id="orders-list">
+        <div id="orders-list" class="orders-list-container">
             <!-- Заказы будут здесь -->
         </div>
     </div>
     
-    <div id="order-detail-screen" style="display: none; opacity: 0; padding: 70px 15px 60px; height: calc(100% - 130px); overflow-y: auto;">
-        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-            <button onclick="goBackToOrders()" style="background: none; border: none; margin-right: 10px;">
-                <img src="/static/back.svg" alt="Назад" style="width: 24px;">
+    <div id="order-detail-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
+        <div class="orders-header">
+            <button onclick="goBackToOrders()" class="back-button">
+                <img src="/static/back.svg" alt="Назад">
             </button>
-            <h2 style="margin: 0; color: #ff0000;">Детали заказа</h2>
+            <h2>Детали заказа</h2>
         </div>
         
-        <div id="order-detail-content">
+        <div id="order-detail-content" class="order-detail-container">
             <!-- Детали заказа будут здесь -->
         </div>
     </div>
@@ -464,6 +521,8 @@
     function showOrdersScreen() {
         document.getElementById('personal-cabinet').style.display = 'none';
         document.getElementById('orders-screen').style.display = 'block';
+        document.getElementById('orders-list').style.paddingTop = '0'; // Сбрасываем отступ
+        
         setTimeout(() => {
             document.getElementById('orders-screen').style.opacity = '1';
             loadUserOrders();
@@ -490,10 +549,13 @@
     
     async function viewOrderDetail(orderId) {
       document.getElementById('orders-screen').style.opacity = '0';
-      document.getElementById('order-detail-screen').style.display = 'block';
-    
-      setTimeout(async () => {
-        document.getElementById('order-detail-screen').style.opacity = '1';
+    setTimeout(() => {
+        document.getElementById('orders-screen').style.display = 'none';
+        document.getElementById('order-detail-screen').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('order-detail-screen').style.opacity = '1';
+            loadOrderDetail(orderId);
     
         try {
           const response = await fetch(`/api/get-order/${orderId}`);
@@ -569,12 +631,8 @@
                 return;
             }
             
-            // Добавляем отступ сверху для компенсации фиксированного заголовка
-            ordersList.style.paddingTop = '60px';
-            
             ordersList.innerHTML = orders.map(order => `
-                <div class="order-item" onclick="viewOrderDetail('${order.order_id}')" 
-                     style="background: #f9f9f9; border-radius: 10px; padding: 12px; margin: 10px; cursor: pointer;">
+                <div class="order-item" onclick="viewOrderDetail('${order.order_id}')">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                         <span style="font-weight: bold;">Заказ №${order.order_id}</span>
                         <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
@@ -626,36 +684,6 @@
             }, 50);
         }, 500);
     }
-    document.getElementById('my-orders-btn').addEventListener('click', async function() {
-      const modal = document.getElementById('orders-modal');
-      modal.style.display = 'flex';
-      
-      try {
-        const userData = JSON.parse(localStorage.getItem(`user_${Telegram.WebApp.initDataUnsafe.user.id}`));
-        const response = await fetch(`/api/get-orders?username=${encodeURIComponent(userData.username)}`);
-        const orders = await response.json();
-        
-        const ordersList = document.getElementById('orders-list');
-        if (!orders.length) {
-          ordersList.innerHTML = '<p style="text-align: center;">У вас пока нет заказов</p>';
-          return;
-        }
-        
-        ordersList.innerHTML = orders.map(order => `
-          <div class="order-item" onclick="viewOrderDetail(${order.order_id})" style="background: #f9f9f9; border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-weight: bold;">Заказ №${order.order_id}</span>
-              <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
-            </div>
-            <div style="margin-bottom: 8px;">${new Date(order.order_date).toLocaleDateString('ru-RU')}</div>
-            <div style="font-weight: bold;">${parseFloat(order.final_total).toFixed(2)} BYN</div>
-          </div>
-        `).join('');
-      } catch (error) {
-        console.error('Ошибка загрузки заказов:', error);
-        ordersList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки заказов</p>';
-      }
-    });
     
     function getStatusColor(status) {
       switch(status.toLowerCase()) {
