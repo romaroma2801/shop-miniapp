@@ -249,29 +249,23 @@
             transform: scale(0.98);
         }
         .orders-header {
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             background: white;
             padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 10;
+            text-align: center;
+            z-index: 90; /* Ниже кнопки "Назад" */
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         .orders-header h2 {
             margin: 0;
             color: #ff0000;
-            flex-grow: 1;
-            text-align: center;
+            font-size: 18px;
         }
         
-        .back-button {
-            background: none;
-            border: none;
-            padding: 0;
-        }
         
         .orders-list-container {
             padding: 15px;
@@ -395,7 +389,7 @@
     </div>
     <div id="orders-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
         <div class="orders-header">
-            <button onclick="goBackToProfile()" class="back-button">
+            <button id="back-button" onclick="goBackToProfile()">
                 <img src="/static/back.svg" alt="Назад">
             </button>
             <h2>Мои заказы</h2>
@@ -408,7 +402,7 @@
     
     <div id="order-detail-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
         <div class="orders-header">
-            <button onclick="goBackToOrders()" class="back-button">
+            <button id="back-button" onclick="goBackToOrders()">
                 <img src="/static/back.svg" alt="Назад">
             </button>
             <h2>Детали заказа</h2>
