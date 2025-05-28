@@ -324,7 +324,7 @@
         /* Общие стили для экранов */
         .screen-header {
             position: fixed;
-            top: 60px; /* Под основным хедером */
+            top: 0px; /* Под основным хедером */
             left: 0;
             right: 0;
             background: white;
@@ -605,19 +605,24 @@
     function formatPrice(price) {
         if (price === null || price === undefined) return '0.00';
         
-        // Если число уже в правильном формате (с точкой)
-        if (typeof price === 'number' || (typeof price === 'string' && price.includes('.'))) {
-            return parseFloat(price).toFixed(2);
+        // Преобразуем в строку и заменяем запятые на точки
+        let priceStr = price.toString().replace(',', '.');
+        
+        // Пробуем распарсить число
+        let num = parseFloat(priceStr);
+        if (isNaN(num)) return '0.00';
+        
+        // Определяем, нужно ли делить на 100 (если число очень большое)
+        if (num > 100000) { // Если число больше 1000 BYN в копейках
+            num = num / 100;
+        }
+        // Или если число целое и больше 100 BYN
+        else if (num % 1 === 0 && num > 100) {
+            num = num / 100;
         }
         
-        // Если число с запятой
-        if (typeof price === 'string' && price.includes(',')) {
-            return parseFloat(price.replace(',', '.')).toFixed(2);
-        }
-        
-        // Если число целое и больше 100, вероятно в копейках
-        const num = parseFloat(price);
-        return (num > 100 ? num / 100 : num).toFixed(2);
+        // Форматируем с 2 знаками после запятой
+        return num.toFixed(2);
     }
     
     async function viewOrderDetail(orderId) {
@@ -643,39 +648,41 @@
                     const items = order.items || [];
                     
                     let content = `
-                        <div style="margin-bottom: 20px;">
+                        <div style="margin-bottom: 15px;">
                             <div><strong>Номер заказа:</strong> ${order.order_id}</div>
                             <div><strong>Дата:</strong> ${new Date(order.order_date).toLocaleString('ru-RU')}</div>
                             <div><strong>Статус:</strong> <span style="color: ${getStatusColor(order.status)}">${order.status}</span></div>
                         </div>
                         
                         <h3>Товары:</h3>
-                        <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden;">`;
+                        <div style="margin-bottom: 15px;">`;
                     
                     items.forEach(item => {
                         content += `
-                            <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                            <div style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between;">
                                 <div>
                                     <div>${item.title}</div>
                                     ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
                                     <div style="font-size: 12px;">Количество: ${item.quantity}</div>
                                 </div>
-                                <div>${formatPrice(item.price * item.quantity)} BYN</div>
+                                <div style="font-weight: bold;">${formatPrice(item.price * item.quantity)} BYN</div>
                             </div>`;
                     });
                     
                     content += `</div>
                         <h3>Доставка:</h3>
-                        <p><strong>Получатель:</strong> ${order.customer_name || '—'}<br>
-                        <strong>Телефон:</strong> ${order.phone || '—'}<br>
-                        <strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
+                        <div style="margin-bottom: 15px;">
+                            <p><strong>Получатель:</strong> ${order.customer_name || '—'}</p>
+                            <p><strong>Телефон:</strong> ${order.phone || '—'}</p>
+                            <p><strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
+                        </div>
                         
                         <h3>Суммы:</h3>
-                        <div style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
-                            <div>Сумма заказа: ${formatPrice(order.total)} BYN</div>
-                            <div>Скидка 3%: -${formatPrice(order.discount)} BYN</div>
-                            <div>Доставка: ${formatPrice(order.delivery)} BYN</div>
-                            <div><strong>Итого: ${formatPrice(order.final_total)} BYN</strong></div>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                            <div style="margin-bottom: 5px;">Сумма заказа: ${formatPrice(order.total)} BYN</div>
+                            <div style="margin-bottom: 5px;">Скидка 3%: -${formatPrice(order.discount)} BYN</div>
+                            <div style="margin-bottom: 5px;">Доставка: ${formatPrice(order.delivery)} BYN</div>
+                            <div style="font-weight: bold; margin-top: 10px;">Итого: ${formatPrice(order.final_total)} BYN</div>
                         </div>`;
                     
                     document.getElementById('order-detail-content').innerHTML = content;
