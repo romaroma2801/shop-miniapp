@@ -209,7 +209,45 @@
             transform: translateY(0);
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        #orders-screen > div:first-child {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
         
+        #orders-screen h2 {
+            flex: 1;
+            text-align: center;
+            margin-left: -24px; /* Компенсируем кнопку назад */
+        }
+        #orders-screen h2 {
+            text-align: center;
+            margin: 15px 0;
+            width: 100%;
+        }
+        #orders-screen {
+            position: relative;
+        }
+        
+        #orders-list {
+            margin-top: 50px;
+            padding: 15px;
+        }
+        
+        .order-item {
+            transition: transform 0.2s;
+        }
+        
+        .order-item:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -441,15 +479,6 @@
         }, 300);
     }
     
-    function viewOrderDetail(orderId) {
-        document.getElementById('orders-screen').style.opacity = '0';
-        document.getElementById('order-detail-screen').style.display = 'block';
-        setTimeout(() => {
-            document.getElementById('order-detail-screen').style.opacity = '1';
-            loadOrderDetail(orderId);
-        }, 300);
-    }
-    
     function goBackToOrders() {
         document.getElementById('order-detail-screen').style.opacity = '0';
         setTimeout(() => {
@@ -509,10 +538,10 @@
     
             <h3>Суммы:</h3>
             <div style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
-              <div>Сумма заказа: ${parseFloat(order.total.toString().replace(',', '.')).toFixed(2)} BYN</div>
-              <div>Скидка 3%: -${parseFloat(order.discount.toString().replace(',', '.')).toFixed(2)} BYN</div>
-              <div>Доставка: ${parseFloat(order.delivery.toString().replace(',', '.')).toFixed(2)} BYN</div>
-              <div><strong>Итого: ${parseFloat(order.final_total.toString().replace(',', '.')).toFixed(2)} BYN</strong></div>
+              <div>Сумма заказа: ${parseFloat(order.total.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
+              <div>Скидка 3%: -${parseFloat(order.discount.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
+              <div>Доставка: ${parseFloat(order.delivery.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
+              <div><strong>Итого: ${parseFloat(order.final_total.toString().replace(',', '.'))/100).toFixed(2)} BYN</strong></div>
             </div>`;
     
           document.getElementById('order-detail-content').innerHTML = content;
@@ -528,31 +557,36 @@
     // Обновите обработчик кнопки "Мои заказы"
     document.getElementById('my-orders-btn').addEventListener('click', showOrdersScreen);
     async function loadUserOrders() {
-      try {
-        const response = await fetch(`/api/get-orders?username=${encodeURIComponent(userData.username)}`);
-        const orders = await response.json();
-        
-        const ordersList = document.getElementById('orders-list');
-        if (!ordersList) return;
-        
-        if (!orders.length) {
-          ordersList.innerHTML = '<p style="text-align: center;">У вас пока нет заказов</p>';
-          return;
+        try {
+            const response = await fetch(`/api/get-orders?username=${encodeURIComponent(userData.username)}`);
+            const orders = await response.json();
+            
+            const ordersList = document.getElementById('orders-list');
+            if (!ordersList) return;
+            
+            if (!orders.length) {
+                ordersList.innerHTML = '<p style="text-align: center; padding: 20px;">У вас пока нет заказов</p>';
+                return;
+            }
+            
+            // Добавляем отступ сверху для компенсации фиксированного заголовка
+            ordersList.style.paddingTop = '60px';
+            
+            ordersList.innerHTML = orders.map(order => `
+                <div class="order-item" onclick="viewOrderDetail('${order.order_id}')" 
+                     style="background: #f9f9f9; border-radius: 10px; padding: 12px; margin: 10px; cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: bold;">Заказ №${order.order_id}</span>
+                        <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">${new Date(order.order_date).toLocaleDateString('ru-RU')}</div>
+                    <div style="font-weight: bold;">${(parseFloat(order.final_total)/100).toFixed(2)} BYN</div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Ошибка загрузки заказов:', error);
+            ordersList.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">Ошибка загрузки заказов</p>';
         }
-        
-        ordersList.innerHTML = orders.map(order => `
-          <div class="order-item" style="background: #f9f9f9; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-weight: bold;">Заказ №${order.order_id}</span>
-              <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
-            </div>
-            <div style="margin-bottom: 8px;">${new Date(order.order_date).toLocaleDateString()}</div>
-            <div style="font-weight: bold;">${parseFloat(order.final_total).toFixed(2)} BYN</div>
-          </div>
-        `).join('');
-      } catch (error) {
-        console.error('Ошибка загрузки заказов:', error);
-      }
     }
     
     function getStatusColor(status) {
@@ -631,12 +665,7 @@
         default: return '#333';
       }
     }
-    
-    function viewOrderDetail(orderId) {
-      // Здесь будет код для просмотра деталей заказа
-      alert(`Просмотр заказа №${orderId}`);
-      // Можно реализовать отдельный модальный попап для деталей заказа
-    }
+
  
     function showEditForm(user) {
         const personalCabinet = document.getElementById('personal-cabinet');
