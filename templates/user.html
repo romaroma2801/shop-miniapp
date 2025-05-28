@@ -7,349 +7,227 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/cart.css">
     <style>
-        :root { --vh: 1vh; }
-        html, body { height: calc(var(--vh, 1vh) * 100); }
-        
-        /* Стили для личного кабинета */
-        .user-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            overflow: hidden;
-            border: 3px solid #ff0000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-            
-        .user-data {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .user-header h2 {
-            text-align: center;
-            color: #ff0000;
-            margin-bottom: 20px;
-        }
-        
-        .data-row {
-            display: flex;
-            margin-bottom: 15px;
-            font-size: 16px;
-            align-items: center;
-        }
-        
-        .data-label {
-            font-weight: bold;
-            width: 100px;
-            color: #555;
-        }
-        
-        .data-value {
-            flex: 1;
-            color: #333;
-            word-break: break-word;
-        }
-        
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 20px 15px;
-        }
-        
-        #welcome-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-        }
-        #welcome-screen.fade-out {
-            opacity: 0;
-        }
-        
-        .welcome-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 3px solid #ff0000;
-        }
-        #personal-cabinet, #edit-form {
-            opacity: 0;
-            transition: opacity 0.5s ease 0.3s;
-        }
-        #personal-cabinet.show, #edit-form.show {
-            opacity: 1;
-        }
-        /* Стили для кнопок */
-        .action-buttons button {
-            background: #ff0000;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 5px 0;
-            width: 100%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
+      :root {
+        --main-color: #ff0000;
+        --main-bg: #ffffff;
+        --light-gray: #f9f9f9;
+        --text-color: #333;
+        --muted: #888;
+        --header-height: 60px;
+        --subheader-height: 50px;
+      }
     
-        .action-buttons button:active {
-            transform: scale(0.98);
-        }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--main-bg);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: var(--text-color);
+        height: 100%;
+        overflow: hidden;
+      }
     
-        #edit-profile-btn {
-            background: linear-gradient(135deg, #ff0000, #ff5252);
-        }
-        #edit-form {
-            transition: opacity 0.3s ease;
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .edit-form-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
+      #content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+      }
     
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-             display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        .form-input:focus {
-            border-color: #ff0000;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .save-btn {
-            background: #ff0000;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            flex: 1;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .save-btn:hover {
-            background: #e60000;
-            transform: translateY(-1px);
-        }
-
-        .cancel-btn {
-            background: white;
-            color: #ff0000;
-            border: 1px solid #ff0000;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            flex: 1;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .cancel-btn:hover {
-            background: #ffeeee;
-            transform: translateY(-1px);
-        }
-        
-        /* Анимация при нажатии для обеих кнопок */
-        .save-btn:active, .cancel-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        #orders-screen h2 {
-            flex: 1;
-            text-align: center;
-            margin-left: -24px; /* Компенсируем кнопку назад */
-        }
-        #orders-screen h2 {
-            text-align: center;
-            margin: 15px 0;
-            width: 100%;
-        }
-        #orders-screen {
-            position: relative;
-        }
-        
-        #orders-list {
-            margin-top: 50px;
-            padding: 15px;
-        }
-        
-        .order-item {
-            transition: transform 0.2s;
-        }
-        
-        .order-item:active {
-            transform: scale(0.98);
-        }
-        .orders-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 15px;
-            text-align: center;
-            z-index: 90; /* Ниже кнопки "Назад" */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .orders-header h2 {
-            margin: 0;
-            color: #ff0000;
-            font-size: 18px;
-        }
-        
-        
-        .orders-list-container {
-            padding: 15px;
-            padding-top: 0px; /* Отступ для заголовка */
-            margin-bottom: 60px; /* Отступ для нижних кнопок */
-        }
-        
-        .order-item {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.2s;
-        }
-        
-        .order-item:active {
-            transform: scale(0.98);
-        }
-        .order-detail-container {
-            padding: 15px;
-            padding-top: 0px;
-            margin-bottom: 60px;
-        }
-        
-        .order-detail-container > div {
-            margin-bottom: 20px;
-        }
-        
-        .order-detail-container h3 {
-            color: #ff0000;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-        #back-button {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            width: 40px;
-            height: 40px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            z-index: 200; /* Выше заголовка */
-            padding: 0;
-            margin: 0;
-        }
-        
-        #back-button img {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-        }
-        /* Общие стили для экранов */
-        .screen-header {
-            position: fixed;
-            top: 60px; /* Под основным хедером */
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 12px 15px;
-            text-align: center;
-            z-index: 90;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-                
-        .screen-header h2 {
-            margin: 0;
-            color: #ff0000;
-            font-size: 18px;
-        }
-        
-        .screen-content {
-            padding: 15px;
-            padding-top: 120px; /* Хедер + заголовок экрана */
-            padding-bottom: 100px; /* Отступ над футером */
-        }
-        
-        /* Специфичные стили для деталей заказа */
-        #order-detail-content h3 {
-            text-align: left;
-            margin-left: 0;
-            padding-left: 0;
-            color: #ff0000;
-            font-size: 18px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-        
-        #order-detail-content > div {
-            margin-left: 0;
-            padding-left: 0;
-        }
+      /* Общий хедер (логотип и кнопка назад) */
+      .header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--main-bg);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        position: relative;
+        z-index: 100;
+      }
+    
+      .logo {
+        height: 30px;
+      }
+    
+      #back-button {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+    
+      #back-button img {
+        width: 24px;
+        height: 24px;
+      }
+    
+      /* Заголовок экрана */
+      .screen-header {
+        height: var(--subheader-height);
+        background: var(--main-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        z-index: 99;
+        position: relative;
+      }
+    
+      .screen-header h2 {
+        margin: 0;
+        font-size: 18px;
+        color: var(--main-color);
+      }
+    
+      /* Контент экрана */
+      .screen-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: calc(var(--subheader-height) + 10px) 15px 100px;
+        box-sizing: border-box;
+      }
+    
+      /* Элемент заказа */
+      .order-item {
+        background: var(--light-gray);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: transform 0.2s;
+      }
+    
+      .order-item:active {
+        transform: scale(0.98);
+      }
+    
+      .order-item .top {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+    
+      .order-item .date {
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+    
+      .order-item .price {
+        font-weight: bold;
+        font-size: 16px;
+      }
+    
+      /* Детали заказа */
+      .order-detail-container {
+        padding: 0 15px 100px;
+      }
+    
+      .order-detail-container > div {
+        margin-bottom: 20px;
+      }
+    
+      .order-detail-container h3 {
+        color: var(--main-color);
+        font-size: 18px;
+        margin: 20px 0 10px;
+      }
+    
+      /* Текстовые блоки */
+      .text-muted {
+        color: var(--muted);
+        font-size: 14px;
+      }
+    
+      .bold {
+        font-weight: bold;
+      }
+    
+      /* Статус заказа */
+      .status {
+        font-weight: bold;
+      }
+    
+      .status.sent {
+        color: #009900;
+      }
+    
+      .status.pending {
+        color: #ff9900;
+      }
+    
+      .status.canceled {
+        color: #ff0000;
+      }
+    
+      /* Кнопка корзины */
+      .cart-button-container {
+        position: fixed;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 200;
+      }
+    
+      .cart-button {
+        background: var(--main-color);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      }
+    
+      .cart-button img {
+        width: 28px;
+        height: 28px;
+      }
+    
+      .cart-button:active {
+        transform: scale(0.95);
+      }
+    
+      /* Уведомление/значок на кнопке */
+      .cart-button-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: white;
+        color: var(--main-color);
+        font-weight: bold;
+        font-size: 12px;
+        border-radius: 10px;
+        padding: 2px 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+    
+      /* Футер (если есть) */
+      .footer-buttons {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 60px;
+        background: var(--main-color);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 100;
+      }
+    
+      .footer-buttons img {
+        width: 28px;
+        height: 28px;
+      }
     </style>
+
 </head>
 <body>
     <div class="header">
