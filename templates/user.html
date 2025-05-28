@@ -308,7 +308,7 @@
             background: transparent;
             border: none;
             cursor: pointer;
-            z-index: 100; /* Выше заголовка */
+            z-index: 200; /* Выше заголовка */
             padding: 0;
             margin: 0;
         }
@@ -320,6 +320,44 @@
             transform: translate(-50%, -50%);
             width: 40px;
             height: 40px;
+        }
+        /* Общие стили для экранов */
+        .screen-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 15px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .screen-header h2 {
+            margin: 0;
+            color: #ff0000;
+            font-size: 18px;
+        }
+        
+        .screen-content {
+            padding: 20px 15px;
+            padding-top: 70px; /* Отступ под заголовком */
+            padding-bottom: 100px; /* Отступ над футером */
+        }
+        
+        /* Специфичные стили для деталей заказа */
+        #order-detail-content h3 {
+            text-align: left;
+            margin-left: 0;
+            padding-left: 0;
+            color: #ff0000;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        #order-detail-content > div {
+            margin-left: 0;
+            padding-left: 0;
         }
     </style>
 </head>
@@ -410,28 +448,27 @@
         </button>
     </div>
     <div id="orders-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
-        <div class="orders-header">
-            <button id="back-button" onclick="goBackToProfile()">
-                <img src="/static/back.svg" alt="Назад">
-            </button>
+        <button id="back-button" onclick="goBackToProfile()">
+            <img src="/static/back.svg" alt="Назад">
+        </button>
+        <div class="screen-header">
             <h2>Мои заказы</h2>
         </div>
-        
-        <div id="orders-list" class="orders-list-container">
-            <!-- Заказы будут здесь -->
+        <div id="orders-list" class="screen-content">
+            <!-- Список заказов -->
         </div>
     </div>
+
     
     <div id="order-detail-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
-        <div class="orders-header">
-            <button id="back-button" onclick="goBackToOrders()">
-                <img src="/static/back.svg" alt="Назад">
-            </button>
+        <button id="back-button" onclick="goBackToOrders()">
+            <img src="/static/back.svg" alt="Назад">
+        </button>
+        <div class="screen-header">
             <h2>Детали заказа</h2>
         </div>
-        
-        <div id="order-detail-content" class="order-detail-container">
-            <!-- Детали заказа будут здесь -->
+        <div id="order-detail-content" class="screen-content">
+            <!-- Детали заказа -->
         </div>
     </div>
     <script>
@@ -569,7 +606,7 @@
             document.getElementById('orders-screen').style.display = 'none';
             document.getElementById('order-detail-screen').style.display = 'block';
             
-            setTimeout(async () => {  // Добавляем async здесь
+            setTimeout(async () => {
                 document.getElementById('order-detail-screen').style.opacity = '1';
                 
                 try {
@@ -593,7 +630,7 @@
                         </div>
                         
                         <h3>Товары:</h3>
-                        <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden;">`;
+                        <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden; margin-left: 0;">`;
                     
                     items.forEach(item => {
                         content += `
@@ -609,12 +646,12 @@
                     
                     content += `</div>
                         <h3>Доставка:</h3>
-                        <p><strong>Получатель:</strong> ${order.customer_name || '—'}<br>
+                        <p style="margin-left: 0;"><strong>Получатель:</strong> ${order.customer_name || '—'}<br>
                         <strong>Телефон:</strong> ${order.phone || '—'}<br>
                         <strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
                         
                         <h3>Суммы:</h3>
-                        <div style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-left: 0;">
                             <div>Сумма заказа: ${(parseFloat(order.total.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
                             <div>Скидка 3%: -${(parseFloat(order.discount.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
                             <div>Доставка: ${(parseFloat(order.delivery.toString().replace(',', '.'))/100).toFixed(2)} BYN</div>
