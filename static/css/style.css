@@ -151,7 +151,7 @@ p {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 10px 20px 70px; /* Отступы под header и над footer */
+    padding: 70px 20px 70px; /* Отступы под header и над footer */
     margin-top: 0;
     z-index: 1;
     width: 100%;
