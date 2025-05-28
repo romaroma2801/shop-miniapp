@@ -324,6 +324,7 @@
         </div>
     </div>
     <script>
+    let userData = null;
     document.addEventListener('DOMContentLoaded', async () => {
         // Проверяем авторизацию Telegram
         function openCart() {
@@ -336,7 +337,7 @@
 
         const tgUser = Telegram.WebApp.initDataUnsafe.user;
         const userKey = `user_${tgUser.id}`;
-        let userData = JSON.parse(localStorage.getItem(userKey)) || {
+        userData = JSON.parse(localStorage.getItem(userKey)) || {
             id: tgUser.id,
             username: tgUser.username || `id${tgUser.id}`,
             first_name: tgUser.first_name || '',
