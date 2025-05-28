@@ -122,7 +122,7 @@ def save_user():
                 data['username'],
                 data.get('name', ''),
                 data.get('phone', ''),
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                datetime.now().strftime("%Y-%m-%d")
             ])
             message = "User created"
         
@@ -195,7 +195,7 @@ def create_order():
         # Проверяем, не был ли уже добавлен этот заказ
         existing_order = next((o for o in records if 
                              o.get('username') == data['username'] and 
-                             abs((datetime.strptime(o['order_date'], "%Y-%m-%d %H:%M:%S") - 
+                             abs((datetime.strptime(o['order_date'], "%Y-%m-%d") - 
                                  datetime.now()).total_seconds()) < 60), None)
         if existing_order:
             return jsonify({"status": "error", "message": "Order already exists"}), 400
@@ -203,7 +203,7 @@ def create_order():
         last_order_id = records[-1]['order_id'] if records else 0
         order_id = last_order_id + 1
         
-        order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        order_date = datetime.now().strftime("%Y-%m-%d")
         items_str = json.dumps(data['items'], ensure_ascii=False)
         
         # Добавляем заказ только один раз
@@ -254,7 +254,7 @@ def get_orders_sheet():
 def send_order_notification(order_id, order_data):
     try:
         message = f"🛒 <b>Новый заказ №{order_id}</b>\n"
-        message += f"📅 Дата: {datetime.now().strftime('%d.%m.%Y %H:%M')}\n"
+        message += f"📅 Дата: {datetime.now().strftime('%d.%m.%Y')}\n"
         message += f"👤 Пользователь: @{order_data['username']}\n\n"
         
         message += "🛍️ <b>Товары:</b>\n"
