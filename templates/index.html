@@ -28,26 +28,49 @@
 
     <div class="menu-vertical" id="content">
         <button onclick="showRegions()">Адреса магазинов</button>
-        <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
         <button onclick="showSection('contacts')">Контакты</button>
         <button onclick="showSection('jobs')">Вакансии</button>
-        <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <div class="footer-buttons">
-        <div id="home-button" onclick="goHome()">
-            <img src="/static/home.svg" alt="Домой">
+    <div class="footer-nav">
+      <div class="footer-indicator"></div>
+      
+      <button class="footer-btn" data-page="home">
+        <div class="footer-btn-content">
+          <img src="/static/home (1).svg" class="footer-btn-icon">
+          <span class="footer-btn-label">Домой</span>
         </div>
-        <div id="login-button">
-            <img src="/static/login.svg" alt="Авторизация">
+      </button>
+      
+      <button class="footer-btn" data-page="catalog">
+        <div class="footer-btn-content">
+          <img src="/static/catalog.svg" class="footer-btn-icon">
+          <span class="footer-btn-label">Каталог</span>
         </div>
-    </div>
-
-    <div class="cart-button-container">
-        <button class="cart-button" id="cart-button">
-            <img src="/static/shop.svg" alt="Корзина">
-        </button>
+      </button>
+      
+      <button class="footer-btn" data-page="cart" id="cart-btn">
+        <div class="footer-btn-content">
+          <img src="/static/cart-arrow-down.svg" class="footer-btn-icon">
+          <span class="footer-btn-label">Корзина</span>
+          <span class="cart-badge">0</span>
+        </div>
+      </button>
+      
+      <button class="footer-btn" data-page="promotions">
+        <div class="footer-btn-content">
+          <img src="/static/benefit-porcent.svg" class="footer-btn-icon">
+          <span class="footer-btn-label">Акции</span>
+        </div>
+      </button>
+      
+      <button class="footer-btn" data-page="user">
+        <div class="footer-btn-content">
+          <img src="/static/entrance.svg" class="footer-btn-icon">
+          <span class="footer-btn-label">Кабинет</span>
+        </div>
+      </button>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -824,7 +847,99 @@
                 document.getElementById('user-name').textContent = user.first_name || 'Не указано';
                 document.getElementById('user-phone').textContent = user.phone || 'Не указан';
             }
-
+            class ModernFooter {
+              constructor() {
+                this.footer = document.querySelector('.footer-nav');
+                this.indicator = document.querySelector('.footer-indicator');
+                this.buttons = document.querySelectorAll('.footer-btn');
+                this.activePage = 'home';
+                
+                this.init();
+              }
+              
+              init() {
+                this.setupEventListeners();
+                this.setActiveButton(this.activePage);
+              }
+              
+              setActiveButton(page) {
+                this.activePage = page;
+                
+                this.buttons.forEach(btn => {
+                  const isActive = btn.dataset.page === page;
+                  btn.classList.toggle('active', isActive);
+                  
+                  if (isActive) {
+                    this.moveIndicator(btn);
+                  }
+                });
+              }
+              
+              moveIndicator(activeBtn) {
+                const btnRect = activeBtn.getBoundingClientRect();
+                const footerRect = this.footer.getBoundingClientRect();
+                const left = btnRect.left - footerRect.left + btnRect.width/2;
+                
+                this.indicator.style.left = `${left - 30}px`;
+              }
+              
+              setupEventListeners() {
+                this.buttons.forEach(btn => {
+                  btn.addEventListener('click', () => {
+                    const page = btn.dataset.page;
+                    if (page === 'cart') {
+                      this.toggleCart(btn);
+                      return;
+                    }
+                    this.setActiveButton(page);
+                    this.navigateToPage(page);
+                  });
+                });
+              }
+              
+              navigateToPage(page) {
+                if (page === 'home') {
+                  goHome();
+                } else if (page === 'catalog') {
+                  showSection('catalog');
+                } else if (page === 'promotions') {
+                  showSection('promotions');
+                } else if (page === 'user') {
+                  if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                    window.location.href = '/user';
+                  } else {
+                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
+                  }
+                }
+              }
+              
+              toggleCart(btn) {
+                btn.classList.toggle('active');
+                toggleCart();
+              }
+              
+              updateCartBadge(count) {
+                const badge = document.querySelector('.cart-badge');
+                if (badge) {
+                  badge.textContent = count;
+                  badge.style.display = count > 0 ? 'flex' : 'none';
+                }
+              }
+            }
+            
+            // Инициализация футера
+            document.addEventListener('DOMContentLoaded', () => {
+              const footer = new ModernFooter();
+              
+              // Интеграция с корзиной
+              if (window.cart) {
+                window.cart.updateBadge = function() {
+                  const count = this.items.reduce((sum, item) => sum + item.quantity, 0);
+                  footer.updateCartBadge(count);
+                };
+                footer.updateCartBadge(window.cart.items.length);
+              }
+            });
             // Экспорт всех функций в глобальную область видимости
             // Основные функции приложения
             window.showHome = showHome;
