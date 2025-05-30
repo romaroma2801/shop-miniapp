@@ -156,7 +156,7 @@ p {
     z-index: 1;
     width: 100%;
     box-sizing: border-box;
-    padding-bottom: 100px;
+    padding-bottom: 80px;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -896,4 +896,137 @@ button.secondary:hover {
     border-radius: 12px;
     font-size: 12px;
     font-weight: bold;
+}
+:root {
+  --footer-height: 80px;
+  --footer-bg: #ffffff;
+  --footer-active-color: #ff0000;
+  --footer-inactive-color: #000000;
+  --footer-text-color: #000000;
+  --footer-active-text-color: #ffffff;
+  --footer-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  --footer-glow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.footer-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--footer-height);
+  background: var(--footer-bg);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: var(--footer-shadow);
+  z-index: 100;
+  padding: 0 10px;
+}
+
+.footer-indicator {
+  position: absolute;
+  top: 0;
+  left: 15%;
+  width: 60px;
+  height: 4px;
+  background: var(--footer-active-color);
+  border-radius: 2px 2px 0 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--footer-glow);
+}
+
+.footer-btn {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+}
+
+.footer-btn-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.footer-btn.active .footer-btn-content {
+  transform: translateY(-8px);
+}
+
+.footer-btn-icon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 6px;
+  filter: brightness(0) invert(0);
+  transition: all 0.3s ease;
+}
+
+.footer-btn.active .footer-btn-icon {
+  filter: brightness(0) invert(1);
+  transform: scale(1.15);
+}
+
+.footer-btn-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--footer-text-color);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.footer-btn.active .footer-btn-label {
+  color: var(--footer-active-color);
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Активная кнопка - красный круг */
+.footer-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  background: var(--footer-active-color);
+  border-radius: 50%;
+  transform: translate(-50%, 100%);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: -1;
+  opacity: 0;
+}
+
+.footer-btn.active::after {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+}
+
+/* Бейдж корзины */
+.cart-badge {
+  position: absolute;
+  top: 12px;
+  right: calc(50% - 20px);
+  background: var(--footer-active-color);
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+#cart-btn.active .cart-badge {
+  background: white;
+  color: var(--footer-active-color);
+  transform: translateY(-8px);
 }
