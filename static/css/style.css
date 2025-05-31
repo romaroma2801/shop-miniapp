@@ -923,7 +923,8 @@ button.secondary:hover {
 
 .footer-btn {
   position: relative;
-  flex: 1;
+  width: 32px;
+  flex: 0 0 auto;
   height: 100%;
   border: none;
   background: transparent;
