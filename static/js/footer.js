@@ -11,6 +11,8 @@ class ModernFooter {
   init() {
     this.setupEventListeners();
     this.setActiveButton(this.activePage);
+    this.updateIndicatorSize();
+    window.addEventListener('resize', () => this.updateIndicatorSize());
   }
   
   setActiveButton(page) {
@@ -29,9 +31,18 @@ class ModernFooter {
   moveIndicator(activeBtn) {
     const btnRect = activeBtn.getBoundingClientRect();
     const footerRect = this.footer.getBoundingClientRect();
-    const left = btnRect.left - footerRect.left + btnRect.width/2;
+    const left = btnRect.left - footerRect.left;
+    const width = btnRect.width;
     
-    this.indicator.style.left = `${left - 30}px`;
+    this.indicator.style.left = `${left}px`;
+    this.indicator.style.width = `${width}px`;
+  }
+  
+  updateIndicatorSize() {
+    const activeBtn = document.querySelector(`.footer-btn[data-page="${this.activePage}"]`);
+    if (activeBtn) {
+      this.moveIndicator(activeBtn);
+    }
   }
   
   setupEventListeners() {
@@ -58,22 +69,8 @@ class ModernFooter {
   updateCartBadge(count) {
     const badge = document.querySelector('.cart-badge');
     if (badge) {
-      badge.textContent = count;
+      badge.textContent = count > 9 ? '9+' : count;
       badge.style.display = count > 0 ? 'flex' : 'none';
     }
   }
 }
-
-// Инициализация
-document.addEventListener('DOMContentLoaded', () => {
-  const footer = new ModernFooter();
-  
-  // Интеграция с корзиной
-  if (window.cart) {
-    window.cart.updateBadge = function() {
-      const count = this.items.reduce((sum, item) => sum + item.quantity, 0);
-      footer.updateCartBadge(count);
-    };
-    footer.updateCartBadge(window.cart.items.length);
-  }
-});
