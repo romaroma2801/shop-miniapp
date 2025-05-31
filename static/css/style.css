@@ -899,39 +899,38 @@ button.secondary:hover {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px; /* Фиксированная высота */
-  background: white;
+  height: 72px;
+  background: #ffffff;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-  padding: 0 10px;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0 5px;
 }
 
 .footer-indicator {
   position: absolute;
   top: 0;
   height: 3px;
-  background: #ff0000;
-  border-radius: 3px;
-  transition: left 0.3s ease, width 0.3s ease;
-  z-index: 10;
+  background: #FF3347;
+  border-radius: 0 0 3px 3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
 }
 
 .footer-btn {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 60px; /* Фиксированная ширина */
-  height: 60px; /* Фиксированная высота */
+  width: 20%;
+  height: 100%;
   background: transparent;
   border: none;
-  cursor: pointer;
   padding: 0;
   margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 .footer-btn-content {
@@ -939,35 +938,44 @@ button.secondary:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
+  width: 100%;
   height: 100%;
   transition: all 0.3s ease;
 }
 
 .footer-btn.active .footer-btn-content {
-  transform: translateY(-8px);
+  transform: translateY(-5px);
 }
 
 .footer-btn-icon {
   width: 24px;
   height: 24px;
+  margin-bottom: 4px;
   transition: all 0.3s ease;
 }
 
 .footer-btn-label {
   font-size: 10px;
-  margin-top: 4px;
+  font-weight: 500;
+  color: #555;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .footer-btn.active .footer-btn-icon {
-  transform: translateY(-5px) scale(1.1);
+  transform: scale(1.1);
+  filter: invert(16%) sepia(89%) saturate(6054%) hue-rotate(340deg) brightness(98%) contrast(112%);
 }
 
 
 
 .footer-btn.active .footer-btn-label {
-  transform: translateY(-5px);
-  font-weight: bold;
+  color: #FF3347;
+  font-weight: 600;
 }
 
 /* Активная кнопка - красный круг */
@@ -994,9 +1002,9 @@ button.secondary:hover {
 /* Бейдж корзины */
 .cart-badge {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  background: #ff0000;
+  top: 2px;
+  right: 12px;
+  background: #FF3347;
   color: white;
   border-radius: 50%;
   width: 16px;
@@ -1005,6 +1013,7 @@ button.secondary:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: bold;
 }
 
 #cart-btn.active .cart-badge {
