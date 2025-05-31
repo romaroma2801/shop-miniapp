@@ -34,23 +34,31 @@
     </div>
 
     <div class="footer-buttons">
-      <div id="home-button" onclick="goHome()">
-        <img src="/static/home.svg" alt="Домой">
-      </div>
-      
-      <div onclick="showSection('catalog')">
-        <img src="/static/catalog.svg" alt="Каталог">
-      </div>
-    
-      <div style="width: 60px;"></div> <!-- под корзину -->
-    
-      <div onclick="showSection('promotions')">
-        <img src="/static/benefit-porcent.svg" alt="Акции">
-      </div>
-    
-      <div id="login-button">
-        <img src="/static/entrance.svg" alt="Кабинет">
-      </div>
+        <div class="footer-btn" onclick="goHome()" id="footer-home">
+            <img src="/static/home.svg" alt="Домой">
+            <span>Главная</span>
+        </div>
+        
+        <div class="footer-btn" onclick="showSection('catalog')" id="footer-catalog">
+            <img src="/static/catalog.svg" alt="Каталог">
+            <span>Каталог</span>
+        </div>
+        
+        <div class="footer-btn" onclick="toggleCart()" id="footer-cart">
+            <img src="/static/shop.svg" alt="Корзина">
+            <span>Корзина</span>
+            <span class="cart-badge" id="cart-badge"></span>
+        </div>
+        
+        <div class="footer-btn" onclick="showSection('promotions')" id="footer-promo">
+            <img src="/static/benefit-porcent.svg" alt="Акции">
+            <span>Акции</span>
+        </div>
+        
+        <div class="footer-btn" id="footer-login" onclick="handleLogin()">
+            <img src="/static/entrance.svg" alt="Кабинет">
+            <span>Кабинет</span>
+        </div>
     </div>
 
     <div class="cart-button-container">
@@ -238,6 +246,28 @@
                     submitReview();
                 }
             });
+            function updateFooterActive(state) {
+                // Сбрасываем все активные состояния
+                document.querySelectorAll('.footer-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Устанавливаем активное состояние
+                switch(state) {
+                    case 'home':
+                        document.getElementById('footer-home').classList.add('active');
+                        break;
+                    case 'catalog':
+                        document.getElementById('footer-catalog').classList.add('active');
+                        break;
+                    case 'promotions':
+                        document.getElementById('footer-promo').classList.add('active');
+                        break;
+                    case 'promotions':
+                        document.getElementById('footer-login').classList.add('active');
+                        break;
+                }
+            }
 
             async function loadData(url) {
                 try {
@@ -302,6 +332,7 @@
 
             function showHome() {
                 currentState = "home";
+                updateFooterActive('home');
                 
                 // Загружаем акции для карусели
                 loadPromotionsForCarousel().then(carouselHTML => {
@@ -601,12 +632,14 @@
                         </div>
                     `, true);
                 } else if (section === 'catalog') {
+                    updateFooterActive('catalog');
                     // Плавный переход
                     document.getElementById('content').classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = '/catalog';
                     }, 300);
                 } else if (section === 'promotions') {
+                    updateFooterActive('promotions');
                     currentState = "promotions";
                     showPromotions();
                 } else {
