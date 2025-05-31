@@ -35,59 +35,24 @@
         <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <div class="footer-nav">
-      <div class="footer-indicator"></div>
-      
-      <button class="footer-btn" data-page="home">
-        <div class="footer-btn-content">
-          <img src="/static/home.svg" class="footer-btn-icon">
-          <span class="footer-btn-label">Домой</span>
+    <div class="footer-buttons">
+        <div id="home-button" onclick="goHome()">
+            <img src="/static/home.svg" alt="Домой">
         </div>
-      </button>
-    
-      <button class="footer-btn" data-page="catalog">
-        <div class="footer-btn-content">
-          <img src="/static/catalog.svg" class="footer-btn-icon">
-          <span class="footer-btn-label">Каталог</span>
+        <div id="login-button">
+            <img src="/static/login.svg" alt="Авторизация">
         </div>
-      </button>
-    
-      <button class="footer-btn" data-page="cart" id="cart-btn">
-        <div class="footer-btn-content">
-          <img src="/static/cart.svg" class="footer-btn-icon">
-          <span class="footer-btn-label">Корзина</span>
-          <span class="cart-badge">0</span>
-        </div>
-      </button>
-    
-      <button class="footer-btn" data-page="promotions">
-        <div class="footer-btn-content">
-          <img src="/static/promotions.svg" class="footer-btn-icon">
-          <span class="footer-btn-label">Акции</span>
-        </div>
-      </button>
-    
-      <button class="footer-btn" data-page="profile">
-        <div class="footer-btn-content">
-          <img src="/static/profile.svg" class="footer-btn-icon">
-          <span class="footer-btn-label">Профиль</span>
-        </div>
-      </button>
     </div>
-    <script src="/static/js/footer.js" defer></script>
+
+    <div class="cart-button-container">
+        <button class="cart-button" id="cart-button">
+            <img src="/static/shop.svg" alt="Корзина">
+        </button>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
                 function openCart() {
                     toggleCart(); // теперь открывает выезжающую панель
-                }
-                const footer = new ModernFooter();
-
-                if (window.cart) {
-                  window.cart.updateBadge = function () {
-                    const count = this.items.reduce((sum, item) => sum + item.quantity, 0);
-                    footer.updateCartBadge(count);
-                  };
-                  footer.updateCartBadge(window.cart.items.length);
                 }
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
