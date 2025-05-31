@@ -28,20 +28,29 @@
 
     <div class="menu-vertical" id="content">
         <button onclick="showRegions()">Адреса магазинов</button>
-        <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
         <button onclick="showSection('contacts')">Контакты</button>
         <button onclick="showSection('jobs')">Вакансии</button>
-        <button onclick="showSection('promotions')">Акции</button>
     </div>
 
     <div class="footer-buttons">
-        <div id="home-button" onclick="goHome()">
-            <img src="/static/home.svg" alt="Домой">
-        </div>
-        <div id="login-button">
-            <img src="/static/login.svg" alt="Авторизация">
-        </div>
+      <div id="home-button" onclick="goHome()">
+        <img src="/static/home.svg" alt="Домой">
+      </div>
+      
+      <div onclick="showSection('catalog')">
+        <img src="/static/catalog.svg" alt="Каталог">
+      </div>
+    
+      <div style="width: 60px;"></div> <!-- под корзину -->
+    
+      <div onclick="showSection('promotions')">
+        <img src="/static/benefit-porcent.svg" alt="Акции">
+      </div>
+    
+      <div id="login-button">
+        <img src="/static/entrance.svg" alt="Кабинет">
+      </div>
     </div>
 
     <div class="cart-button-container">
@@ -298,11 +307,9 @@
                 loadPromotionsForCarousel().then(carouselHTML => {
                     showContent(`
                         <button data-action="regions">Адреса магазинов</button>
-                        <button data-action="section:catalog">Каталог товаров</button>
                         <button data-action="section:review">Оставить отзыв</button>
                         <button data-action="section:contacts">Контакты</button>
                         <button data-action="section:jobs">Вакансии</button>
-                        <button data-action="section:promotions">Акции</button>
                         
                         ${carouselHTML}
                     `, false, () => {
