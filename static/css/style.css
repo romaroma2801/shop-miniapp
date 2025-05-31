@@ -44,14 +44,23 @@ body {
     position: fixed;
     bottom: 0;
     width: 100%;
-    background: #ff0000;
+    background: white;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
-    padding: 12px 50px;
+    padding: 8px 0;
     z-index: 100;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     box-sizing: border-box;
-    height: 60px;
+}
+.footer-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px;
+    flex: 1;
+    position: relative;
 }
 
 #home-button, #login-button {
@@ -64,12 +73,26 @@ body {
     justify-content: center;
     cursor: pointer;
 }
-
+.footer-btn img {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 3px;
+    filter: brightness(0); /* Черные иконки по умолчанию */
+}
+.footer-btn span {
+    font-size: 10px;
+    color: #333;
+}
 .footer-buttons img {
     width: 32px;
     height: 32px;
 }
-
+.footer-btn.active img {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(100%) saturate(7433%) hue-rotate(358deg) brightness(95%) contrast(112%);
+}
+.footer-btn.active span {
+    color: #ff0000;
+}
 .cart-button-container {
     position: fixed;
     bottom: 0px; /* Поднята над футером */
@@ -822,17 +845,18 @@ button.secondary:hover {
 
 .cart-badge {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: 0;
+    right: 15px;
     background: #ff0000;
     color: white;
     border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    display: none;
 }
 
 .flying-badge {
