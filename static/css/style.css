@@ -93,13 +93,6 @@ body {
 .footer-btn.active span {
     color: #ff0000;
 }
-.cart-button-container {
-    position: fixed;
-    bottom: 0px; /* Поднята над футером */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 110;
-}
 
 .cart-button {
     width: 80px;
