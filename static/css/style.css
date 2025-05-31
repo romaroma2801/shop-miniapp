@@ -899,14 +899,14 @@ button.secondary:hover {
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--footer-height);
-  background: var(--footer-bg);
+  height: 80px;
+  background: white;
   display: flex;
+  flex-direction: row;
   justify-content: space-around;
   align-items: center;
-  box-shadow: var(--footer-shadow);
   z-index: 100;
-  padding: 0 10px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .footer-indicator {
@@ -922,15 +922,15 @@ button.secondary:hover {
 }
 
 .footer-btn {
-  position: relative;
-  width: 32px;
-  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
   height: 100%;
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 0;
-  overflow: hidden;
 }
 
 .footer-btn-content {
