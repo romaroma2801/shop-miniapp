@@ -899,38 +899,39 @@ button.secondary:hover {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 70px; /* Фиксированная высота */
   background: white;
   display: flex;
-  flex-direction: row;
   justify-content: space-around;
   align-items: center;
   z-index: 100;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 0 10px;
 }
 
 .footer-indicator {
   position: absolute;
   top: 0;
-  left: 15%;
-  width: 60px;
-  height: 4px;
-  background: var(--footer-active-color);
-  border-radius: 2px 2px 0 0;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: var(--footer-glow);
+  height: 3px;
+  background: #ff0000;
+  border-radius: 3px;
+  transition: left 0.3s ease, width 0.3s ease;
+  z-index: 10;
 }
 
 .footer-btn {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 100%;
-  border: none;
+  width: 60px; /* Фиксированная ширина */
+  height: 60px; /* Фиксированная высота */
   background: transparent;
+  border: none;
   cursor: pointer;
+  padding: 0;
+  margin: 0;
 }
 
 .footer-btn-content {
@@ -949,28 +950,24 @@ button.secondary:hover {
 .footer-btn-icon {
   width: 24px;
   height: 24px;
-  margin-bottom: 6px;
-  filter: brightness(0) invert(0);
+  transition: all 0.3s ease;
+}
+
+.footer-btn-label {
+  font-size: 10px;
+  margin-top: 4px;
   transition: all 0.3s ease;
 }
 
 .footer-btn.active .footer-btn-icon {
-  filter: brightness(0) invert(1);
-  transform: scale(1.15);
+  transform: translateY(-5px) scale(1.1);
 }
 
-.footer-btn-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--footer-text-color);
-  opacity: 0.8;
-  transition: all 0.3s ease;
-}
+
 
 .footer-btn.active .footer-btn-label {
-  color: var(--footer-active-color);
-  opacity: 1;
-  font-weight: 600;
+  transform: translateY(-5px);
+  font-weight: bold;
 }
 
 /* Активная кнопка - красный круг */
@@ -997,19 +994,17 @@ button.secondary:hover {
 /* Бейдж корзины */
 .cart-badge {
   position: absolute;
-  top: 12px;
-  right: calc(50% - 20px);
-  background: var(--footer-active-color);
+  top: 5px;
+  right: 5px;
+  background: #ff0000;
   color: white;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   font-size: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  transition: all 0.3s ease;
 }
 
 #cart-btn.active .cart-badge {
