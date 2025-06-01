@@ -22,12 +22,15 @@
   justify-content: center;
   position: relative;
   cursor: pointer;
+  height: 100%;
+  padding-top: 6px;
 }
 
 .footer-item img {
   width: 24px;
   height: 24px;
   filter: brightness(0);
+  object-fit: contain;
 }
 
 .footer-item.active img {
@@ -36,6 +39,8 @@
 
 .footer-item span {
   margin-top: 4px;
+  font-size: 11px;
+  line-height: 1;
 }
 
 .footer-item.active::before {
