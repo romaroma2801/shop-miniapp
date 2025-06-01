@@ -34,19 +34,19 @@
     </div>
 
     <div class="footer-nav">
-        <div class="footer-item" id="home-button" data-section="home" onclick="goHome()">
+        <div class="footer-item" id="home-button" data-section="home">
             <img src="/static/home-agreement.svg" alt="Домой">
             <span>Домой</span>
         </div>
-        <div class="footer-item" id="catalog-button" data-section="catalog" onclick="showSection('catalog')">
+        <div class="footer-item" id="catalog-button" data-section="catalog">
             <img src="/static/category.svg" alt="Каталог">
             <span>Каталог</span>
         </div>
-        <div class="footer-item" id="cart-footer-button" data-section="cart" onclick="openCart()">
+        <div class="footer-item" id="cart-footer-button" data-section="cart">
             <img src="/static/add-cart.svg" alt="Корзина">
             <span>Корзина</span>
         </div>
-        <div class="footer-item" id="promotions-button" data-section="promotions" onclick="showSection('promotions')">
+        <div class="footer-item" id="promotions-button" data-section="promotions">
             <img src="/static/discount.svg" alt="Акции">
             <span>Акции</span>
         </div>
@@ -167,6 +167,20 @@
             document.body.style.overflow = 'hidden';
             document.body.style.userSelect = 'none';
             document.addEventListener('dblclick', (e) => e.preventDefault());
+            document.getElementById('home-button').addEventListener('click', () => {
+                goHome();
+            });
+            document.getElementById('catalog-button').addEventListener('click', () => {
+                showSection('catalog');
+            });
+            
+            document.getElementById('cart-footer-button').addEventListener('click', () => {
+                openCart();
+            });
+            
+            document.getElementById('promotions-button').addEventListener('click', () => {
+                showSection('promotions');
+            });
             document.getElementById('back-button').addEventListener('click', goBack);
             document.getElementById('login-button').addEventListener('click', function() {
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
