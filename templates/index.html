@@ -8,7 +8,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/cart.css">
-    <link rel="stylesheet" href="/static/css/footer.css">
     <style>
         :root {
             --vh: 1vh;
@@ -35,8 +34,21 @@
         <button onclick="showSection('jobs')">Вакансии</button>
         <button onclick="showSection('promotions')">Акции</button>
     </div>
-    <div id="footer-container"></div>
-    
+
+    <div class="footer-buttons">
+        <div id="home-button" onclick="goHome()">
+            <img src="/static/home.svg" alt="Домой">
+        </div>
+        <div id="login-button">
+            <img src="/static/login.svg" alt="Авторизация">
+        </div>
+    </div>
+
+    <div class="cart-button-container">
+        <button class="cart-button" id="cart-button">
+            <img src="/static/shop.svg" alt="Корзина">
+        </button>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
                 function openCart() {
@@ -831,6 +843,5 @@
         });
     </script>
     <script src="/static/js/cart.js" defer></script>
-    <script src="/static/js/footer.js"></script>
 </body>
 </html>
