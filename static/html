@@ -1,0 +1,22 @@
+<div class="footer-nav">
+  <div class="footer-item" id="home-button" data-section="home">
+    <img src="/static/home-agreement.svg" alt="Домой">
+    <span>Домой</span>
+  </div>
+  <div class="footer-item" id="catalog-button" data-section="catalog">
+    <img src="/static/category.svg" alt="Каталог">
+    <span>Каталог</span>
+  </div>
+  <div class="footer-item" id="cart-footer-button" data-section="cart">
+    <img src="/static/add-cart.svg" alt="Корзина">
+    <span>Корзина</span>
+  </div>
+  <div class="footer-item" id="promotions-button" data-section="promotions">
+    <img src="/static/discount.svg" alt="Акции">
+    <span>Акции</span>
+  </div>
+  <div class="footer-item" id="login-button" data-section="user">
+    <img src="/static/log-in.svg" alt="Кабинет">
+    <span>Кабинет</span>
+  </div>
+</div>
