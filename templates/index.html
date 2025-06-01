@@ -49,6 +49,154 @@
     </script>
 
     <script>
+    let currentState = "home";
+    let currentRegion = null;
+    let currentCity = null;
+    showHome();
+    setActiveFooter("home");
+    const contentDiv = document.getElementById('content');
+
+    contentDiv.addEventListener('click', (e) => {
+        if (e.target.closest('#back-button')) {
+            goBack();
+            return;
+        }
+        const promoItem = e.target.closest('[data-action="showPromoDetail"]');
+        if (promoItem) {
+            const promoData = JSON.parse(promoItem.dataset.promo);
+            showPromotionDetail(promoData);
+            return;
+        }
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        const action = btn.dataset.action;
+        if (action) {
+            console.log("Нажата кнопка:", action);
+
+            if (action === 'regions') showRegions();
+            else if (action.startsWith('section:')) showSection(action.split(':')[1]);
+            else if (action.startsWith('city:')) showCities(action.split(':')[1]);
+            else if (action.startsWith('store:')) {
+                const [_, city, region] = action.split(':');
+                showStores(city, region);
+            } else if (action.startsWith('detail:')) {
+                showStoreDetails(action.split(':')[1]);
+            } else if (action === 'goHome') {
+                goHome();
+            }
+        }
+
+        const starEl = e.target.closest('.star');
+        if (starEl && starEl.dataset.stars) {
+            const count = parseInt(starEl.dataset.stars);
+            selectStars(count);
+        }
+
+
+        const submitBtn = e.target.closest('#submit-review');
+        if (submitBtn) {
+            submitReview();
+        }
+    function openCart() {
+        setActiveFooter("cart");
+        toggleCart(); // теперь открывает выезжающую панель
+    }
+    function setActiveFooter(section) {
+        const items = document.querySelectorAll('.footer-item');
+        items.forEach(item => {
+            const isActive = item.dataset.section === section;
+            item.classList.toggle('active', isActive);
+        });
+    }
+    function copyPhoneNumber() {
+        const phone = "+375 29 225-13-34";
+        
+        // Fallback для старых браузеров
+        const fallbackCopy = () => {
+            const textarea = document.createElement('textarea');
+            textarea.value = phone;
+            textarea.style.position = 'fixed';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                const success = document.execCommand('copy');
+                showToast(success ? "Номер скопирован!" : "Не удалось скопировать");
+            } catch (err) {
+                showToast("Ошибка при копировании");
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        };
+    
+        // Современный способ
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(phone)
+                .then(() => {
+                    showToast("Номер скопирован в буфер обмена!");
+                    try {
+                        if (navigator.vibrate) navigator.vibrate(50);
+                    } catch (e) {
+                        console.log("Вибрация не сработала");
+                    }
+                })
+                .catch((err) => {
+                    console.error("Clipboard error:", err);
+                    fallbackCopy(); // Пробуем старый способ
+                });
+        } else {
+            fallbackCopy();
+        }
+    }
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            const tgUser = Telegram.WebApp.initDataUnsafe.user;
+            const userKey = `user_${tgUser.id}`;
+
+            // Проверяем, когда последний раз обновляли данные
+            const lastUpdate = localStorage.getItem(`${userKey}_last_update`);
+            const now = Date.now();
+
+            // Обновляем данные, если они старые (старше 5 минут)
+            if (!lastUpdate || (now - parseInt(lastUpdate)) > 300000) {
+                (async () => {
+                    try {
+                        const response = await fetch(`/api/get-user?username=${encodeURIComponent(tgUser.username || `id${tgUser.id}`)}`);
+                        const result = await response.json();
+            
+                        const userData = {
+                            id: tgUser.id,
+                            username: tgUser.username || `id${tgUser.id}`,
+                            first_name: result.exists ? result.user.Name : tgUser.first_name || '',
+                            phone: result.exists ? result.user.Phone : tgUser.phone_number || '',
+                            photo_url: tgUser.photo_url || '/static/user-avatar.png',
+                            updated_at: now
+                        };
+            
+                        localStorage.setItem(userKey, JSON.stringify(userData));
+                        localStorage.setItem(`${userKey}_last_update`, now.toString());
+            
+                        if (!result.exists) {
+                            await fetch('/api/save-user', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    username: userData.username,
+                                    name: userData.first_name,
+                                    phone: userData.phone
+                                })
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Фоновая синхронизация не удалась:', error);
+                    }
+                })();
+            }
+        }
+        // ===== КОНЕЦ ВСТАВКИ =====
+    const setFullHeight = () => {
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    };
     async function loadData(url) {
             try {
                 const response = await fetch(`/api/${url}`);
@@ -661,109 +809,7 @@
         window.showCities = showCities;
         window.showStores = showStores;
         window.showStoreDetails = showStoreDetails;
-        document.addEventListener('DOMContentLoaded', () => {
-                function openCart() {
-                    setActiveFooter("cart");
-                    toggleCart(); // теперь открывает выезжающую панель
-                }
-                function setActiveFooter(section) {
-                    const items = document.querySelectorAll('.footer-item');
-                    items.forEach(item => {
-                        const isActive = item.dataset.section === section;
-                        item.classList.toggle('active', isActive);
-                    });
-                }
-                function copyPhoneNumber() {
-                    const phone = "+375 29 225-13-34";
-                    
-                    // Fallback для старых браузеров
-                    const fallbackCopy = () => {
-                        const textarea = document.createElement('textarea');
-                        textarea.value = phone;
-                        textarea.style.position = 'fixed';
-                        document.body.appendChild(textarea);
-                        textarea.select();
-                        
-                        try {
-                            const success = document.execCommand('copy');
-                            showToast(success ? "Номер скопирован!" : "Не удалось скопировать");
-                        } catch (err) {
-                            showToast("Ошибка при копировании");
-                        } finally {
-                            document.body.removeChild(textarea);
-                        }
-                    };
-                
-                    // Современный способ
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(phone)
-                            .then(() => {
-                                showToast("Номер скопирован в буфер обмена!");
-                                try {
-                                    if (navigator.vibrate) navigator.vibrate(50);
-                                } catch (e) {
-                                    console.log("Вибрация не сработала");
-                                }
-                            })
-                            .catch((err) => {
-                                console.error("Clipboard error:", err);
-                                fallbackCopy(); // Пробуем старый способ
-                            });
-                    } else {
-                        fallbackCopy();
-                    }
-                }
-                document.querySelector('.cart-button').addEventListener('click', openCart);
-                // ===== НАЧАЛО ВСТАВКИ =====
-                // Фоновая регистрация пользователя при загрузке
-                if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-                    const tgUser = Telegram.WebApp.initDataUnsafe.user;
-                    const userKey = `user_${tgUser.id}`;
-        
-                    // Проверяем, когда последний раз обновляли данные
-                    const lastUpdate = localStorage.getItem(`${userKey}_last_update`);
-                    const now = Date.now();
-        
-                    // Обновляем данные, если они старые (старше 5 минут)
-                    if (!lastUpdate || (now - parseInt(lastUpdate)) > 300000) {
-                        (async () => {
-                            try {
-                                const response = await fetch(`/api/get-user?username=${encodeURIComponent(tgUser.username || `id${tgUser.id}`)}`);
-                                const result = await response.json();
-                    
-                                const userData = {
-                                    id: tgUser.id,
-                                    username: tgUser.username || `id${tgUser.id}`,
-                                    first_name: result.exists ? result.user.Name : tgUser.first_name || '',
-                                    phone: result.exists ? result.user.Phone : tgUser.phone_number || '',
-                                    photo_url: tgUser.photo_url || '/static/user-avatar.png',
-                                    updated_at: now
-                                };
-                    
-                                localStorage.setItem(userKey, JSON.stringify(userData));
-                                localStorage.setItem(`${userKey}_last_update`, now.toString());
-                    
-                                if (!result.exists) {
-                                    await fetch('/api/save-user', {
-                                        method: 'POST',
-                                        headers: {'Content-Type': 'application/json'},
-                                        body: JSON.stringify({
-                                            username: userData.username,
-                                            name: userData.first_name,
-                                            phone: userData.phone
-                                        })
-                                    });
-                                }
-                            } catch (error) {
-                                console.error('Фоновая синхронизация не удалась:', error);
-                            }
-                        })();
-                    }
-                }
-                // ===== КОНЕЦ ВСТАВКИ =====
-            const setFullHeight = () => {
-                document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-            };
+        document.addEventListener('DOMContentLoaded', () => {   
             window.addEventListener('resize', setFullHeight);
             window.addEventListener('load', setFullHeight);
             setFullHeight();
@@ -798,56 +844,6 @@
                 document.body.innerHTML = "Ошибка: откройте через Telegram!";
                 return;
             }
-
-            let currentState = "home";
-            let currentRegion = null;
-            let currentCity = null;
-            showHome();
-            setActiveFooter("home");
-            const contentDiv = document.getElementById('content');
-
-            contentDiv.addEventListener('click', (e) => {
-                if (e.target.closest('#back-button')) {
-                    goBack();
-                    return;
-                }
-                const promoItem = e.target.closest('[data-action="showPromoDetail"]');
-                if (promoItem) {
-                    const promoData = JSON.parse(promoItem.dataset.promo);
-                    showPromotionDetail(promoData);
-                    return;
-                }
-                const btn = e.target.closest('button');
-                if (!btn) return;
-
-                const action = btn.dataset.action;
-                if (action) {
-                    console.log("Нажата кнопка:", action);
-        
-                    if (action === 'regions') showRegions();
-                    else if (action.startsWith('section:')) showSection(action.split(':')[1]);
-                    else if (action.startsWith('city:')) showCities(action.split(':')[1]);
-                    else if (action.startsWith('store:')) {
-                        const [_, city, region] = action.split(':');
-                        showStores(city, region);
-                    } else if (action.startsWith('detail:')) {
-                        showStoreDetails(action.split(':')[1]);
-                    } else if (action === 'goHome') {
-                        goHome();
-                    }
-                }
-
-                const starEl = e.target.closest('.star');
-                if (starEl && starEl.dataset.stars) {
-                    const count = parseInt(starEl.dataset.stars);
-                    selectStars(count);
-                }
-
-
-                const submitBtn = e.target.closest('#submit-review');
-                if (submitBtn) {
-                    submitReview();
-                }
             });
         });
     </script>
