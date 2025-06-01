@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Permissions-Policy" content="clipboard-write">
     <meta http-equiv="Permissions-Policy" content="clipboard-write, vibration">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: wss:; connect-src 'self' https://nekuri.by https://api.telegram.org wss://*.web.telegram.org blob:;">
     <title>Мини-приложение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
@@ -62,6 +63,60 @@
     </div>
     <script>
         // Глобальные функции навигации
+        window.showPromotions = function() {
+            currentState = "promotions";
+            showContent(`<p>Загрузка акций...</p>`, true);
+            
+            try {
+                const response = await fetch('https://nekuri.by/api/news-feed.php');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const promotions = await response.json();
+                if (!Array.isArray(promotions)) throw new Error("Некорректный формат данных");
+                
+                localStorage.setItem('cachedPromotions', JSON.stringify(promotions));
+                localStorage.setItem('promotionsCacheTime', Date.now().toString());
+                
+                renderPromotions(promotions);
+            } catch (error) {
+                console.error("Ошибка загрузки акций:", error);
+                const cached = localStorage.getItem('cachedPromotions');
+                if (cached) {
+                    renderPromotions(JSON.parse(cached));
+                    showToast("Используются кэшированные данные");
+                } else {
+                    showContent(`
+                        <p>Не удалось загрузить акции</p>
+                        <button onclick="showPromotions()">Попробовать снова</button>
+                        <button data-action="goHome">На главную</button>
+                    `, true);
+                }
+            }
+        };
+        
+        window.handleLogin = function() {
+            if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                window.location.href = '/user';
+            } else {
+                Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
+            }
+        };
+        function updateFooterActive(state) {
+            document.querySelectorAll('.footer-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const activeIds = {
+                'home': 'footer-home',
+                'catalog': 'footer-catalog',
+                'promotions': 'footer-promo',
+                'user': 'footer-login'
+            };
+            
+            if (activeIds[state]) {
+                document.getElementById(activeIds[state]).classList.add('active');
+            }
+        }
         window.showSection = function(section) {
             if (section === 'catalog') {
                 document.getElementById('content').classList.add('fade-out');
@@ -149,7 +204,6 @@
                         fallbackCopy();
                     }
                 }
-                document.querySelector('.cart-button').addEventListener('click', openCart);
                 // ===== НАЧАЛО ВСТАВКИ =====
                 // Фоновая регистрация пользователя при загрузке
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
@@ -203,7 +257,7 @@
             window.addEventListener('resize', setFullHeight);
             window.addEventListener('load', setFullHeight);
             setFullHeight();
-
+            updateFooterActive('home'); // Добавьте эту строку
             document.body.style.overflow = 'hidden';
             document.body.style.userSelect = 'none';
             document.addEventListener('dblclick', (e) => e.preventDefault());
@@ -284,28 +338,7 @@
                     submitReview();
                 }
             });
-            function updateFooterActive(state) {
-                // Сбрасываем все активные состояния
-                document.querySelectorAll('.footer-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                // Устанавливаем активное состояние
-                switch(state) {
-                    case 'home':
-                        document.getElementById('footer-home').classList.add('active');
-                        break;
-                    case 'catalog':
-                        document.getElementById('footer-catalog').classList.add('active');
-                        break;
-                    case 'promotions':
-                        document.getElementById('footer-promo').classList.add('active');
-                        break;
-                    case 'promotions':
-                        document.getElementById('footer-login').classList.add('active');
-                        break;
-                }
-            }
+
 
             async function loadData(url) {
                 try {
@@ -905,13 +938,6 @@
 
             // Экспорт всех функций в глобальную область видимости
             // Основные функции приложения
-            window.handleLogin = function() {
-                if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-                    window.location.href = '/user';
-                } else {
-                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
-                }
-            };
             window.showHome = showHome;
             window.goHome = goHome;
             window.auth = auth; // Обновленная версия
