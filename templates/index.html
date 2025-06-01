@@ -44,7 +44,7 @@
             <span>Каталог</span>
         </div>
         
-        <div class="footer-btn" onclick="toggleCart()" id="footer-cart">
+        <div class="footer-btn" onclick="openCart()" id="footer-cart">
             <img src="/static/shop.svg" alt="Корзина">
             <span>Корзина</span>
             <span class="cart-badge" id="cart-badge"></span>
@@ -60,17 +60,55 @@
             <span>Кабинет</span>
         </div>
     </div>
-
-    <div class="cart-button-container">
-        <button class="cart-button" id="cart-button">
-            <img src="/static/shop.svg" alt="Корзина">
-        </button>
-    </div>
     <script>
+        // Глобальные функции навигации
+        window.showSection = function(section) {
+            if (section === 'catalog') {
+                document.getElementById('content').classList.add('fade-out');
+                setTimeout(() => {
+                    window.location.href = '/catalog';
+                }, 300);
+            } else if (section === 'promotions') {
+                currentState = "promotions";
+                showPromotions();
+            } else if (section === 'contacts') {
+                currentState = "contacts";
+                showContent(`
+                    <h3>Свяжитесь с нами</h3>
+                    <button id="copy-phone-btn">Позвонить: +375 29 225-13-34</button>
+                    <button onclick="window.open('https://www.instagram.com/nekuri.by/', '_blank')">Instagram</button>
+                    <button onclick="window.open('https://t.me/nekuri_by', '_blank')">Telegram канал</button>
+                    <button onclick="window.open('https://t.me/nekuri_by_brest', '_blank')">Telegram чат</button>
+                    <button onclick="window.open('https://vk.com/nekuribrest', '_blank')">ВКонтакте</button>
+                    <button onclick="window.open('https://www.tiktok.com/@nekuri.by', '_blank')">TikTok</button>
+                `, true, () => {
+                    document.getElementById('copy-phone-btn').addEventListener('click', copyPhoneNumber);
+                });
+            } else if (section === 'review') {
+                checkReviewCooldown();
+            } else if (section === 'jobs') {
+                currentState = "jobs";
+                showContent(`
+                    <div class="vacancy-block">
+                        <h3>Продавец-консультант</h3>
+                        <!-- остальной код вакансий -->
+                    </div>
+                `, true);
+            }
+        };
         document.addEventListener('DOMContentLoaded', () => {
                 function openCart() {
-                    toggleCart(); // теперь открывает выезжающую панель
+                    const cartOverlay = document.getElementById('cart-overlay');
+                    if (!cartOverlay) return;
+                    
+                    cartOverlay.classList.toggle('show');
+                    document.getElementById('footer-cart').classList.toggle('active', cartOverlay.classList.contains('show'));
+                    
+                    if (cartOverlay.classList.contains('show')) {
+                        cart.render();
+                    }
                 }
+                window.openCart = openCart;
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
                     
@@ -867,6 +905,13 @@
 
             // Экспорт всех функций в глобальную область видимости
             // Основные функции приложения
+            window.handleLogin = function() {
+                if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                    window.location.href = '/user';
+                } else {
+                    Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
+                }
+            };
             window.showHome = showHome;
             window.goHome = goHome;
             window.auth = auth; // Обновленная версия
