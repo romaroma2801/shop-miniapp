@@ -28,31 +28,46 @@
 
     <div class="menu-vertical" id="content">
         <button onclick="showRegions()">Адреса магазинов</button>
-        <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
         <button onclick="showSection('contacts')">Контакты</button>
         <button onclick="showSection('jobs')">Вакансии</button>
-        <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <div class="footer-buttons">
-        <div id="home-button" onclick="goHome()">
-            <img src="/static/home.svg" alt="Домой">
+    <div class="footer-nav">
+        <div class="footer-item" id="home-button" data-section="home" onclick="goHome()">
+            <img src="/static/home-agreement.svg" alt="Домой">
+            <span>Домой</span>
         </div>
-        <div id="login-button">
-            <img src="/static/login.svg" alt="Авторизация">
+        <div class="footer-item" id="catalog-button" data-section="catalog" onclick="showSection('catalog')">
+            <img src="/static/category.svg" alt="Каталог">
+            <span>Каталог</span>
+        </div>
+        <div class="footer-item" id="cart-footer-button" data-section="cart" onclick="openCart()">
+            <img src="/static/add-cart.svg" alt="Корзина">
+            <span>Корзина</span>
+        </div>
+        <div class="footer-item" id="promotions-button" data-section="promotions" onclick="showSection('promotions')">
+            <img src="/static/discount.svg" alt="Акции">
+            <span>Акции</span>
+        </div>
+        <div class="footer-item" id="login-button" data-section="user">
+            <img src="/static/log-in.svg" alt="Кабинет">
+            <span>Кабинет</span>
         </div>
     </div>
 
-    <div class="cart-button-container">
-        <button class="cart-button" id="cart-button">
-            <img src="/static/shop.svg" alt="Корзина">
-        </button>
-    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
                 function openCart() {
+                    setActiveFooter("cart");
                     toggleCart(); // теперь открывает выезжающую панель
+                }
+                function setActiveFooter(section) {
+                    const items = document.querySelectorAll('.footer-item');
+                    items.forEach(item => {
+                        const isActive = item.dataset.section === section;
+                        item.classList.toggle('active', isActive);
+                    });
                 }
                 function copyPhoneNumber() {
                     const phone = "+375 29 225-13-34";
@@ -184,6 +199,7 @@
             let currentRegion = null;
             let currentCity = null;
             showHome();
+            setActiveFooter("home");
             const contentDiv = document.getElementById('content');
 
             contentDiv.addEventListener('click', (e) => {
@@ -293,16 +309,16 @@
 
             function showHome() {
                 currentState = "home";
+                setActiveFooter("home");
+
                 
                 // Загружаем акции для карусели
                 loadPromotionsForCarousel().then(carouselHTML => {
                     showContent(`
                         <button data-action="regions">Адреса магазинов</button>
-                        <button data-action="section:catalog">Каталог товаров</button>
                         <button data-action="section:review">Оставить отзыв</button>
                         <button data-action="section:contacts">Контакты</button>
                         <button data-action="section:jobs">Вакансии</button>
-                        <button data-action="section:promotions">Акции</button>
                         
                         ${carouselHTML}
                     `, false, () => {
@@ -594,12 +610,14 @@
                         </div>
                     `, true);
                 } else if (section === 'catalog') {
+                    setActiveFooter("catalog");
                     // Плавный переход
                     document.getElementById('content').classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = '/catalog';
                     }, 300);
                 } else if (section === 'promotions') {
+                    setActiveFooter("promotions");
                     currentState = "promotions";
                     showPromotions();
                 } else {
