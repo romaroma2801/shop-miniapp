@@ -8,6 +8,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/cart.css">
+    <link rel="stylesheet" href="/static/css/footer.css">
     <style>
         :root {
             --vh: 1vh;
@@ -32,29 +33,19 @@
         <button onclick="showSection('contacts')">Контакты</button>
         <button onclick="showSection('jobs')">Вакансии</button>
     </div>
+    <div id="footer-placeholder"></div>
 
-    <div class="footer-nav">
-        <div class="footer-item" id="home-button" data-section="home">
-            <img src="/static/home-agreement.svg" alt="Домой">
-            <span>Домой</span>
-        </div>
-        <div class="footer-item" id="catalog-button" data-section="catalog">
-            <img src="/static/category.svg" alt="Каталог">
-            <span>Каталог</span>
-        </div>
-        <div class="footer-item" id="cart-footer-button" data-section="cart">
-            <img src="/static/add-cart.svg" alt="Корзина">
-            <span>Корзина</span>
-        </div>
-        <div class="footer-item" id="promotions-button" data-section="promotions">
-            <img src="/static/discount.svg" alt="Акции">
-            <span>Акции</span>
-        </div>
-        <div class="footer-item" id="login-button" data-section="user">
-            <img src="/static/log-in.svg" alt="Кабинет">
-            <span>Кабинет</span>
-        </div>
-    </div>
+    <script type="module">
+      import { initFooter } from '/static/js/footer.js';
+    
+      // Загружаем footer.html внутрь #footer-placeholder
+      fetch('/static/html/footer.html')
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('footer-placeholder').innerHTML = html;
+          initFooter();
+        });
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -167,20 +158,6 @@
             document.body.style.overflow = 'hidden';
             document.body.style.userSelect = 'none';
             document.addEventListener('dblclick', (e) => e.preventDefault());
-            document.getElementById('home-button').addEventListener('click', () => {
-                goHome();
-            });
-            document.getElementById('catalog-button').addEventListener('click', () => {
-                showSection('catalog');
-            });
-            
-            document.getElementById('cart-footer-button').addEventListener('click', () => {
-                openCart();
-            });
-            
-            document.getElementById('promotions-button').addEventListener('click', () => {
-                showSection('promotions');
-            });
             document.getElementById('back-button').addEventListener('click', goBack);
             document.getElementById('login-button').addEventListener('click', function() {
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
