@@ -40,35 +40,6 @@ body {
     margin: 0 auto;
 }
 
-.footer-buttons {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #ff0000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 50px;
-    z-index: 100;
-    box-sizing: border-box;
-    height: 60px;
-}
-
-#home-button, #login-button {
-    width: 30px;
-    height: 30px;
-    background: transparent;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.footer-buttons img {
-    width: 32px;
-    height: 32px;
-}
 
 .cart-button-container {
     position: fixed;
