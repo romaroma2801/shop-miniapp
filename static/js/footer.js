@@ -23,11 +23,12 @@ function initFooter() {
   const handleLogin = () => {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
     if (user) {
-      location.href = '/user';
+      showUserPage(); // ✅ Загрузка кабинета без перехода
     } else {
       Telegram.WebApp.openTelegramLink('https://t.me/Shop_NEKURIBY_bot?start=login');
     }
   };
+
 
   document.addEventListener('DOMContentLoaded', initFooter);
   document.getElementById('home-button')?.addEventListener('click', goHome);
