@@ -10,6 +10,11 @@ export function initFooter() {
     window.goHome();
   };
 
+  const showPromotions = () => {
+    setActiveFooter('promotions');
+    window.showSection('promotions');
+  };
+
   const toggleCart = () => {
     setActiveFooter('cart');
     cart.toggle();
