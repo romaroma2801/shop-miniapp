@@ -122,12 +122,12 @@ p {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 70px 20px 70px; /* Отступы под header и над footer */
+    padding: 60px 20px 50px; /* Отступы под header и над footer */
     margin-top: 0;
     z-index: 1;
     width: 100%;
     box-sizing: border-box;
-    padding-bottom: 100px;
+    padding-bottom: 80px;
     -webkit-overflow-scrolling: touch;
 }
 
