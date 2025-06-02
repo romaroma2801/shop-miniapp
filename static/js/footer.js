@@ -1,4 +1,4 @@
-export function initFooter() {
+function initFooter() {
   const setActiveFooter = (section) => {
     document.querySelectorAll('.footer-item').forEach(item => {
       item.classList.toggle('active', item.dataset.section === section);
@@ -29,6 +29,7 @@ export function initFooter() {
     }
   };
 
+  document.addEventListener('DOMContentLoaded', initFooter);
   document.getElementById('home-button')?.addEventListener('click', goHome);
   document.getElementById('catalog-button')?.addEventListener('click', () => {
     setActiveFooter('catalog');
