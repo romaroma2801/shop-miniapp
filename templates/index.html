@@ -35,7 +35,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-                function initFooter() {
+                if (typeof initFooter === 'function') {
                     initFooter();
                 }
                 function openCart() {
