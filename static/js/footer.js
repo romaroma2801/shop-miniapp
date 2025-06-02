@@ -40,7 +40,11 @@ function initFooter() {
     setActiveFooter('promotions');
     window.showSection('promotions');
   });
-  document.getElementById('login-button')?.addEventListener('click', handleLogin);
+  document.getElementById('login-button')?.addEventListener('click', () => {
+    setActiveFooter('user');
+    window.showUserPage();
+  });
+
 
   // Инициализация корзины при загрузке
   initCart();
