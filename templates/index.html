@@ -306,11 +306,9 @@
             loadPromotionsForCarousel().then(carouselHTML => {
                 showContent(`
                     <button data-action="regions">Адреса магазинов</button>
-                    <button data-action="section:catalog">Каталог товаров</button>
                     <button data-action="section:review">Оставить отзыв</button>
                     <button data-action="section:contacts">Контакты</button>
                     <button data-action="section:jobs">Вакансии</button>
-                    <button data-action="section:promotions">Акции</button>
                     
                     ${carouselHTML}
                 `, false, () => {
