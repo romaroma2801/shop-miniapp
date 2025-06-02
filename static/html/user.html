@@ -1,91 +1,349 @@
+#content {
+    padding-left: 5px;
+    padding-right: 5px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 70px 20px 70px; /* Отступы под header и над footer */
+    margin-top: 0;
+    z-index: 1;
+    width: 100%;
+    box-sizing: border-box;
+    padding-bottom: 100px;
+    -webkit-overflow-scrolling: touch;
+}
+.user-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    overflow: hidden;
+    border: 3px solid #ff0000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
 
-<div id="content" class="content-user">
-    <!-- Приветствие -->
-    <div id="welcome-screen">
-        <div class="welcome-avatar">
-            <img src="" alt="Аватар" id="welcome-avatar">
-        </div>
-        <h2 id="welcome-message">Загружаем ваш профиль...</h2>
-    </div>
-
-    <!-- Личный кабинет -->
-    <div id="personal-cabinet" class="content-user">
-        <div class="user-header">
-            <h2>Добро пожаловать в личный кабинет</h2>
-        </div>
-
-        <div class="user-avatar">
-            <img src="" alt="Аватар" id="user-avatar-img">
-        </div>
-
-        <div class="user-data">
-            <div class="data-row">
-                <span class="data-label">Юзернейм:</span>
-                <span class="data-value" id="user-username"></span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Имя:</span>
-                <span class="data-value" id="user-name"></span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Телефон:</span>
-                <span class="data-value" id="user-phone"></span>
-            </div>
-        </div>
-        <div class="action-buttons">
-          <button id="my-orders-btn" class="edit-btn">📦 Мои заказы</button>
-        </div>
-        <div class="action-buttons">
-            <button id="edit-profile-btn" class="edit-btn">✏️ Редактировать данные</button>
-        </div>
-    </div>
-
-    <!-- Форма редактирования -->
-    <!-- Замените блок edit-form на этот -->
-    <div id="edit-form" style="display: none; opacity: 0;">
-        <div class="user-header">
-            <h2>Редактирование профиля</h2>
-        </div>
-
-        <div class="edit-form-container">
-            <div class="form-group">
-                <label for="edit-name">Имя и фамилия</label>
-                <input type="text" id="edit-name" class="form-input" placeholder="Введите ваше имя">
-            </div>
-            
-            <div class="form-group">
-                <label for="edit-phone">Телефон</label>
-                <input type="tel" id="edit-phone" class="form-input" placeholder="+375 XX XXX-XX-XX">
-            </div>
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
     
-            <div class="form-actions">
-                <button id="save-profile-btn" class="save-btn">Сохранить</button>
-                <button id="cancel-edit-btn" class="cancel-btn">Отмена</button>
-            </div>
-        </div>
-    </div>
-</div>
+.user-data {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+}
+.user-header h2 {
+    text-align: center;
+    color: #ff0000;
+    margin-bottom: 20px;
+}
 
-<div id="orders-screen" class="content-user">
-    <button id="back-button" onclick="goBackToProfile()">
-        <img src="/static/back.svg" alt="Назад">
-    </button>
-    <div class="orders-header">
-        <h2>Мои заказы</h2>
-    </div>
-    <div id="orders-list" class="orders-list-container">
-        <!-- Список заказов -->
-    </div>
-</div>
+.data-row {
+    display: flex;
+    margin-bottom: 15px;
+    font-size: 16px;
+    align-items: center;
+}
 
-<div id="order-detail-screen" class="content-user">
-    <button id="back-button" onclick="goBackToOrders()">
-        <img src="/static/back.svg" alt="Назад">
-    </button>
-    <div class="screen-header">
-        <h2>Детали заказа</h2>
-    </div>
-    <div id="order-detail-content" class="screen-content">
-        <!-- Детали заказа -->
-    </div>
-</div>
+.data-label {
+    font-weight: bold;
+    width: 100px;
+    color: #555;
+}
+
+.data-value {
+    flex: 1;
+    color: #333;
+    word-break: break-word;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 15px;
+}
+
+#welcome-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+#welcome-screen.fade-out {
+    opacity: 0;
+}
+
+.welcome-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 3px solid #ff0000;
+}
+#personal-cabinet, #edit-form {
+    opacity: 0;
+    transition: opacity 0.5s ease 0.3s;
+}
+#personal-cabinet.show, #edit-form.show {
+    opacity: 1;
+}
+/* Стили для кнопок */
+.action-buttons button {
+    background: #ff0000;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.action-buttons button:active {
+    transform: scale(0.98);
+}
+
+#edit-profile-btn {
+    background: linear-gradient(135deg, #ff0000, #ff5252);
+}
+#edit-form {
+    transition: opacity 0.3s ease;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.edit-form-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+     display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+.form-input:focus {
+    border-color: #ff0000;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background: #ff0000;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    flex: 1;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.save-btn:hover {
+    background: #e60000;
+    transform: translateY(-1px);
+}
+
+.cancel-btn {
+    background: white;
+    color: #ff0000;
+    border: 1px solid #ff0000;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    flex: 1;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    background: #ffeeee;
+    transform: translateY(-1px);
+}
+
+/* Анимация при нажатии для обеих кнопок */
+.save-btn:active, .cancel-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#orders-screen h2 {
+    flex: 1;
+    text-align: center;
+    margin-left: -24px; /* Компенсируем кнопку назад */
+}
+#orders-screen h2 {
+    text-align: center;
+    margin: 15px 0;
+    width: 100%;
+}
+#orders-screen {
+    position: relative;
+}
+
+#orders-list {
+    padding: 15px;
+}
+
+.order-item {
+    transition: transform 0.2s;
+}
+
+.order-item:active {
+    transform: scale(0.98);
+}
+.orders-header {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: white;
+    text-align: center;
+    z-index: 90; /* Ниже кнопки "Назад" */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.orders-header h2 {
+    margin: 0;
+    color: #ff0000;
+    font-size: 18px;
+}
+
+
+.orders-list-container {
+    padding: 15px;
+    padding-top: 10px; /* Отступ для заголовка */
+    margin-bottom: 60px; /* Отступ для нижних кнопок */
+}
+
+.order-item {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+
+.order-item:active {
+    transform: scale(0.98);
+}
+.order-detail-container {
+    padding: 15px;
+    padding-top: 10px;
+    margin-bottom: 60px;
+}
+
+.order-detail-container > div {
+    margin-bottom: 20px;
+}
+
+.order-detail-container h3 {
+    color: #ff0000;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+#back-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 200; /* Выше заголовка */
+    padding: 0;
+    margin: 0;
+}
+
+#back-button img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+}
+/* Общие стили для экранов */
+.screen-header {
+    position: fixed;
+    top: 60px; /* Под основным хедером */
+    left: 0;
+    right: 0;
+    padding: 12px 15px;
+    background: white;
+    text-align: center;
+    z-index: 90;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+        
+.screen-header h2 {
+    margin: 0;
+    color: #ff0000;
+    font-size: 18px;
+}
+
+.screen-content {
+    padding: 0px 15px 60px;
+    padding-bottom: 60px; /* Отступ над футером */
+}
+
+/* Специфичные стили для деталей заказа */
+#order-detail-content h3 {
+    text-align: left;
+    margin-left: 0;
+    padding-left: 0;
+    color: #ff0000;
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+#order-detail-content > div {
+    margin-left: 0;
+    padding-left: 0;
+}
