@@ -7,7 +7,7 @@
     <title>Мини-приложение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/cart.css">
+    <link rel="stylesheet" href="/static/css/footer.css">
     <style>
         :root {
             --vh: 1vh;
@@ -28,29 +28,16 @@
 
     <div class="menu-vertical" id="content">
         <button onclick="showRegions()">Адреса магазинов</button>
-        <button onclick="showSection('catalog')">Каталог товаров</button>
         <button onclick="showSection('review')">Оставить отзыв</button>
         <button onclick="showSection('contacts')">Контакты</button>
         <button onclick="showSection('jobs')">Вакансии</button>
-        <button onclick="showSection('promotions')">Акции</button>
     </div>
 
-    <div class="footer-buttons">
-        <div id="home-button" onclick="goHome()">
-            <img src="/static/home.svg" alt="Домой">
-        </div>
-        <div id="login-button">
-            <img src="/static/login.svg" alt="Авторизация">
-        </div>
-    </div>
-
-    <div class="cart-button-container">
-        <button class="cart-button" id="cart-button">
-            <img src="/static/shop.svg" alt="Корзина">
-        </button>
-    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+                if (typeof initFooter === 'function') {
+                    initFooter();
+                }
                 function openCart() {
                     toggleCart(); // теперь открывает выезжающую панель
                 }
@@ -842,6 +829,6 @@
             window.showStoreDetails = showStoreDetails;
         });
     </script>
-    <script src="/static/js/cart.js" defer></script>
+    <script src="/static/js/footer.js" defer></script>
 </body>
 </html>
