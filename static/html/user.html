@@ -1,0 +1,94 @@
+<div class="header">
+    <img src="/static/logo22.png" alt="Логотип" class="logo">
+</div>
+
+<div id="content">
+    <!-- Приветствие -->
+    <div id="welcome-screen">
+        <div class="welcome-avatar">
+            <img src="" alt="Аватар" id="welcome-avatar">
+        </div>
+        <h2 id="welcome-message">Загружаем ваш профиль...</h2>
+    </div>
+
+    <!-- Личный кабинет -->
+    <div id="personal-cabinet" style="display: none; opacity: 0;">
+        <div class="user-header">
+            <h2>Добро пожаловать в личный кабинет</h2>
+        </div>
+
+        <div class="user-avatar">
+            <img src="" alt="Аватар" id="user-avatar-img">
+        </div>
+
+        <div class="user-data">
+            <div class="data-row">
+                <span class="data-label">Юзернейм:</span>
+                <span class="data-value" id="user-username"></span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Имя:</span>
+                <span class="data-value" id="user-name"></span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Телефон:</span>
+                <span class="data-value" id="user-phone"></span>
+            </div>
+        </div>
+        <div class="action-buttons">
+          <button id="my-orders-btn" class="edit-btn">📦 Мои заказы</button>
+        </div>
+        <div class="action-buttons">
+            <button id="edit-profile-btn" class="edit-btn">✏️ Редактировать данные</button>
+        </div>
+    </div>
+
+    <!-- Форма редактирования -->
+    <!-- Замените блок edit-form на этот -->
+    <div id="edit-form" style="display: none; opacity: 0;">
+        <div class="user-header">
+            <h2>Редактирование профиля</h2>
+        </div>
+
+        <div class="edit-form-container">
+            <div class="form-group">
+                <label for="edit-name">Имя и фамилия</label>
+                <input type="text" id="edit-name" class="form-input" placeholder="Введите ваше имя">
+            </div>
+            
+            <div class="form-group">
+                <label for="edit-phone">Телефон</label>
+                <input type="tel" id="edit-phone" class="form-input" placeholder="+375 XX XXX-XX-XX">
+            </div>
+    
+            <div class="form-actions">
+                <button id="save-profile-btn" class="save-btn">Сохранить</button>
+                <button id="cancel-edit-btn" class="cancel-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="orders-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
+    <button id="back-button" onclick="goBackToProfile()">
+        <img src="/static/back.svg" alt="Назад">
+    </button>
+    <div class="orders-header">
+        <h2>Мои заказы</h2>
+    </div>
+    <div id="orders-list" class="orders-list-container">
+        <!-- Список заказов -->
+    </div>
+</div>
+
+<div id="order-detail-screen" style="display: none; opacity: 0; height: 100%; overflow-y: auto;">
+    <button id="back-button" onclick="goBackToOrders()">
+        <img src="/static/back.svg" alt="Назад">
+    </button>
+    <div class="screen-header">
+        <h2>Детали заказа</h2>
+    </div>
+    <div id="order-detail-content" class="screen-content">
+        <!-- Детали заказа -->
+    </div>
+</div>
