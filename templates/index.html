@@ -825,7 +825,15 @@
         }
         function showUserPage() {
           currentState = 'user';
-        
+          // Загружаем CSS только при необходимости
+          if (!document.getElementById('user-css')) {
+            const link = document.createElement('link');
+            link.id = 'user-css';
+            link.rel = 'stylesheet';
+            link.href = '/static/css/user.css';
+            document.head.appendChild(link);
+          }
+
           fetch('/static/html/user.html')
             .then(res => res.text())
             .then(html => {
