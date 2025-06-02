@@ -35,7 +35,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-                if (typeof initFooter === 'function') {
+                function initFooter() {
                     initFooter();
                 }
                 function openCart() {
@@ -81,6 +81,7 @@
                         fallbackCopy();
                     }
                 }
+                document.addEventListener('DOMContentLoaded', initFooter);
                 document.querySelector('.cart-button').addEventListener('click', openCart);
                 // ===== НАЧАЛО ВСТАВКИ =====
                 // Фоновая регистрация пользователя при загрузке
