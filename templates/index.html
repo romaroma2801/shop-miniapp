@@ -163,7 +163,6 @@
             document.addEventListener('dblclick', (e) => e.preventDefault());
             document.getElementById('back-button').addEventListener('click', goBack);
             document.getElementById('login-button').addEventListener('click', function() {
-                document.getElementById('login-button').addEventListener('click', function() {
                 if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
                     showUserPage(); // ✅ Заменили весь переход на вызов
                 } else {
