@@ -830,6 +830,27 @@
             document.getElementById('user-name').textContent = user.first_name || 'Не указано';
             document.getElementById('user-phone').textContent = user.phone || 'Не указан';
         }
+        function showUserPage() {
+          currentState = 'user';
+        
+          fetch('/templates/user.html')
+            .then(res => res.text())
+            .then(html => {
+              showContent(html, false, () => {
+                if (typeof initUserPage === 'function') {
+                  initUserPage();
+                } else {
+                  showToast('Не удалось инициализировать личный кабинет');
+                }
+              });
+            })
+            .catch(err => {
+              console.error('Ошибка загрузки user.html:', err);
+              showToast('Не удалось загрузить личный кабинет');
+            });
+        }
+        
+        window.showUserPage = showUserPage;
 
         // Экспорт всех функций в глобальную область видимости
         // Основные функции приложения
@@ -849,5 +870,6 @@
         
     </script>
     <script src="/static/js/footer.js"></script>
+    <script src="/static/js/user.js"></script>
 </body>
 </html>
