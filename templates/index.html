@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/footer.css">
     <link rel="stylesheet" href="/static/css/user.css">
+    <link rel="stylesheet" href="/static/css/order.css">
     <style>
         :root {
             --vh: 1vh;
@@ -897,19 +898,36 @@
           fetch('/static/html/order.html')
             .then(res => res.text())
             .then(html => {
-              showContent(html, false, () => {
+              showContent(html);
+        
+              // Только после загрузки HTML, загружаем JS
+              if (!document.getElementById('order-js')) {
+                const script = document.createElement('script');
+                script.id = 'order-js';
+                script.src = '/static/js/order.js';
+                script.onload = () => {
+                  if (typeof initOrderPage === 'function') {
+                    initOrderPage();
+                  } else {
+                    showToast('Не удалось инициализировать оформление заказа');
+                  }
+                };
+                document.body.appendChild(script);
+              } else {
+                // если уже загружен
                 if (typeof initOrderPage === 'function') {
                   initOrderPage();
                 } else {
                   showToast('Не удалось инициализировать оформление заказа');
                 }
-              });
+              }
             })
             .catch(err => {
               console.error('Ошибка загрузки order.html:', err);
               showToast('Не удалось загрузить оформление заказа');
             });
         }
+
         window.showOrderPage = showOrderPage;
 
         window.showUserPage = showUserPage;
@@ -933,5 +951,6 @@
     </script>
     <script src="/static/js/footer.js"></script>
     <script src="/static/js/user.js"></script>
+    <script src="/static/js/order.js"></script>
 </body>
 </html>
