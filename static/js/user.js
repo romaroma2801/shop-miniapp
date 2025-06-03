@@ -99,7 +99,7 @@ function ensureBackButtons() {
     // Для экрана заказов
     if (!document.querySelector('#orders-screen #back-button')) {
         const btn = document.createElement('button');
-        btn.id = 'back-button';
+        btn.id = 'back-to-profile-button';
         btn.innerHTML = '<img src="/static/back.svg" alt="Назад">';
         btn.onclick = goBackToProfile;
         btn.style.cssText = `
@@ -118,7 +118,7 @@ function ensureBackButtons() {
     // Для экрана деталей заказа
     if (!document.querySelector('#order-detail-screen #back-button')) {
         const btn = document.createElement('button');
-        btn.id = 'back-button';
+        btn.id = 'back-to-orders-button';
         btn.innerHTML = '<img src="/static/back.svg" alt="Назад">';
         btn.onclick = goBackToOrders;
         btn.style.cssText = `
@@ -141,6 +141,7 @@ function showOrdersScreen() {
   console.log('Кнопка в DOM:', document.querySelector('#back-button'));
   console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
   const backBtn = document.querySelector('#orders-screen #back-button');
+  const backBtn = document.getElementById('back-to-profile-button');
   if (backBtn) {
     backBtn.style.display = 'block'; // Убедитесь, что это выполняется
     backBtn.style.visibility = 'visible';
@@ -205,6 +206,7 @@ async function viewOrderDetail(orderId) {
         console.log('Кнопка в DOM:', document.querySelector('#back-button'));
         console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
         const backBtn = document.querySelector('#order-detail-screen #back-button');
+        const backBtn = document.getElementById('back-to-orders-button');
         if (backBtn) {
           backBtn.style.display = 'block';
           backBtn.style.visibility = 'visible';
