@@ -60,15 +60,6 @@ function initOrderPage() {
         <button type="submit" class="submit-btn">Отправить заказ</button>
       </form>
     </div>
-
-    <div class="footer-buttons">
-      <div id="home-button" onclick="location.href='/'">
-        <img src="/static/home.svg" alt="Домой">
-      </div>
-      <div id="login-button" onclick="location.href='/user'">
-        <img src="/static/login.svg" alt="Личный кабинет">
-      </div>
-    </div>
   `;
 
   // Вставляем HTML в DOM
