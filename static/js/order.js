@@ -140,7 +140,6 @@ function renderOrderItems() {
       <div class="cart-item-right">
         <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</div>
         <button class="cart-item-remove" onclick="removeOrderItem('${item.key}', event)">
-          <img src="/static/remove.png" alt="Удалить">
         </button>
       </div>
     </div>
