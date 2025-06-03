@@ -73,7 +73,6 @@ function initUserPage() {
     document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
       showEditForm(userData);
     });
-    ensureBackButtons();
     document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
       cancelEdit();
     });
