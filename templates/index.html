@@ -887,7 +887,13 @@
             });
         }
         function showOrderPage() {
-          // Загружаем CSS если ещё не загружен
+          // Показываем глобальный loader
+          const globalLoader = document.createElement('div');
+          globalLoader.id = 'global-loader';
+          globalLoader.innerHTML = '<img src="/static/Eicon.png" alt="Loading">';
+          document.body.appendChild(globalLoader);
+        
+          // Загружаем CSS если нужно
           if (!document.getElementById('order-css')) {
             const link = document.createElement('link');
             link.id = 'order-css';
@@ -896,45 +902,38 @@
             document.head.appendChild(link);
           }
         
-          // Показываем loader сразу
-          const loader = document.createElement('div');
-          loader.id = 'global-loader';
-          loader.innerHTML = '<img src="/static/Eicon.png" alt="Loading">';
-          document.body.appendChild(loader);
-        
-          // Загружаем HTML и JS параллельно
-          Promise.all([
-            fetch('/static/html/order.html').then(res => res.text()),
-            !document.getElementById('order-js') ? 
-              new Promise(resolve => {
+          // Загружаем HTML
+          fetch('/static/html/order.html')
+            .then(res => res.text())
+            .then(html => {
+              // Вставляем HTML
+              showContent(html);
+              
+              // Загружаем JS если нужно
+              if (!document.getElementById('order-js')) {
                 const script = document.createElement('script');
                 script.id = 'order-js';
                 script.src = '/static/js/order.js';
-                script.onload = resolve;
+                script.onload = () => {
+                  document.getElementById('global-loader')?.remove();
+                  if (typeof initOrderPage === 'function') {
+                    initOrderPage();
+                  }
+                };
                 document.body.appendChild(script);
-              }) : Promise.resolve()
-          ])
-          .then(([html]) => {
-            // Вставляем HTML
-            showContent(html);
-            
-            // Даём небольшой timeout для гарантированного рендера DOM
-            setTimeout(() => {
-              if (typeof initOrderPage === 'function') {
-                initOrderPage();
               } else {
-                showToast('Функция инициализации не найдена');
+                document.getElementById('global-loader')?.remove();
+                if (typeof initOrderPage === 'function') {
+                  initOrderPage();
+                }
               }
-              
-              // Убираем loader
+            })
+            .catch(err => {
+              console.error('Ошибка загрузки:', err);
               document.getElementById('global-loader')?.remove();
-            }, 50);
-          })
-          .catch(err => {
-            console.error('Ошибка загрузки:', err);
-            showToast('Ошибка загрузки страницы');
-            document.getElementById('global-loader')?.remove();
-          });
+              showToast('Не удалось загрузить страницу');
+              cart.toggle(); // Возвращаем в корзину
+            });
         }
 
         window.showOrderPage = showOrderPage;
