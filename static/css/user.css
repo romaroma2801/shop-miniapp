@@ -289,30 +289,35 @@
 }
 #orders-screen #back-button,
 #order-detail-screen #back-button {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    width: 40px;
-    height: 40px;
-    background: white;
-    border-radius: 50%;
-    border: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    cursor: pointer;
-    z-index: 200;
-    padding: 0;
-    margin: 0;
+    position: fixed !important;
+    top: 15px !important;
+    left: 15px !important;
+    width: 40px !important;
+    height: 40px !important;
+    background: white !important;
+    border-radius: 50% !important;
+    border: none !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
     display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 #orders-screen #back-button img,
 #order-detail-screen #back-button img {
-    width: 24px;
-    height: 24px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 24px !important;
+    height: 24px !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 /* Общие стили для экранов */
 .screen-header {
