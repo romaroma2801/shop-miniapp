@@ -1,25 +1,33 @@
 function initOrderPage() {
+  // Проверяем основные элементы
   const loader = document.getElementById('loader');
   const content = document.getElementById('order-content');
   
-  // Показываем наш контентный loader
   if (loader) loader.style.display = 'flex';
   if (content) content.style.display = 'none';
 
-  // Основная инициализация
-  const init = async () => {
+  // Ждём когда DOM полностью обновится
+  setTimeout(async () => {
     try {
+      // Проверяем существование контейнеров
+      const itemsContainer = document.getElementById('order-items');
+      const summaryContainer = document.getElementById('order-summary');
+      
+      if (!itemsContainer || !summaryContainer) {
+        throw new Error('Не найдены контейнеры для товаров или суммы заказа');
+      }
+
       const userData = await loadUserData();
       
-      // Устанавливаем значения только если элементы существуют
-      const setValueIfExists = (id, value) => {
+      // Безопасное установление значений
+      const safeSetValue = (id, value) => {
         const el = document.getElementById(id);
         if (el) el.value = value || '';
       };
 
       if (userData) {
-        setValueIfExists('first-name', userData.first_name);
-        setValueIfExists('phone', userData.phone);
+        safeSetValue('first-name', userData.first_name);
+        safeSetValue('phone', userData.phone);
         
         const phoneInput = document.getElementById('phone');
         if (phoneInput && userData.phone) {
@@ -27,39 +35,32 @@ function initOrderPage() {
         }
       }
 
+      // Рендерим содержимое
       renderOrderItems();
       renderOrderSummary();
       
     } catch (error) {
       console.error('Ошибка инициализации:', error);
-      showToast('Ошибка загрузки данных');
+      showToast('Ошибка загрузки страницы заказа');
+      
+      // Возвращаем в корзину при ошибке
+      setTimeout(() => cart.toggle(), 1000);
     } finally {
-      // В любом случае скрываем loader и показываем контент
-      setTimeout(() => {
-        if (loader) loader.style.display = 'none';
-        if (content) content.style.display = 'block';
-      }, 300);
+      if (loader) loader.style.display = 'none';
+      if (content) content.style.display = 'block';
     }
-  };
-
-  // Запускаем инициализацию
-  init();
-
-  // Обработчик формы
-  const form = document.getElementById('order-form');
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      await submitOrder();
-    });
-  }
+  }, 50);
 }
+
+// Безопасный рендер товаров
 function renderOrderItems() {
   const itemsContainer = document.getElementById('order-items');
-  const items = cart.items;
+  if (!itemsContainer) return;
 
+  const items = cart.items;
+  
   if (!items.length) {
-    itemsContainer.innerHTML = '<p style="text-align: center; padding: 15px;">Ваша корзина пуста</p>';
+    itemsContainer.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста</p>';
     return;
   }
 
@@ -72,12 +73,13 @@ function renderOrderItems() {
       </div>
       <div class="cart-item-right">
         <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</div>
-        <button class="cart-item-remove" onclick="removeOrderItem('${item.key}', event)"></button>
+        <button class="cart-item-remove" onclick="removeOrderItem('${item.key}', event)">
+          <img src="/static/remove.svg" alt="Удалить">
+        </button>
       </div>
     </div>
   `).join('');
 }
-
 function removeOrderItem(key, event) {
   event.stopPropagation();
   cart.remove(key);
