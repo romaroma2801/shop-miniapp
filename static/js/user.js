@@ -55,8 +55,7 @@ function initUserPage() {
     });
 
     document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
-      document.getElementById('edit-form').style.display = 'none';
-      document.getElementById('personal-cabinet').style.display = 'block';
+      cancelEdit();
     });
 
     document.getElementById('save-profile-btn')?.addEventListener('click', async () => {
@@ -103,7 +102,14 @@ function goBackToOrders() {
     document.getElementById('orders-screen').style.opacity = '1';
   }, 300);
 }
-
+function cancelEdit() {
+  document.getElementById('edit-form').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('edit-form').style.display = 'none';
+    document.getElementById('personal-cabinet').style.display = 'block';
+    document.getElementById('personal-cabinet').style.opacity = '1';
+  }, 300);
+}
 function formatPrice(price) {
   if (price == null) return '0.00';
   let num = parseFloat(price.toString().replace(',', '.'));
