@@ -15,7 +15,7 @@
   max-width: 20%;
   text-align: center;
   font-size: 12px;
-  color: #000;
+  color: black;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,17 +24,18 @@
   cursor: pointer;
   height: 100%;
   padding-top: 15px;
+  
 }
 
 .footer-item img {
   width: 24px;
   height: 24px;
-  filter: brightness(0);
+  filter: none;
   object-fit: contain;
 }
 
 .footer-item.active img {
-  filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(-10deg) saturate(600%) brightness(1);
+  color: red;
 }
 
 .footer-item span {
