@@ -287,8 +287,8 @@
     margin-top: 20px;
     margin-bottom: 10px;
 }
-#orders-screen #back-button,
-#order-detail-screen #back-button {
+#back-to-profile-button,
+#back-to-orders-button {
     position: fixed !important;
     top: 15px !important;
     left: 15px !important;
@@ -307,8 +307,8 @@
     visibility: visible !important;
 }
 
-#orders-screen #back-button img,
-#order-detail-screen #back-button img {
+#back-to-profile-button img,
+#back-to-orders-button img {
     width: 24px !important;
     height: 24px !important;
     position: absolute !important;
