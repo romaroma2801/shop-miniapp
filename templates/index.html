@@ -898,29 +898,31 @@
           fetch('/static/html/order.html')
             .then(res => res.text())
             .then(html => {
+              // Вставляем HTML и только потом инициализируем
               showContent(html);
-        
-              // Только после загрузки HTML, загружаем JS
-              if (!document.getElementById('order-js')) {
-                const script = document.createElement('script');
-                script.id = 'order-js';
-                script.src = '/static/js/order.js';
-                script.onload = () => {
+              
+              // Даём время браузеру на обработку DOM
+              setTimeout(() => {
+                if (!document.getElementById('order-js')) {
+                  const script = document.createElement('script');
+                  script.id = 'order-js';
+                  script.src = '/static/js/order.js';
+                  script.onload = () => {
+                    if (typeof initOrderPage === 'function') {
+                      initOrderPage();
+                    } else {
+                      showToast('Не удалось инициализировать оформление заказа');
+                    }
+                  };
+                  document.body.appendChild(script);
+                } else {
                   if (typeof initOrderPage === 'function') {
                     initOrderPage();
                   } else {
                     showToast('Не удалось инициализировать оформление заказа');
                   }
-                };
-                document.body.appendChild(script);
-              } else {
-                // если уже загружен
-                if (typeof initOrderPage === 'function') {
-                  initOrderPage();
-                } else {
-                  showToast('Не удалось инициализировать оформление заказа');
                 }
-              }
+              }, 50); // Небольшая задержка для гарантии
             })
             .catch(err => {
               console.error('Ошибка загрузки order.html:', err);
