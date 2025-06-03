@@ -615,13 +615,11 @@ button.secondary:hover {
 }
 /* Добавьте в конец файла */
 .promotions-carousel {
-    width: calc(100% - 20px); /* Добавляем отступы по бокам */
-    margin: 10px 10px 20px; /* Увеличиваем нижний отступ */
-    position: relative;
-    overflow: hidden;
+    width: calc(100% - 30px);
+    margin: 0 15px 20px;
     border-radius: 12px;
-    box-shadow: 0 0px 8px rgba(255,0,0,0.5);
-    border: 2px solid red;
+    box-shadow: 0 0 8px rgba(255,0,0,0.1);
+    border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
 .carousel-container {
@@ -917,4 +915,77 @@ button.secondary:hover {
 .footer-item span {
     margin-top: 4px;
 }
+/* Новые стили для главного меню */
+.menu-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin: 15px 0 10px;
+    text-align: left;
+    padding-left: 15px;
+    width: 100%;
+}
 
+.menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    padding: 0 15px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+
+.menu-item {
+    background: white;
+    border: 1px solid #ff0000;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 80px;
+}
+
+.menu-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+}
+
+.menu-item-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.menu-item-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.new-products-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin: 25px 0 10px;
+    text-align: left;
+    padding-left: 15px;
+    width: 100%;
+}
+
+.new-products-placeholder {
+    background: white;
+    border-radius: 12px;
+    margin: 0 15px 20px;
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
