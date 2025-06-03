@@ -1,68 +1,58 @@
-async function initOrderPage() {
+function initOrderPage() {
   const loader = document.getElementById('loader');
   const content = document.getElementById('order-content');
-
+  
+  // Показываем наш контентный loader
   if (loader) loader.style.display = 'flex';
   if (content) content.style.display = 'none';
 
-  try {
-    const userData = await loadUserData();
-    
-    // Ждём появления элементов формы
-    const [firstNameInput, phoneInput] = await Promise.all([
-      waitForElement('#first-name'),
-      waitForElement('#phone')
-    ]);
+  // Основная инициализация
+  const init = async () => {
+    try {
+      const userData = await loadUserData();
+      
+      // Устанавливаем значения только если элементы существуют
+      const setValueIfExists = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value || '';
+      };
 
-    if (userData) {
-      if (firstNameInput) firstNameInput.value = userData.first_name || '';
-      if (phoneInput) {
-        phoneInput.value = userData.phone || '';
-        if (userData.phone) phoneInput.readOnly = true;
+      if (userData) {
+        setValueIfExists('first-name', userData.first_name);
+        setValueIfExists('phone', userData.phone);
+        
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput && userData.phone) {
+          phoneInput.readOnly = true;
+        }
       }
+
+      renderOrderItems();
+      renderOrderSummary();
+      
+    } catch (error) {
+      console.error('Ошибка инициализации:', error);
+      showToast('Ошибка загрузки данных');
+    } finally {
+      // В любом случае скрываем loader и показываем контент
+      setTimeout(() => {
+        if (loader) loader.style.display = 'none';
+        if (content) content.style.display = 'block';
+      }, 300);
     }
+  };
 
-    renderOrderItems();
-    renderOrderSummary();
+  // Запускаем инициализацию
+  init();
 
-  } catch (error) {
-    console.error('Error initializing order page:', error);
-    showToast('Ошибка инициализации страницы заказа');
-  } finally {
-    setTimeout(() => {
-      if (loader) loader.style.display = 'none';
-      if (content) content.style.display = 'block';
-    }, 500);
-  }
-
-  const orderForm = document.getElementById('order-form');
-  if (orderForm) {
-    orderForm.addEventListener('submit', async (e) => {
+  // Обработчик формы
+  const form = document.getElementById('order-form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       await submitOrder();
     });
   }
-}
-
-// Вспомогательная функция для ожидания элемента
-function waitForElement(selector) {
-  return new Promise(resolve => {
-    if (document.querySelector(selector)) {
-      return resolve(document.querySelector(selector));
-    }
-
-    const observer = new MutationObserver(() => {
-      if (document.querySelector(selector)) {
-        observer.disconnect();
-        resolve(document.querySelector(selector));
-      }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  });
 }
 function renderOrderItems() {
   const itemsContainer = document.getElementById('order-items');
