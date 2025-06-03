@@ -27,10 +27,19 @@ html, body { height: calc(var(--vh, 1vh) * 100); }
 }
 
 #order-content {
-  padding: 70px 15px 60px; /* Отступы под header и над footer */
-  height: calc(100% - 130px);
+  padding: 0px 15px 0px; /* Отступы под header и над footer */
   overflow-y: auto;
   display: none;
+  width: 100%
+}
+.cart-item-remove {
+  width: 24px;
+  height: 24px;
+  margin-left: 10px;
+  background: url('/static/remove.png') no-repeat center;
+  background-size: 16px;
+  border: none;
+  cursor: pointer;
 }
 
 .order-title {
