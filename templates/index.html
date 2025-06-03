@@ -295,34 +295,15 @@
         function showHome() {
             currentState = "home";
             
+            // Загружаем акции для карусели
             loadPromotionsForCarousel().then(carouselHTML => {
                 showContent(`
-                    <div class="menu-title">Новости</div>
+                    <button data-action="regions">Адреса магазинов</button>
+                    <button data-action="section:review">Оставить отзыв</button>
+                    <button data-action="section:contacts">Контакты</button>
+                    <button data-action="section:jobs">Вакансии</button>
+                    
                     ${carouselHTML}
-                    
-                    <div class="menu-grid">
-                        <div class="menu-item" onclick="showRegions()">
-                            <img src="/static/geo.svg" class="menu-item-icon" alt="Адреса">
-                            <div class="menu-item-text">Адреса<br>магазинов</div>
-                        </div>
-                        <div class="menu-item" onclick="showSection('review')">
-                            <img src="/static/feedback.svg" class="menu-item-icon" alt="Отзыв">
-                            <div class="menu-item-text">Оставить<br>отзыв</div>
-                        </div>
-                        <div class="menu-item" onclick="showSection('contacts')">
-                            <img src="/static/contact.svg" class="menu-item-icon" alt="Контакты">
-                            <div class="menu-item-text">Контакты</div>
-                        </div>
-                        <div class="menu-item" onclick="showSection('jobs')">
-                            <img src="/static/vacant.svg" class="menu-item-icon" alt="Вакансии">
-                            <div class="menu-item-text">Вакансии</div>
-                        </div>
-                    </div>
-                    
-                    <div class="new-products-title">Новинки</div>
-                    <div class="new-products-placeholder">
-                        Скоро здесь появятся новинки
-                    </div>
                 `, false, () => {
                     initCarousel();
                     document.getElementById('content').scrollTo(0, 0);
