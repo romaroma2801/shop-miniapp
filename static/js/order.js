@@ -1,33 +1,44 @@
 function initOrderPage() {
-  // Проверяем основные элементы
   const loader = document.getElementById('loader');
   const content = document.getElementById('order-content');
   
   if (loader) loader.style.display = 'flex';
   if (content) content.style.display = 'none';
 
-  // Ждём когда DOM полностью обновится
-  setTimeout(async () => {
-    try {
-      // Проверяем существование контейнеров
-      const itemsContainer = document.getElementById('order-items');
-      const summaryContainer = document.getElementById('order-summary');
-      
-      if (!itemsContainer || !summaryContainer) {
-        throw new Error('Не найдены контейнеры для товаров или суммы заказа');
-      }
+  const maxAttempts = 10;
+  let attempts = 0;
 
+  const checkContainers = () => {
+    attempts++;
+    const itemsContainer = document.getElementById('order-items');
+    const summaryContainer = document.getElementById('order-summary');
+    const form = document.getElementById('order-form');
+
+    if (itemsContainer && summaryContainer && form) {
+      initializePage();
+    } else if (attempts < maxAttempts) {
+      setTimeout(checkContainers, 100);
+    } else {
+      console.error('Не удалось найти необходимые элементы');
+      showToast('Ошибка загрузки страницы');
+      if (loader) loader.style.display = 'none';
+      cart.toggle();
+    }
+  };
+
+  const initializePage = async () => {
+    try {
       const userData = await loadUserData();
       
-      // Безопасное установление значений
-      const safeSetValue = (id, value) => {
+      // Установка значений формы
+      const setValue = (id, value) => {
         const el = document.getElementById(id);
         if (el) el.value = value || '';
       };
 
       if (userData) {
-        safeSetValue('first-name', userData.first_name);
-        safeSetValue('phone', userData.phone);
+        setValue('first-name', userData.first_name);
+        setValue('phone', userData.phone);
         
         const phoneInput = document.getElementById('phone');
         if (phoneInput && userData.phone) {
@@ -35,32 +46,38 @@ function initOrderPage() {
         }
       }
 
-      // Рендерим содержимое
       renderOrderItems();
       renderOrderSummary();
-      
+
+      // Обработчик формы
+      document.getElementById('order-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await submitOrder();
+      });
+
     } catch (error) {
       console.error('Ошибка инициализации:', error);
-      showToast('Ошибка загрузки страницы заказа');
-      
-      // Возвращаем в корзину при ошибке
-      setTimeout(() => cart.toggle(), 1000);
+      showToast('Ошибка загрузки данных');
     } finally {
       if (loader) loader.style.display = 'none';
       if (content) content.style.display = 'block';
     }
-  }, 50);
+  };
+
+  checkContainers();
 }
 
-// Безопасный рендер товаров
 function renderOrderItems() {
   const itemsContainer = document.getElementById('order-items');
-  if (!itemsContainer) return;
+  if (!itemsContainer) {
+    console.error('Контейнер товаров не найден');
+    return;
+  }
 
   const items = cart.items;
   
   if (!items.length) {
-    itemsContainer.innerHTML = '<p class="empty-cart-message">Ваша корзина пуста</p>';
+    itemsContainer.innerHTML = '<p class="empty-cart">Ваша корзина пуста</p>';
     return;
   }
 
@@ -74,7 +91,7 @@ function renderOrderItems() {
       <div class="cart-item-right">
         <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</div>
         <button class="cart-item-remove" onclick="removeOrderItem('${item.key}', event)">
-          <img src="/static/remove.svg" alt="Удалить">
+          <img src="/static/remove.png" alt="Удалить">
         </button>
       </div>
     </div>
