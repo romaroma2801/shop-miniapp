@@ -1,48 +1,100 @@
 function initOrderPage() {
+  // Создаем HTML структуру
+  const orderHTML = `
+    <div id="loader" class="loader">
+      <img src="/static/Eicon.png" alt="Loading">
+    </div>
+
+    <div class="header">
+      <img src="/static/logo22.png" alt="Логотип" class="logo">
+    </div>
+
+    <button id="back-button" onclick="goBack()">
+      <img src="/static/back.svg" alt="Назад">
+    </button>
+
+    <div id="order-content">
+      <h2 class="order-title">Оформление заказа</h2>
+      
+      <div class="order-items-container">
+        <div id="order-items">
+          <!-- Товары будут здесь -->
+        </div>
+      </div>
+      
+      <div class="order-summary" id="order-summary">
+        <!-- Суммы будут здесь -->
+      </div>
+      
+      <form id="order-form">
+        <div class="form-group">
+          <label for="last-name">Фамилия</label>
+          <input type="text" id="last-name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="first-name">Имя</label>
+          <input type="text" id="first-name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="city">Город / Населённый пункт</label>
+          <input type="text" id="city" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="postcode">Индекс</label>
+          <input type="text" id="postcode" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="address">Адрес</label>
+          <input type="text" id="address" required>
+        </div>
+        
+        <div class="form-group" id="phone-group">
+          <label for="phone">Номер телефона</label>
+          <input type="tel" id="phone" required>
+        </div>
+        
+        <button type="submit" class="submit-btn">Отправить заказ</button>
+      </form>
+    </div>
+
+    <div class="footer-buttons">
+      <div id="home-button" onclick="location.href='/'">
+        <img src="/static/home.svg" alt="Домой">
+      </div>
+      <div id="login-button" onclick="location.href='/user'">
+        <img src="/static/login.svg" alt="Личный кабинет">
+      </div>
+    </div>
+  `;
+
+  // Вставляем HTML в DOM
+  showContent(orderHTML);
+
+  // Инициализация страницы
   const loader = document.getElementById('loader');
   const content = document.getElementById('order-content');
   
   if (loader) loader.style.display = 'flex';
   if (content) content.style.display = 'none';
 
-  const maxAttempts = 10;
-  let attempts = 0;
-
-  const checkContainers = () => {
-    attempts++;
-    const itemsContainer = document.getElementById('order-items');
-    const summaryContainer = document.getElementById('order-summary');
-    const form = document.getElementById('order-form');
-
-    if (itemsContainer && summaryContainer && form) {
-      initializePage();
-    } else if (attempts < maxAttempts) {
-      setTimeout(checkContainers, 100);
-    } else {
-      console.error('Не удалось найти необходимые элементы');
-      showToast('Ошибка загрузки страницы');
-      if (loader) loader.style.display = 'none';
-      cart.toggle();
-    }
-  };
-
-  const initializePage = async () => {
+  // Основная инициализация
+  const initialize = async () => {
     try {
       const userData = await loadUserData();
       
-      // Установка значений формы
-      const setValue = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.value = value || '';
-      };
-
+      // Устанавливаем значения формы
       if (userData) {
-        setValue('first-name', userData.first_name);
-        setValue('phone', userData.phone);
-        
+        const firstNameInput = document.getElementById('first-name');
         const phoneInput = document.getElementById('phone');
-        if (phoneInput && userData.phone) {
-          phoneInput.readOnly = true;
+        
+        if (firstNameInput) firstNameInput.value = userData.first_name || '';
+        if (phoneInput) {
+          phoneInput.value = userData.phone || '';
+          if (userData.phone) phoneInput.readOnly = true;
         }
       }
 
@@ -50,21 +102,27 @@ function initOrderPage() {
       renderOrderSummary();
 
       // Обработчик формы
-      document.getElementById('order-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await submitOrder();
-      });
+      const form = document.getElementById('order-form');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          await submitOrder();
+        });
+      }
 
     } catch (error) {
       console.error('Ошибка инициализации:', error);
-      showToast('Ошибка загрузки данных');
+      showToast('Ошибка загрузки страницы');
     } finally {
-      if (loader) loader.style.display = 'none';
-      if (content) content.style.display = 'block';
+      setTimeout(() => {
+        if (loader) loader.style.display = 'none';
+        if (content) content.style.display = 'block';
+      }, 300);
     }
   };
 
-  checkContainers();
+  // Даем время браузеру обработать DOM
+  setTimeout(initialize, 50);
 }
 
 function renderOrderItems() {
