@@ -465,24 +465,34 @@
             startAutoSlide();
         }
         function goBack() {
-            console.log("🔙 goBack вызван. currentState =", currentState);
-            if (currentState === "promotionDetail") {
-                // Возвращаемся к списку акций вместо главного меню
-                showPromotions();
-            } else if (currentState === "regions") {
-                showHome();
-            } else if (currentState === "cities") {
-                showRegions();
-            } else if (currentState === "stores") {
-                showCities(currentRegion);
-            } else if (currentState === "storeDetails") {
-                showStores(currentCity, currentRegion);
-            } else if (["review", "contacts", "jobs", "promotions"].includes(currentState)) {
-                showHome();
+          console.log("🔙 goBack вызван. currentState =", currentState);
+          if (currentState === "promotionDetail") {
+            showPromotions();
+          } else if (currentState === "regions") {
+            showHome();
+          } else if (currentState === "cities") {
+            showRegions();
+          } else if (currentState === "stores") {
+            showCities(currentRegion);
+          } else if (currentState === "storeDetails") {
+            showStores(currentCity, currentRegion);
+          } else if (currentState === "user") {
+            // Добавляем обработку личного кабинета
+            if (document.getElementById('order-detail-screen')?.style.display === 'block') {
+              goBackToOrders();
+            } else if (document.getElementById('orders-screen')?.style.display === 'block') {
+              goBackToProfile();
+            } else if (document.getElementById('edit-form')?.style.display === 'block') {
+              cancelEdit();
             } else {
-                console.warn("❓ Неизвестное состояние:", currentState);
-                showHome();
+              showHome();
             }
+          } else if (["review", "contacts", "jobs", "promotions"].includes(currentState)) {
+            showHome();
+          } else {
+            console.warn("❓ Неизвестное состояние:", currentState);
+            showHome();
+          }
         }
         async function showRegions() {
             currentState = "regions";
