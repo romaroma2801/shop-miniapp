@@ -140,7 +140,6 @@ function showOrdersScreen() {
   document.getElementById('orders-list').style.paddingTop = '0';
   console.log('Кнопка в DOM:', document.querySelector('#back-button'));
   console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
-  const backBtn = document.querySelector('#orders-screen #back-button');
   const backBtn = document.getElementById('back-to-profile-button');
   if (backBtn) {
     backBtn.style.display = 'block'; // Убедитесь, что это выполняется
@@ -205,7 +204,6 @@ async function viewOrderDetail(orderId) {
         }
         console.log('Кнопка в DOM:', document.querySelector('#back-button'));
         console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
-        const backBtn = document.querySelector('#order-detail-screen #back-button');
         const backBtn = document.getElementById('back-to-orders-button');
         if (backBtn) {
           backBtn.style.display = 'block';
