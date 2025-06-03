@@ -106,8 +106,6 @@ function showOrdersScreen() {
     backBtn.style.visibility = 'visible';
     backBtn.style.opacity = '1';
   }
-  
-  document.getElementById('orders-screen').style.display = 'block';
   setTimeout(() => {
     document.getElementById('orders-screen').style.opacity = '1';
   }, 50);
@@ -173,6 +171,7 @@ async function viewOrderDetail(orderId) {
         document.getElementById('order-detail-screen').style.display = 'block';
         setTimeout(async () => {
           document.getElementById('order-detail-screen').style.opacity = '1';
+        }, 50);
         const order = result.order;
         const items = order.items || [];
 
