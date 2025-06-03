@@ -1,9 +1,4 @@
 function initFooter() {
-  const setActiveFooter = (section) => {
-    document.querySelectorAll('.footer-item').forEach(item => {
-      item.classList.toggle('active', item.dataset.section === section);
-    });
-  };
 
   const goHome = () => {
     setActiveFooter('home');
@@ -51,7 +46,14 @@ function initFooter() {
   initCart();
   setActiveFooter('home');
 }
+window.setActiveFooter = function (section) {
+  document.querySelectorAll('.footer-item').forEach(item => {
+    const isActive = item.dataset.section === section;
+    item.classList.toggle('active', isActive);
+  });
 
+  window.lastFooterSection = section;
+};
 function initCart() {
   // Создаем HTML корзины если его нет
   if (!document.getElementById('cart-overlay')) {
@@ -91,6 +93,7 @@ function initCart() {
     
     if (!isClickInside && !isCartButton) {
       cartOverlay.classList.remove('show');
+      setActiveFooter(window.lastFooterSection);
     }
   });
 }
