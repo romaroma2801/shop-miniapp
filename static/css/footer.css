@@ -27,14 +27,14 @@
   
 }
 
-.footer-item img {
+.footer-item svg {
   width: 24px;
   height: 24px;
   filter: none;
   object-fit: contain;
 }
 
-.footer-item.active img {
+.footer-item.active svg {
   color: red;
 }
 
