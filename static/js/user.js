@@ -73,7 +73,7 @@ function initUserPage() {
     document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
       showEditForm(userData);
     });
-
+    ensureBackButtons();
     document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
       cancelEdit();
     });
@@ -95,11 +95,51 @@ window.initUserPage = initUserPage;
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // --------------------------------
 
+function ensureBackButtons() {
+    // Для экрана заказов
+    if (!document.querySelector('#orders-screen #back-button')) {
+        const btn = document.createElement('button');
+        btn.id = 'back-button';
+        btn.innerHTML = '<img src="/static/back.svg" alt="Назад">';
+        btn.onclick = goBackToProfile;
+        btn.style.cssText = `
+            position: fixed !important;
+            top: 15px !important;
+            left: 15px !important;
+            width: 40px !important;
+            height: 40px !important;
+            background: white !important;
+            border-radius: 50% !important;
+            z-index: 1000 !important;
+        `;
+        document.getElementById('orders-screen').prepend(btn);
+    }
+
+    // Для экрана деталей заказа
+    if (!document.querySelector('#order-detail-screen #back-button')) {
+        const btn = document.createElement('button');
+        btn.id = 'back-button';
+        btn.innerHTML = '<img src="/static/back.svg" alt="Назад">';
+        btn.onclick = goBackToOrders;
+        btn.style.cssText = `
+            position: fixed !important;
+            top: 15px !important;
+            left: 15px !important;
+            width: 40px !important;
+            height: 40px !important;
+            background: white !important;
+            border-radius: 50% !important;
+            z-index: 1000 !important;
+        `;
+        document.getElementById('order-detail-screen').prepend(btn);
+    }
+}
 function showOrdersScreen() {
   document.getElementById('personal-cabinet').style.display = 'none';
   document.getElementById('orders-screen').style.display = 'block';
   document.getElementById('orders-list').style.paddingTop = '0';
-
+  console.log('Кнопка в DOM:', document.querySelector('#back-button'));
+  console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
   const backBtn = document.querySelector('#orders-screen #back-button');
   if (backBtn) {
     backBtn.style.display = 'block';
@@ -161,6 +201,8 @@ async function viewOrderDetail(orderId) {
             `<p style="text-align: center; color: red;">${result.message || 'Ошибка загрузки заказа'}</p>`;
           return;
         }
+        console.log('Кнопка в DOM:', document.querySelector('#back-button'));
+        console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
         const backBtn = document.querySelector('#order-detail-screen #back-button');
         if (backBtn) {
           backBtn.style.display = 'block';
