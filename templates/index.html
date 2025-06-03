@@ -477,6 +477,7 @@
           } else if (currentState === "storeDetails") {
             showStores(currentCity, currentRegion);
           } else if (currentState === "user") {
+              setActiveFooter('user');
             // Добавляем обработку личного кабинета
             if (document.getElementById('order-detail-screen')?.style.display === 'block') {
               goBackToOrders();
@@ -486,12 +487,15 @@
               cancelEdit();
             } else {
               showHome();
+              setActiveFooter('home');
             }
           } else if (["review", "contacts", "jobs", "promotions"].includes(currentState)) {
             showHome();
+            setActiveFooter('home');
           } else {
             console.warn("❓ Неизвестное состояние:", currentState);
             showHome();
+            setActiveFooter('home');
           }
         }
         async function showRegions() {
