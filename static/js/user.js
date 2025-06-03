@@ -142,9 +142,10 @@ function showOrdersScreen() {
   console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
   const backBtn = document.querySelector('#orders-screen #back-button');
   if (backBtn) {
-    backBtn.style.display = 'block';
+    backBtn.style.display = 'block'; // Убедитесь, что это выполняется
     backBtn.style.visibility = 'visible';
     backBtn.style.opacity = '1';
+    backBtn.onclick = goBackToProfile; // Явно устанавливаем обработчик
   }
   setTimeout(() => {
     document.getElementById('orders-screen').style.opacity = '1';
