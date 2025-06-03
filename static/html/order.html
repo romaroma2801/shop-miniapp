@@ -1,0 +1,68 @@
+<div id="loader" class="loader">
+  <img src="/static/Eicon.png" alt="Loading">
+</div>
+
+<div class="header">
+  <img src="/static/logo22.png" alt="Логотип" class="logo">
+</div>
+
+<button id="back-button" onclick="goBack()">
+  <img src="/static/back.svg" alt="Назад">
+</button>
+
+<div id="order-content">
+  <h2 class="order-title">Оформление заказа</h2>
+  
+  <div class="order-items-container">
+    <div id="order-items">
+      <!-- Товары будут здесь -->
+    </div>
+  </div>
+  
+  <div class="order-summary" id="order-summary">
+    <!-- Суммы будут здесь -->
+  </div>
+  
+  <form id="order-form">
+    <div class="form-group">
+      <label for="last-name">Фамилия</label>
+      <input type="text" id="last-name" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="first-name">Имя</label>
+      <input type="text" id="first-name" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="city">Город / Населённый пункт</label>
+      <input type="text" id="city" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="postcode">Индекс</label>
+      <input type="text" id="postcode" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="address">Адрес</label>
+      <input type="text" id="address" required>
+    </div>
+    
+    <div class="form-group" id="phone-group">
+      <label for="phone">Номер телефона</label>
+      <input type="tel" id="phone" required>
+    </div>
+    
+    <button type="submit" class="submit-btn">Отправить заказ</button>
+  </form>
+</div>
+
+<div class="footer-buttons">
+  <div id="home-button" onclick="location.href='/'">
+    <img src="/static/home.svg" alt="Домой">
+  </div>
+  <div id="login-button" onclick="location.href='/user'">
+    <img src="/static/login.svg" alt="Личный кабинет">
+  </div>
+</div>
