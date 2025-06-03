@@ -49,7 +49,27 @@ function initUserPage() {
       showToast("Используются сохранённые данные");
       showPersonalCabinet(userData);
     }
-
+    // Отладочный код - проверяем наличие кнопок в DOM
+    console.log('Проверка кнопок "Назад":');
+    console.log('Кнопка в orders-screen:', document.querySelector('#orders-screen #back-button'));
+    console.log('Кнопка в order-detail-screen:', document.querySelector('#order-detail-screen #back-button'));
+    
+    // Проверяем computed styles
+    const checkButtonStyles = (button) => {
+      if (!button) return;
+      const styles = window.getComputedStyle(button);
+      console.log('Стили кнопки:', {
+        display: styles.display,
+        visibility: styles.visibility,
+        opacity: styles.opacity,
+        zIndex: styles.zIndex,
+        position: styles.position
+      });
+    };
+    
+    checkButtonStyles(document.querySelector('#orders-screen #back-button'));
+    checkButtonStyles(document.querySelector('#order-detail-screen #back-button'));
+    
     document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
       showEditForm(userData);
     });
@@ -80,6 +100,14 @@ function showOrdersScreen() {
   document.getElementById('orders-screen').style.display = 'block';
   document.getElementById('orders-list').style.paddingTop = '0';
 
+  const backBtn = document.querySelector('#orders-screen #back-button');
+  if (backBtn) {
+    backBtn.style.display = 'block';
+    backBtn.style.visibility = 'visible';
+    backBtn.style.opacity = '1';
+  }
+  
+  document.getElementById('orders-screen').style.display = 'block';
   setTimeout(() => {
     document.getElementById('orders-screen').style.opacity = '1';
   }, 50);
@@ -135,7 +163,17 @@ async function viewOrderDetail(orderId) {
             `<p style="text-align: center; color: red;">${result.message || 'Ошибка загрузки заказа'}</p>`;
           return;
         }
-
+        const backBtn = document.querySelector('#order-detail-screen #back-button');
+        if (backBtn) {
+          backBtn.style.display = 'block';
+          backBtn.style.visibility = 'visible';
+          backBtn.style.opacity = '1';
+        }
+        
+        document.getElementById('order-detail-screen').style.display = 'block';
+        setTimeout(async () => {
+          document.getElementById('order-detail-screen').style.opacity = '1';
+        }
         const order = result.order;
         const items = order.items || [];
 
