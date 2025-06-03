@@ -1,36 +1,69 @@
-function initOrderPage() {
+async function initOrderPage() {
   const loader = document.getElementById('loader');
   const content = document.getElementById('order-content');
 
   if (loader) loader.style.display = 'flex';
+  if (content) content.style.display = 'none';
 
-  (async () => {
+  try {
     const userData = await loadUserData();
+    
+    // Ждём появления элементов формы
+    const [firstNameInput, phoneInput] = await Promise.all([
+      waitForElement('#first-name'),
+      waitForElement('#phone')
+    ]);
 
     if (userData) {
-      document.getElementById('first-name').value = userData.first_name || '';
-      document.getElementById('phone').value = userData.phone || '';
-
-      if (userData.phone) {
-        document.getElementById('phone').readOnly = true;
+      if (firstNameInput) firstNameInput.value = userData.first_name || '';
+      if (phoneInput) {
+        phoneInput.value = userData.phone || '';
+        if (userData.phone) phoneInput.readOnly = true;
       }
     }
 
     renderOrderItems();
     renderOrderSummary();
 
+  } catch (error) {
+    console.error('Error initializing order page:', error);
+    showToast('Ошибка инициализации страницы заказа');
+  } finally {
     setTimeout(() => {
       if (loader) loader.style.display = 'none';
       if (content) content.style.display = 'block';
     }, 500);
-  })();
+  }
 
-  document.getElementById('order-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    await submitOrder();
-  });
+  const orderForm = document.getElementById('order-form');
+  if (orderForm) {
+    orderForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await submitOrder();
+    });
+  }
 }
 
+// Вспомогательная функция для ожидания элемента
+function waitForElement(selector) {
+  return new Promise(resolve => {
+    if (document.querySelector(selector)) {
+      return resolve(document.querySelector(selector));
+    }
+
+    const observer = new MutationObserver(() => {
+      if (document.querySelector(selector)) {
+        observer.disconnect();
+        resolve(document.querySelector(selector));
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  });
+}
 function renderOrderItems() {
   const itemsContainer = document.getElementById('order-items');
   const items = cart.items;
