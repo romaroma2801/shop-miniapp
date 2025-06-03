@@ -189,7 +189,7 @@ const cart = {
           showToast("Ваша корзина пуста");
           return;
         }
-        window.location.href = '/order';
+        showOrderPage(); // 🟢 вместо window.location.href = '/order'
       });
     }
   },
