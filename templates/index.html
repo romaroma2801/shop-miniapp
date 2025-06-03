@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/footer.css">
     <link rel="stylesheet" href="/static/css/user.css">
-    <link rel="stylesheet" href="/static/css/order.css">
     <style>
         :root {
             --vh: 1vh;
@@ -886,8 +885,17 @@
               showToast('Не удалось загрузить личный кабинет');
             });
         }
+        function showContent(html, clear = true, callback = null) {
+          const content = document.getElementById('content');
+          if (clear) content.innerHTML = '';
+          content.innerHTML = html;
+          if (typeof callback === 'function') callback();
+        }
+
         function showOrderPage() {
-          // Загружаем CSS если ещё не загружен
+          currentState = 'order';
+        
+          // Подгружаем CSS
           if (!document.getElementById('order-css')) {
             const link = document.createElement('link');
             link.id = 'order-css';
@@ -896,33 +904,29 @@
             document.head.appendChild(link);
           }
         
-          // Показываем глобальный loader
+          // Глобальный loader
           const globalLoader = document.createElement('div');
           globalLoader.id = 'global-loader';
           globalLoader.innerHTML = '<img src="/static/Eicon.png" alt="Loading">';
           document.body.appendChild(globalLoader);
         
-          // Загружаем только JS (HTML теперь встроен в JS)
+          // Подгружаем JS, если не загружен
           if (!document.getElementById('order-js')) {
             const script = document.createElement('script');
             script.id = 'order-js';
             script.src = '/static/js/order.js';
             script.onload = () => {
               document.getElementById('global-loader')?.remove();
-              if (typeof initOrderPage === 'function') {
-                initOrderPage();
-              }
+              if (typeof initOrderPage === 'function') initOrderPage();
             };
             document.body.appendChild(script);
           } else {
             document.getElementById('global-loader')?.remove();
-            if (typeof initOrderPage === 'function') {
-              initOrderPage();
-            }
+            if (typeof initOrderPage === 'function') initOrderPage();
           }
         }
-
         window.showOrderPage = showOrderPage;
+
 
         window.showUserPage = showUserPage;
 
