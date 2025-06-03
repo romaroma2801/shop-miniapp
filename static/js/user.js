@@ -173,7 +173,6 @@ async function viewOrderDetail(orderId) {
         document.getElementById('order-detail-screen').style.display = 'block';
         setTimeout(async () => {
           document.getElementById('order-detail-screen').style.opacity = '1';
-        }
         const order = result.order;
         const items = order.items || [];
 
