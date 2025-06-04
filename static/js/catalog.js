@@ -208,6 +208,9 @@ function viewProduct(i) {
 
   const originalGoBack = window.goBack;
 
+  openView(renderDetailView);
+}
+
 function fixImg(url) {
   if (!url || typeof url !== 'string') return '/static/placeholder.png';
   return 'https://nekuri.by' + url.replace(/ /g, '%20').replace(/\\/g, '');
