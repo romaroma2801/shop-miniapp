@@ -58,18 +58,12 @@ function openView(viewFn) {
     loadPromises.forEach(p => p.cancel?.());
     loadPromises = [];
   }
-  if (currentData) historyStack.push(currentData);
+  if (currentData && currentData !== viewFn) {
+    historyStack.push(currentData);
+  }
   currentData = viewFn;
   toggleBackButton();
   viewFn();
-}
-
-function goBack() {
-  if (historyStack.length) {
-    currentData = historyStack.pop();
-    toggleBackButton();
-    currentData();
-  }
 }
 
 function renderMainCategories() {
