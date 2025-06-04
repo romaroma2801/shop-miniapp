@@ -99,60 +99,12 @@ function showOrdersScreen() {
   document.getElementById('orders-screen').style.display = 'block';
   document.getElementById('orders-list').style.paddingTop = '0';
 
-  window.currentState = 'user'; // 🟡 Здесь всё ещё user
-
-  const backBtn = document.getElementById('back-button');
-  if (backBtn) {
-    backBtn.style.display = 'block';
-    backBtn.style.visibility = 'visible';
-    backBtn.style.opacity = '1';
-    backBtn.onclick = goBackToProfile;
-  }
-
   setTimeout(() => {
     document.getElementById('orders-screen').style.opacity = '1';
   }, 50);
 }
 
-function goBackToProfile() {
-  const ordersScreen = document.getElementById('orders-screen');
-  const personalCabinet = document.getElementById('personal-cabinet');
-  const globalBackButton = document.getElementById('back-button');
 
-  if (ordersScreen) ordersScreen.style.display = 'none';
-  if (personalCabinet) {
-    personalCabinet.style.display = 'block';
-    personalCabinet.style.opacity = '1';
-  }
-
-  // 🟢 Обновляем состояние
-  window.currentState = 'user';
-
-  // 🟢 Скрываем и очищаем кнопку назад
-  if (globalBackButton) {
-    globalBackButton.style.display = 'none';
-    globalBackButton.style.visibility = 'hidden';
-    globalBackButton.style.opacity = '0';
-    globalBackButton.onclick = null;
-  }
-}
-
-function goBackToOrders() {
-  document.getElementById('order-detail-screen').style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('order-detail-screen').style.display = 'none';
-    document.getElementById('orders-screen').style.display = 'block';
-    document.getElementById('orders-screen').style.opacity = '1';
-  }, 300);
-}
-function cancelEdit() {
-  document.getElementById('edit-form').style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('edit-form').style.display = 'none';
-    document.getElementById('personal-cabinet').style.display = 'block';
-    document.getElementById('personal-cabinet').style.opacity = '1';
-  }, 300);
-}
 function formatPrice(price) {
   if (price == null) return '0.00';
   let num = parseFloat(price.toString().replace(',', '.'));
@@ -180,12 +132,7 @@ async function viewOrderDetail(orderId) {
         }
         console.log('Кнопка в DOM:', document.querySelector('#back-button'));
         console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
-        const backBtn = document.getElementById('back-button');
-        if (backBtn) {
-          backBtn.style.display = 'block';
-          backBtn.style.visibility = 'visible';
-          backBtn.style.opacity = '1';
-        }
+        
         
         document.getElementById('order-detail-screen').style.display = 'block';
         setTimeout(async () => {
