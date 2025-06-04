@@ -95,13 +95,14 @@ window.initUserPage = initUserPage;
 // --------------------------------
 
 function showOrdersScreen() {
-  document.getElementById('personal-cabinet').style.display = 'none';
-  document.getElementById('orders-screen').style.display = 'block';
-  document.getElementById('orders-list').style.paddingTop = '0';
-
-  setTimeout(() => {
-    document.getElementById('orders-screen').style.opacity = '1';
-  }, 50);
+  openView(() => {
+    document.getElementById('personal-cabinet').style.display = 'none';
+    document.getElementById('orders-screen').style.display = 'block';
+    document.getElementById('orders-list').style.paddingTop = '0';
+    setTimeout(() => {
+      document.getElementById('orders-screen').style.opacity = '1';
+    }, 50);
+  });
 }
 
 
@@ -114,77 +115,79 @@ function formatPrice(price) {
 }
 
 async function viewOrderDetail(orderId) {
-  document.getElementById('orders-screen').style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('orders-screen').style.display = 'none';
-    document.getElementById('order-detail-screen').style.display = 'block';
-    setTimeout(async () => {
-      document.getElementById('order-detail-screen').style.opacity = '1';
-
-      try {
-        const response = await fetch(`/api/get-order/${orderId}`);
-        const result = await response.json();
-
-        if (result.status !== 'success') {
-          document.getElementById('order-detail-content').innerHTML =
-            `<p style="text-align: center; color: red;">${result.message || 'Ошибка загрузки заказа'}</p>`;
-          return;
-        }
-        console.log('Кнопка в DOM:', document.querySelector('#back-button'));
-        console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
-        
-        
-        document.getElementById('order-detail-screen').style.display = 'block';
-        setTimeout(async () => {
-          document.getElementById('order-detail-screen').style.opacity = '1';
-        }, 50);
-        const order = result.order;
-        const items = order.items || [];
-
-        let content = `
-          <div style="margin-bottom: 15px;">
-            <div><strong>Номер заказа:</strong> ${order.order_id}</div>
-            <div><strong>Дата:</strong> ${new Date(order.order_date).toLocaleString('ru-RU')}</div>
-            <div><strong>Статус:</strong> <span style="color: ${getStatusColor(order.status)}">${order.status}</span></div>
-          </div>
-          <h3>Товары:</h3>
-          <div style="margin-bottom: 15px;">`;
-
-        items.forEach(item => {
-          content += `
-            <div style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between;">
-              <div>
-                <div>${item.title}</div>
-                ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
-                <div style="font-size: 12px;">Количество: ${item.quantity}</div>
-              </div>
-              <div style="font-weight: bold;">${formatPrice(item.price * item.quantity)} BYN</div>
+  openView(async () => {
+    document.getElementById('orders-screen').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('orders-screen').style.display = 'none';
+      document.getElementById('order-detail-screen').style.display = 'block';
+      setTimeout(async () => {
+        document.getElementById('order-detail-screen').style.opacity = '1';
+  
+        try {
+          const response = await fetch(`/api/get-order/${orderId}`);
+          const result = await response.json();
+  
+          if (result.status !== 'success') {
+            document.getElementById('order-detail-content').innerHTML =
+              `<p style="text-align: center; color: red;">${result.message || 'Ошибка загрузки заказа'}</p>`;
+            return;
+          }
+          console.log('Кнопка в DOM:', document.querySelector('#back-button'));
+          console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
+          
+          
+          document.getElementById('order-detail-screen').style.display = 'block';
+          setTimeout(async () => {
+            document.getElementById('order-detail-screen').style.opacity = '1';
+          }, 50);
+          const order = result.order;
+          const items = order.items || [];
+  
+          let content = `
+            <div style="margin-bottom: 15px;">
+              <div><strong>Номер заказа:</strong> ${order.order_id}</div>
+              <div><strong>Дата:</strong> ${new Date(order.order_date).toLocaleString('ru-RU')}</div>
+              <div><strong>Статус:</strong> <span style="color: ${getStatusColor(order.status)}">${order.status}</span></div>
+            </div>
+            <h3>Товары:</h3>
+            <div style="margin-bottom: 15px;">`;
+  
+          items.forEach(item => {
+            content += `
+              <div style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between;">
+                <div>
+                  <div>${item.title}</div>
+                  ${item.option ? `<div style="font-size: 12px; color: #666;">${item.option}</div>` : ''}
+                  <div style="font-size: 12px;">Количество: ${item.quantity}</div>
+                </div>
+                <div style="font-weight: bold;">${formatPrice(item.price * item.quantity)} BYN</div>
+              </div>`;
+          });
+  
+          content += `</div>
+            <h3>Доставка:</h3>
+            <div style="margin-bottom: 15px;">
+              <p><strong>Получатель:</strong> ${order.customer_name || '—'}</p>
+              <p><strong>Телефон:</strong> ${order.phone || '—'}</p>
+              <p><strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
+            </div>
+            <h3>Суммы:</h3>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+              <div style="margin-bottom: 5px;">Сумма заказа: ${formatPrice(order.total)} BYN</div>
+              <div style="margin-bottom: 5px;">Скидка 3%: -${formatPrice(order.discount)} BYN</div>
+              <div style="margin-bottom: 5px;">Доставка: ${formatPrice(order.delivery)} BYN</div>
+              <div style="font-weight: bold; margin-top: 10px;">Итого: ${formatPrice(order.final_total)} BYN</div>
             </div>`;
-        });
-
-        content += `</div>
-          <h3>Доставка:</h3>
-          <div style="margin-bottom: 15px;">
-            <p><strong>Получатель:</strong> ${order.customer_name || '—'}</p>
-            <p><strong>Телефон:</strong> ${order.phone || '—'}</p>
-            <p><strong>Адрес:</strong> ${order.city || ''} ${order.postcode || ''} ${order.address || ''}</p>
-          </div>
-          <h3>Суммы:</h3>
-          <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
-            <div style="margin-bottom: 5px;">Сумма заказа: ${formatPrice(order.total)} BYN</div>
-            <div style="margin-bottom: 5px;">Скидка 3%: -${formatPrice(order.discount)} BYN</div>
-            <div style="margin-bottom: 5px;">Доставка: ${formatPrice(order.delivery)} BYN</div>
-            <div style="font-weight: bold; margin-top: 10px;">Итого: ${formatPrice(order.final_total)} BYN</div>
-          </div>`;
-
-        document.getElementById('order-detail-content').innerHTML = content;
-      } catch (error) {
-        console.error('Ошибка загрузки деталей заказа:', error);
-        document.getElementById('order-detail-content').innerHTML =
-          '<p style="text-align: center; color: red;">Ошибка загрузки деталей заказа</p>';
-      }
-    }, 50);
-  }, 300);
+  
+          document.getElementById('order-detail-content').innerHTML = content;
+        } catch (error) {
+          console.error('Ошибка загрузки деталей заказа:', error);
+          document.getElementById('order-detail-content').innerHTML =
+            '<p style="text-align: center; color: red;">Ошибка загрузки деталей заказа</p>';
+        }
+      }, 50);
+    }, 300);
+  });
 }
 
 async function loadUserOrders(user) {
