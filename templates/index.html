@@ -486,6 +486,11 @@
             
             startAutoSlide();
         }
+        function toggleBackButton() {
+          const backButton = document.getElementById('back-button');
+          backButton.style.display = (currentState === 'home') ? 'none' : 'block';
+        }
+
         function goBack() {
           console.log("🔙 goBack вызван. currentState =", currentState);
         
