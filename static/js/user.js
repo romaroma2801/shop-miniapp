@@ -42,7 +42,10 @@ function initUserPage() {
           })
         });
       }
-
+      manageBackButton('user', () => {
+        showHome();
+        setActiveFooter('home');
+      });
       showPersonalCabinet(userData);
     } catch (error) {
       console.error('Ошибка загрузки данных:', error);
@@ -94,21 +97,21 @@ window.initUserPage = initUserPage;
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // --------------------------------
 
+function manageBackButton(state, handler) {
+  const backBtn = document.getElementById('back-button');
+  if (!backBtn) return;
+  
+  backBtn.style.display = 'block';
+  backBtn.style.visibility = 'visible';
+  backBtn.style.opacity = '1';
+  backBtn.onclick = handler;
+  window.currentState = state;
+}
 function showOrdersScreen() {
   document.getElementById('personal-cabinet').style.display = 'none';
   document.getElementById('orders-screen').style.display = 'block';
   document.getElementById('orders-list').style.paddingTop = '0';
-
-  window.currentState = 'user'; // 🟡 Здесь всё ещё user
-
-  const backBtn = document.getElementById('back-button');
-  if (backBtn) {
-    backBtn.style.display = 'block';
-    backBtn.style.visibility = 'visible';
-    backBtn.style.opacity = '1';
-    backBtn.onclick = goBackToProfile;
-  }
-
+  manageBackButton('orders', goBackToProfile);
   setTimeout(() => {
     document.getElementById('orders-screen').style.opacity = '1';
   }, 50);
@@ -178,14 +181,7 @@ async function viewOrderDetail(orderId) {
             `<p style="text-align: center; color: red;">${result.message || 'Ошибка загрузки заказа'}</p>`;
           return;
         }
-        console.log('Кнопка в DOM:', document.querySelector('#back-button'));
-        console.log('Видимость:', document.querySelector('#back-button').offsetParent !== null);
-        const backBtn = document.getElementById('back-button');
-        if (backBtn) {
-          backBtn.style.display = 'block';
-          backBtn.style.visibility = 'visible';
-          backBtn.style.opacity = '1';
-        }
+        manageBackButton('orderDetail', goBackToOrders);
         
         document.getElementById('order-detail-screen').style.display = 'block';
         setTimeout(async () => {
@@ -282,7 +278,12 @@ function getStatusColor(status) {
 function showPersonalCabinet(user) {
   const welcomeScreen = document.getElementById('welcome-screen');
   const personalCabinet = document.getElementById('personal-cabinet');
-
+  const backBtn = document.getElementById('back-button');
+    if (backBtn) {
+      backBtn.style.display = 'none'; // Скрываем в личном кабинете
+    }
+    window.currentState = 'user';
+  }
   if (!user) return;
 
   document.getElementById('user-avatar-img').src = user.photo_url || '/static/user-avatar.png';
@@ -315,6 +316,7 @@ function showEditForm(user) {
       editForm.style.opacity = '1';
     }, 50);
   }, 300);
+  manageBackButton('editForm', cancelEdit);
 }
 
 async function saveProfile(user) {
