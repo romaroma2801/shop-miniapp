@@ -29,7 +29,7 @@ function initFooter() {
   document.getElementById('home-button')?.addEventListener('click', goHome);
   document.getElementById('catalog-button')?.addEventListener('click', () => {
     setActiveFooter('catalog');
-    window.showSection('catalog');
+    window.showCatalogPage();
   });
   document.getElementById('cart-footer-button')?.addEventListener('click', toggleCart);
   document.getElementById('promotions-button')?.addEventListener('click', () => {
