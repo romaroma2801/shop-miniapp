@@ -489,102 +489,77 @@
         function goBack() {
           console.log("🔙 goBack вызван. currentState =", currentState);
         
+          // Специальные случаи
+          if (currentState === 'catalog' && typeof window.goBackCatalog === 'function') {
+            window.goBackCatalog();
+            return;
+          }
+        
+          if (currentState === 'user') {
+            const orderDetail = document.getElementById('order-detail-screen');
+            const ordersScreen = document.getElementById('orders-screen');
+            const editForm = document.getElementById('edit-form');
+        
+            if (orderDetail?.style.display === 'block') {
+              orderDetail.style.display = 'none';
+              ordersScreen.style.display = 'block';
+            } else if (ordersScreen?.style.display === 'block') {
+              ordersScreen.style.display = 'none';
+              document.getElementById('personal-cabinet').style.display = 'block';
+            } else if (editForm?.style.display === 'block') {
+              editForm.style.display = 'none';
+              document.getElementById('personal-cabinet').style.display = 'block';
+            } else {
+              showHome();
+              currentState = 'home';
+            }
+            toggleBackButton();
+            return;
+          }
+        
+          // Общие состояния
           switch (currentState) {
-            case "home":
-              // Назад из home некуда — скрываем кнопку
-              document.getElementById('back-button').style.display = 'none';
-              break;
-        
-            case "regions":
-              showHome();
-              currentState = "home";
-              break;
-        
-            case "cities":
-              showRegions();
-              currentState = "regions";
-              break;
-        
-            case "stores":
-              showCities(currentRegion);
-              currentState = "cities";
-              break;
-        
-            case "storeDetails":
+            case 'storeDetails':
               showStores(currentCity, currentRegion);
-              currentState = "stores";
+              currentState = 'stores';
               break;
-        
-            case "review":
-            case "contacts":
-            case "jobs":
+            case 'stores':
+              showCities(currentRegion);
+              currentState = 'cities';
+              break;
+            case 'cities':
+              showRegions();
+              currentState = 'regions';
+              break;
+            case 'regions':
+            case 'review':
+            case 'contacts':
+            case 'jobs':
+            case 'promotions':
               showHome();
-              currentState = "home";
+              currentState = 'home';
               break;
-        
-            case "promotions":
-              showHome();
-              currentState = "home";
-              break;
-        
-            case "promotionDetail":
+            case 'promotionDetail':
               showPromotions();
-              currentState = "promotions";
+              currentState = 'promotions';
               break;
-        
-            case "user":
-              if (document.getElementById('order-detail-screen')?.style.display === 'block') {
-                document.getElementById('order-detail-screen').style.display = 'none';
-                document.getElementById('orders-screen').style.display = 'block';
-                currentState = "user";
-              } else if (document.getElementById('orders-screen')?.style.display === 'block') {
-                document.getElementById('orders-screen').style.display = 'none';
-                document.getElementById('personal-cabinet').style.display = 'block';
-                currentState = "user";
-              } else if (document.getElementById('edit-form')?.style.display === 'block') {
-                document.getElementById('edit-form').style.display = 'none';
-                document.getElementById('personal-cabinet').style.display = 'block';
-                currentState = "user";
-              } else {
-                showHome();
-                currentState = "home";
-              }
-              break;
-        
-            case "order":
-              // Возврат туда, откуда вызывали оформление заказа
+            case 'order':
               if (typeof previousPageState === 'function') {
-                previousPageState(); // нужно присваивать эту переменную при переходе к оформлению
+                previousPageState();
               } else {
                 showHome();
               }
-              currentState = "home";
+              currentState = 'home';
               break;
-        
-            case "catalog":
-              if (typeof goBackCatalog === 'function') {
-                goBackCatalog(); // логика возврата в catalog.js
-              } else {
-                showHome();
-                currentState = "home";
-              }
-              break;
-        
             default:
               console.warn("❓ Неизвестное состояние:", currentState);
               showHome();
-              currentState = "home";
-              break;
+              currentState = 'home';
           }
         
-          // Управляем отображением кнопки глобально
-          const backButton = document.getElementById('back-button');
-          if (currentState === "home") {
-            backButton.style.display = "none";
-          } else {
-            backButton.style.display = "block";
-          }
+          toggleBackButton();
         }
+        
 
         async function showRegions() {
             currentState = "regions";
