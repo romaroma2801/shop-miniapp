@@ -487,38 +487,104 @@
         }
         function goBack() {
           console.log("🔙 goBack вызван. currentState =", currentState);
-          if (currentState === "promotionDetail") {
-            showPromotions();
-          } else if (currentState === "regions") {
-            showHome();
-          } else if (currentState === "cities") {
-            showRegions();
-          } else if (currentState === "stores") {
-            showCities(currentRegion);
-          } else if (currentState === "storeDetails") {
-            showStores(currentCity, currentRegion);
-          } else if (currentState === "user") {
-              setActiveFooter('user');
-            // Добавляем обработку личного кабинета
-            if (document.getElementById('order-detail-screen')?.style.display === 'block') {
-              goBackToOrders();
-            } else if (document.getElementById('orders-screen')?.style.display === 'block') {
-              goBackToProfile();
-            } else if (document.getElementById('edit-form')?.style.display === 'block') {
-              cancelEdit();
-            } else {
+        
+          switch (currentState) {
+            case "home":
+              // Назад из home некуда — скрываем кнопку
+              document.getElementById('back-button').style.display = 'none';
+              break;
+        
+            case "regions":
               showHome();
-              setActiveFooter('home');
-            }
-          } else if (["review", "contacts", "jobs", "promotions"].includes(currentState)) {
-            showHome();
-            setActiveFooter('home');
+              currentState = "home";
+              break;
+        
+            case "cities":
+              showRegions();
+              currentState = "regions";
+              break;
+        
+            case "stores":
+              showCities(currentRegion);
+              currentState = "cities";
+              break;
+        
+            case "storeDetails":
+              showStores(currentCity, currentRegion);
+              currentState = "stores";
+              break;
+        
+            case "review":
+            case "contacts":
+            case "jobs":
+              showHome();
+              currentState = "home";
+              break;
+        
+            case "promotions":
+              showHome();
+              currentState = "home";
+              break;
+        
+            case "promotionDetail":
+              showPromotions();
+              currentState = "promotions";
+              break;
+        
+            case "user":
+              if (document.getElementById('order-detail-screen')?.style.display === 'block') {
+                document.getElementById('order-detail-screen').style.display = 'none';
+                document.getElementById('orders-screen').style.display = 'block';
+                currentState = "user";
+              } else if (document.getElementById('orders-screen')?.style.display === 'block') {
+                document.getElementById('orders-screen').style.display = 'none';
+                document.getElementById('personal-cabinet').style.display = 'block';
+                currentState = "user";
+              } else if (document.getElementById('edit-form')?.style.display === 'block') {
+                document.getElementById('edit-form').style.display = 'none';
+                document.getElementById('personal-cabinet').style.display = 'block';
+                currentState = "user";
+              } else {
+                showHome();
+                currentState = "home";
+              }
+              break;
+        
+            case "order":
+              // Возврат туда, откуда вызывали оформление заказа
+              if (typeof previousPageState === 'function') {
+                previousPageState(); // нужно присваивать эту переменную при переходе к оформлению
+              } else {
+                showHome();
+              }
+              currentState = "home";
+              break;
+        
+            case "catalog":
+              if (typeof goBackCatalog === 'function') {
+                goBackCatalog(); // логика возврата в catalog.js
+              } else {
+                showHome();
+                currentState = "home";
+              }
+              break;
+        
+            default:
+              console.warn("❓ Неизвестное состояние:", currentState);
+              showHome();
+              currentState = "home";
+              break;
+          }
+        
+          // Управляем отображением кнопки глобально
+          const backButton = document.getElementById('back-button');
+          if (currentState === "home") {
+            backButton.style.display = "none";
           } else {
-            console.warn("❓ Неизвестное состояние:", currentState);
-            showHome();
-            setActiveFooter('home');
+            backButton.style.display = "block";
           }
         }
+
         async function showRegions() {
             currentState = "regions";
             const regions = await loadData('regions');
@@ -885,6 +951,7 @@
           if (typeof callback === 'function') callback();
         }
         window.showUserPage = showUserPage;
+        
         function showOrderPage() {
           currentState = 'order';
         
@@ -921,6 +988,7 @@
         window.showOrderPage = showOrderPage;
 
         function showCatalogPage() {
+          currentState = "catalog";
           if (!document.getElementById('catalog-css')) {
             const link = document.createElement('link');
             link.id = 'catalog-css';
