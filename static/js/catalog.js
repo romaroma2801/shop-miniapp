@@ -21,9 +21,6 @@ function initCatalogPage() {
     <div class="header">
       <img src="/static/logo22.png" alt="Логотип" class="logo">
     </div>
-    <button id="back-button" onclick="goBack()" style="display:none;">
-      <img src="/static/back.svg" alt="Назад">
-    </button>
     <div id="loader" class="loader">
       <img src="/static/Eicon.png" alt="Загрузка...">
     </div>
