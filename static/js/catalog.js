@@ -16,6 +16,7 @@ const categoryIcons = {
 };
 
 function initCatalogPage() {
+  window.currentState = "catalog";
   const catalogHTML = `
     <div class="header">
       <img src="/static/logo22.png" alt="Логотип" class="logo">
@@ -206,15 +207,6 @@ function viewProduct(i) {
   }
 
   const originalGoBack = window.goBack;
-  window.goBack = function() {
-    productViewData = returnData.products;
-    currentData = returnData.view;
-    originalGoBack();
-    window.goBack = originalGoBack;
-  };
-
-  openView(renderDetailView);
-}
 
 function fixImg(url) {
   if (!url || typeof url !== 'string') return '/static/placeholder.png';
