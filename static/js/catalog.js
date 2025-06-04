@@ -262,3 +262,15 @@ function addProductToCart(product, selectedOption = null) {
 }
 
 window.initCatalogPage = initCatalogPage;
+window.goBackCatalog = function () {
+  if (historyStack.length) {
+    currentData = historyStack.pop();
+    toggleBackButton();
+    currentData();
+  } else {
+    showHome();
+    currentState = 'home';
+    toggleBackButton();
+  }
+};
+
