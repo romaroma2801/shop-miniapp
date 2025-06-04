@@ -185,15 +185,32 @@ function viewProduct(i) {
         </div>`).join('')}` : '';
 
     setContent(`
-      <h4>${p.title}</h4>
-      <img src="${fixImg(selectedOptionImage)}" style="max-width:100%; max-height:200px;">
-      ${attributesTable}
-      ${optionsBlock}
-      <p class="price">${p.special_price ? `${p.special_price} BYN (скидка)` : `${p.price} BYN`}</p>
-      <button onclick="${p.options?.length ? `if (!selectedOptionName) { alert('Выберите вариант'); return; } else { addProductToCart(productViewData[${i}], selectedOptionName); }` : `addProductToCart(productViewData[${i}])`}" class="add-button">
-        Купить
-      </button>
+      <div class="product-detail">
+        <img id="product-main-img" src="${fixImg(selectedOptionImage)}" style="max-width: 100%; height: auto; max-height: 250px; object-fit: contain; margin: 0 auto 16px; display: block;">
+        <h4>${p.title}</h4>
+        ${attributesTable}
+        ${optionsBlock}
+        
+        <p class="price">
+          ${p.special_price
+            ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
+               <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
+            : `${parseFloat(p.price).toFixed(2)} BYN`}
+        </p>
+        
+        <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+             onclick="${p.options?.length 
+               ? `if (!selectedOptionName) { alert('Пожалуйста, выберите вариант товара'); return; } else { addProductToCart(productViewData[${i}], selectedOptionName); }` 
+               : `addProductToCart(productViewData[${i}])`}"
+             style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;
+                    ${p.available === 'out_of_stock' 
+                      ? 'background: #fff; color: #ff0000; border: 1px solid #ff0000;' 
+                      : 'background: #ff0000; color: #fff; border: none;'}">
+          ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
+        </div>
+      </div>
     `);
+
   }
 
   window.selectOption = function(productIndex, optionName, valueIndex) {
