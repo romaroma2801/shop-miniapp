@@ -279,12 +279,13 @@ function showPersonalCabinet(user) {
   const welcomeScreen = document.getElementById('welcome-screen');
   const personalCabinet = document.getElementById('personal-cabinet');
   const backBtn = document.getElementById('back-button');
-    if (backBtn) {
-      backBtn.style.display = 'none'; // Скрываем в личном кабинете
-    }
-    window.currentState = 'user';
-  }
+  
   if (!user) return;
+
+  if (backBtn) {
+    backBtn.style.display = 'none'; // Скрываем в личном кабинете
+  }
+  window.currentState = 'user';
 
   document.getElementById('user-avatar-img').src = user.photo_url || '/static/user-avatar.png';
   document.getElementById('user-username').textContent = `@${user.username || 'неизвестно'}`;
