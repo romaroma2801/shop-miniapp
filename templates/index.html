@@ -989,7 +989,9 @@
         window.showOrderPage = showOrderPage;
 
         function showCatalogPage() {
-          currentState = "catalog";
+          window.currentState = 'catalog';
+        
+          // Подключаем CSS, если ещё не подключён
           if (!document.getElementById('catalog-css')) {
             const link = document.createElement('link');
             link.id = 'catalog-css';
@@ -998,31 +1000,40 @@
             document.head.appendChild(link);
           }
         
-          const globalLoader = document.createElement('div');
-          globalLoader.id = 'global-loader';
-          globalLoader.innerHTML = '<img src="/static/Eicon.png" alt="Loading">';
-          document.body.appendChild(globalLoader);
-        
-          if (!document.getElementById('catalog-js')) {
-            const script = document.createElement('script');
-            script.id = 'catalog-js';
-            script.src = '/static/js/catalog.js';
-            script.onload = () => {
-              document.getElementById('global-loader')?.remove();
-              if (typeof initCatalogPage === 'function') {
-                initCatalogPage();
-              }
-            };
-            document.body.appendChild(script);
-          } else {
-            document.getElementById('global-loader')?.remove();
-            if (typeof initCatalogPage === 'function') {
-              initCatalogPage();
-            }
-          }
+          // Загружаем HTML и вставляем в #content
+          fetch('/static/html/catalog.html')
+            .then(res => res.text())
+            .then(html => {
+              showContent(html, false, () => {
+                // Подключаем JS, если ещё не подключён
+                if (!document.getElementById('catalog-js')) {
+                  const script = document.createElement('script');
+                  script.id = 'catalog-js';
+                  script.src = '/static/js/catalog.js';
+                  script.onload = () => {
+                    if (typeof initCatalogPage === 'function') {
+                      initCatalogPage();
+                    } else {
+                      showToast('Не удалось инициализировать каталог');
+                    }
+                  };
+                  document.body.appendChild(script);
+                } else {
+                  if (typeof initCatalogPage === 'function') {
+                    initCatalogPage();
+                  } else {
+                    showToast('Не удалось инициализировать каталог');
+                  }
+                }
+              });
+            })
+            .catch(err => {
+              console.error('Ошибка загрузки catalog.html:', err);
+              showToast('Не удалось загрузить каталог');
+            });
         }
-        
         window.showCatalogPage = showCatalogPage;
+
 
         // Экспорт всех функций в глобальную область видимости
         // Основные функции приложения
