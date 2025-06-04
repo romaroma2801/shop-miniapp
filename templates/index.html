@@ -726,10 +726,6 @@
             });
         }
 
-
-
-
-
         function selectStars(count) {
             window.reviewStars = count;
             for (let i = 1; i <= 5; i++) {
@@ -850,9 +846,6 @@
                 document.getElementById('content').scrollTo(0, 0);
             }, 300);
         }
-
-        
-        
         
         function updateUserData(user) {
             document.getElementById('user-name').textContent = user.first_name || 'Не указано';
@@ -891,7 +884,7 @@
           content.innerHTML = html;
           if (typeof callback === 'function') callback();
         }
-
+        window.showUserPage = showUserPage;
         function showOrderPage() {
           currentState = 'order';
         
@@ -927,8 +920,40 @@
         }
         window.showOrderPage = showOrderPage;
 
-
-        window.showUserPage = showUserPage;
+        function showCatalogPage() {
+          if (!document.getElementById('catalog-css')) {
+            const link = document.createElement('link');
+            link.id = 'catalog-css';
+            link.rel = 'stylesheet';
+            link.href = '/static/css/catalog.css';
+            document.head.appendChild(link);
+          }
+        
+          const globalLoader = document.createElement('div');
+          globalLoader.id = 'global-loader';
+          globalLoader.innerHTML = '<img src="/static/Eicon.png" alt="Loading">';
+          document.body.appendChild(globalLoader);
+        
+          if (!document.getElementById('catalog-js')) {
+            const script = document.createElement('script');
+            script.id = 'catalog-js';
+            script.src = '/static/js/catalog.js';
+            script.onload = () => {
+              document.getElementById('global-loader')?.remove();
+              if (typeof initCatalogPage === 'function') {
+                initCatalogPage();
+              }
+            };
+            document.body.appendChild(script);
+          } else {
+            document.getElementById('global-loader')?.remove();
+            if (typeof initCatalogPage === 'function') {
+              initCatalogPage();
+            }
+          }
+        }
+        
+        window.showCatalogPage = showCatalogPage;
 
         // Экспорт всех функций в глобальную область видимости
         // Основные функции приложения
