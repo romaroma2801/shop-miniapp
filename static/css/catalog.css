@@ -1,0 +1,317 @@
+body, html {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+.menu-vertical {
+  overflow-x: hidden;
+}
+.category-button, .product-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  height: 180px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  position: relative;
+  transition: opacity 0.3s ease;
+}
+.category-button img, .category-icon {
+  height: 140px !important;
+  width: auto;
+  object-fit: contain;
+  margin-top: 12px;
+}
+.category-button div {
+  font-size: 14px;
+  padding: 4px;
+  background: #fff;
+  margin-top: auto;
+}
+.product-card {
+  height: 260px;
+}
+.product-card img {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+  margin: 10px auto 0;
+}
+.product-card .content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+  padding: 6px;
+}
+.product-card h4 {
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 1.2;
+  height: 3.6em;
+  overflow: hidden;
+  margin: 2px 0;
+}
+.product-card .price {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 2px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+.product-card .price .old-price {
+  text-decoration: line-through;
+  color: #999;
+}
+.product-card .price .new-price {
+  color: #a30000;
+}
+.product-card .sale-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+}
+.add-button, .map-button {
+  width: 100%;
+  height: 36px;
+  padding: 0;
+  border-radius: 25px;
+  font-size: 14px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 36px;
+  margin-top: auto;
+  margin-bottom: 4px;
+}
+.add-button {
+  background: #ff0000;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.map-button {
+  background: white;
+  color: #ff0000;
+  border: 1px solid #ff0000;
+  box-shadow: none;
+}
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.loader img {
+  width: 160px;
+  height: 160px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+.sort-buttons {
+  margin: 2px 10px 4px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 10px;
+  align-items: center;
+}
+.sort-buttons button {
+  padding: 6px 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  border-radius: 20px;
+}
+#search-bar {
+  padding: 12px;
+  margin: 2px 10px 2px;
+  width: calc(100% - 20px);
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+.product-detail {
+  background: #fff;
+  padding: 16px;
+  margin: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  /* Убрано padding-bottom: 80px; */
+  box-sizing: border-box;
+}
+
+
+.product-detail .content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-detail .bottom-section {
+  margin-top: auto;
+  padding-top: 16px;
+}
+.product-detail img#product-main-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 250px;
+  object-fit: contain;
+  margin: 0 auto 15px;
+  display: block;
+}
+.product-detail p {
+  white-space: pre-line;
+  margin-bottom: 12px;
+}
+.product-detail .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+.product-detail .add-button, .product-detail .map-button {
+  font-size: 15px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0;
+  margin-bottom: 0;
+}
+.product-detail table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.product-detail table tr {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.product-detail table td {
+  display: block;
+  padding: 8px 0;
+  border-bottom: none;
+}
+.product-detail table td:first-child {
+  font-weight: bold;
+  color: #555;
+}
+
+.product-detail .option-block {
+  margin-bottom: 12px;
+}
+
+.product-detail .option-title {
+  margin-bottom: 6px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.product-detail .option-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.product-detail .option-value {
+  cursor: pointer;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1px;
+  text-align: center;
+  /* Заменяем aspect-ratio на проверенный метод */
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%; /* Это создаст квадрат */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.product-detail .option-value-content {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  padding: 2px; /* Было 4-6px */
+  gap: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+.product-detail .option-value.selected {
+  border: 2px solid #ff0000;
+  box-shadow: 0 0 8px rgba(255,0,0,0.2);
+}
+
+.product-detail .option-value.unavailable {
+  position: relative;
+  background: #f8f8f8;
+  color: #aaa;
+  border-color: #eee;
+}
+
+.product-detail .option-value.unavailable::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.6);
+  border-radius: 7px;
+}
+
+.product-detail .option-value img {
+  width: 80%;
+  max-height: 40px;
+  object-fit: contain;
+  margin-bottom: 0px;
+}
+
+.product-detail .option-value div {
+  font-size: 10px; /* Уменьшили размер шрифта */
+  padding: 0 2px;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  margin: 0;
+}
