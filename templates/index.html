@@ -500,15 +500,12 @@
           } else if (currentState === "user") {
               setActiveFooter('user');
             // Добавляем обработку личного кабинета
-            if (currentState === "orderDetail") {
-                goBackToOrders();
-                return;
-            } if (currentState === "orders") {
-                goBackToProfile();
-                return;
-            } if (currentState === "editForm") {
-                cancelEdit();
-                return;
+            if (document.getElementById('order-detail-screen')?.style.display === 'block') {
+              goBackToOrders();
+            } else if (document.getElementById('orders-screen')?.style.display === 'block') {
+              goBackToProfile();
+            } else if (document.getElementById('edit-form')?.style.display === 'block') {
+              cancelEdit();
             } else {
               showHome();
               setActiveFooter('home');
