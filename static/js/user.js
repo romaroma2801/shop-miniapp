@@ -1,6 +1,6 @@
 function initUserPage() {
   let userData = null;
-
+  currentState = "user";
   (async () => {
     if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
       showToast("Вы не авторизованы");
