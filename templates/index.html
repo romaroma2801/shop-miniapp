@@ -924,12 +924,12 @@
             script.src = '/static/js/order.js';
             script.onload = () => {
               document.getElementById('global-loader')?.remove();
-              if (typeof initOrderPage === 'function') initOrderPage();
+              if (typeof initOrderPage === 'function') openView(() => initOrderPage(), 'order');
             };
             document.body.appendChild(script);
           } else {
             document.getElementById('global-loader')?.remove();
-            if (typeof initOrderPage === 'function') initOrderPage();
+            if (typeof initOrderPage === 'function') openView(() => initOrderPage(), 'order');
           }
         }
         window.showOrderPage = showOrderPage;
