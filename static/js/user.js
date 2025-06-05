@@ -83,7 +83,7 @@ function initUserPage() {
       await saveProfile(userData);
     });
 
-    ocument.getElementById('my-orders-btn')?.addEventListener('click', () => {
+    document.getElementById('my-orders-btn')?.addEventListener('click', () => {
       openView(() => {
         showOrdersScreen();
         loadUserOrders(userData);
