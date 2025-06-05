@@ -1,9 +1,7 @@
 // catalog.js
 
 let catalog = {};
-let historyStack = [];
-let loadPromises = [];
-let currentData = null;
+
 const categoryIcons = {
   "Парогенераторы": "vape.png",
   "Жидкости": "juice.png",
@@ -38,7 +36,7 @@ async function loadCatalog() {
     catalog = await response.json();
     loadPromises = [];
     showLoader(false);
-    openView(renderMainCategories);
+    openView(renderMainCategories, 'catalog-main');
   } catch (error) {
     console.error("Ошибка загрузки каталога:", error);
     showLoader(false);
@@ -49,22 +47,6 @@ function showLoader(state) {
   document.getElementById("loader").style.display = state ? 'flex' : 'none';
 }
 
-function toggleBackButton() {
-  document.getElementById("back-button").style.display = historyStack.length ? 'block' : 'none';
-}
-
-function openView(viewFn) {
-  if (loadPromises.length) {
-    loadPromises.forEach(p => p.cancel?.());
-    loadPromises = [];
-  }
-  if (currentData && currentData !== viewFn) {
-    historyStack.push(currentData);
-  }
-  currentData = viewFn;
-  toggleBackButton();
-  viewFn();
-}
 
 function renderMainCategories() {
   const top = Object.values(catalog).filter(c => c.parent_id === "0");
@@ -83,9 +65,9 @@ function openCategory(id) {
   const cat = catalog[id];
   if (!cat) return;
   if (cat.subcategories && Object.keys(cat.subcategories).length) {
-    openView(() => renderSubcategories(cat.subcategories));
+    openView(() => renderSubcategories(cat.subcategories), 'catalog-subcategories');
   } else if (cat.products?.length) {
-    openView(() => renderProducts(cat.products));
+    openView(() => renderProducts(cat.products), 'catalog-products');
   }
 }
 
@@ -107,9 +89,9 @@ function openSubSub(index) {
   const s = subCache[index];
   if (!s) return;
   if (s.subcategories && Object.keys(s.subcategories).length) {
-    openView(() => renderSubcategories(s.subcategories));
+    openView(() => renderSubcategories(s.subcategories), `catalog-subcategories-${s.id}`);
   } else {
-    openView(() => renderProducts(s.products || []));
+    openView(() => renderProducts(s.products || []), 'catalog-products');
   }
 }
 
@@ -148,7 +130,7 @@ function sortBy(type) {
   const sorted = [...productViewData];
   if (type === 'price') sorted.sort((a,b)=>a.price-b.price);
   else if (type === 'availability') sorted.sort((a,b)=>(a.available==='out_of_stock')-(b.available==='out_of_stock'));
-  openView(() => renderProducts(sorted));
+  openView(() => renderProducts(sorted), 'catalog-products');
 }
 
 function viewProduct(i) {
@@ -216,7 +198,7 @@ function viewProduct(i) {
 
   const originalGoBack = window.goBack;
 
-  openView(renderDetailView);
+  openView(renderDetailView, 'catalog-product-detail');
 }
 
 function fixImg(url) {
@@ -229,7 +211,7 @@ function search(e) {
   const val = document.getElementById('search-bar').value.toLowerCase();
   const arr = Object.values(catalog).flatMap(c => c.products || []);
   const found = arr.filter(p => p.title.toLowerCase().includes(val));
-  openView(() => renderProducts(found));
+  openView(() => renderProducts(found), 'catalog-search-results');
 }
 
 function setContent(html) {
@@ -253,15 +235,5 @@ function addProductToCart(product, selectedOption = null) {
 }
 
 window.initCatalogPage = initCatalogPage;
-window.goBackCatalog = function () {
-  if (historyStack.length) {
-    currentData = historyStack.pop();
-    toggleBackButton();
-    currentData();
-  } else {
-    showHome();
-    currentState = 'home';
-    toggleBackButton();
-  }
-};
+
 
