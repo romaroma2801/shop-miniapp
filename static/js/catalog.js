@@ -38,13 +38,12 @@ async function loadCatalog() {
     catalog = await response.json();
     loadPromises = [];
     showLoader(false);
-    openView(renderMainCategories);
+    openView(renderMainCategories, {}); // теперь всегда передаём второй параметр (даже если без параметров)
   } catch (error) {
     console.error("Ошибка загрузки каталога:", error);
     showLoader(false);
   }
 }
-
 function showLoader(state) {
   document.getElementById("loader").style.display = state ? 'flex' : 'none';
 }
@@ -53,17 +52,19 @@ function toggleBackButton() {
   document.getElementById("back-button").style.display = historyStack.length ? 'block' : 'none';
 }
 
-function openView(viewFn) {
+function openView(viewFn, params = {}) {
   if (loadPromises.length) {
     loadPromises.forEach(p => p.cancel?.());
     loadPromises = [];
   }
-  if (currentData && currentData !== viewFn) {
-    historyStack.push(currentData);
+  // Сохраняем и функцию, и параметры
+  if (currentData && (currentData !== viewFn || JSON.stringify(currentParams) !== JSON.stringify(params))) {
+    historyStack.push({ viewFn: currentData, params: currentParams });
   }
   currentData = viewFn;
+  currentParams = params;
   toggleBackButton();
-  viewFn();
+  viewFn(params); // Передаём параметры!
 }
 
 function renderMainCategories() {
@@ -83,9 +84,9 @@ function openCategory(id) {
   const cat = catalog[id];
   if (!cat) return;
   if (cat.subcategories && Object.keys(cat.subcategories).length) {
-    openView(() => renderSubcategories(cat.subcategories));
+    openView(renderSubcategories, { subcategories: cat.subcategories, categoryId: id });
   } else if (cat.products?.length) {
-    openView(() => renderProducts(cat.products));
+    openView(renderProducts, { products: cat.products, categoryId: id });
   }
 }
 
@@ -103,13 +104,14 @@ function renderSubcategories(subs) {
 const subCache = [];
 function cache(obj) { subCache.push(obj); return subCache.length - 1; }
 
+// Новый вариант openSubSub:
 function openSubSub(index) {
   const s = subCache[index];
   if (!s) return;
   if (s.subcategories && Object.keys(s.subcategories).length) {
-    openView(() => renderSubcategories(s.subcategories));
+    openView(renderSubcategories, { subcategories: s.subcategories, cacheIndex: index });
   } else {
-    openView(() => renderProducts(s.products || []));
+    openView(renderProducts, { products: s.products || [], cacheIndex: index });
   }
 }
 
@@ -117,7 +119,11 @@ let productViewData = [];
 let selectedOptionName = '';
 let selectedOptionImage = '';
 
-function renderProducts(arr) {
+function renderProducts(params) {
+  // Теперь вместо массива ожидается объект с параметрами
+  const arr = params.products;
+  const sortedBy = params.sortedBy || null; // опционально, если нужно отображать сортировку
+
   productViewData = arr;
   setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
     <div class="sort-buttons">
@@ -146,9 +152,9 @@ function renderProducts(arr) {
 
 function sortBy(type) {
   const sorted = [...productViewData];
-  if (type === 'price') sorted.sort((a,b)=>a.price-b.price);
-  else if (type === 'availability') sorted.sort((a,b)=>(a.available==='out_of_stock')-(b.available==='out_of_stock'));
-  openView(() => renderProducts(sorted));
+  if (type === 'price') sorted.sort((a, b) => a.price - b.price);
+  else if (type === 'availability') sorted.sort((a, b) => (a.available === 'out_of_stock') - (b.available === 'out_of_stock'));
+  openView(renderProducts, { products: sorted, sortedBy: type });
 }
 
 function viewProduct(i) {
@@ -255,13 +261,16 @@ function addProductToCart(product, selectedOption = null) {
 window.initCatalogPage = initCatalogPage;
 window.goBackCatalog = function () {
   if (historyStack.length) {
-    currentData = historyStack.pop();
+    const last = historyStack.pop();
     toggleBackButton();
-    currentData();
+    currentData = last.viewFn;
+    currentParams = last.params;
+    last.viewFn(last.params); // Передаём параметры!
   } else {
     showHome();
     currentState = 'home';
+    currentData = null;
+    currentParams = null;
     toggleBackButton();
   }
 };
-
