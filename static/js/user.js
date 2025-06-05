@@ -43,11 +43,11 @@ function initUserPage() {
         });
       }
 
-      showPersonalCabinet(userData);
+      openView(() => showPersonalCabinet(userData), 'user'); 
     } catch (error) {
       console.error('Ошибка загрузки данных:', error);
       showToast("Используются сохранённые данные");
-      showPersonalCabinet(userData);
+      openView(() => showPersonalCabinet(userData), 'user');
     }
     // Отладочный код - проверяем наличие кнопок в DOM
     console.log('Проверка кнопок "Назад":');
@@ -71,22 +71,26 @@ function initUserPage() {
     checkButtonStyles(document.querySelector('#order-detail-screen #back-button'));
     
     document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
-      showEditForm(userData);
+      openView(() => showEditForm(userData), 'edit-profile');
     });
+
     document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
-      cancelEdit();
+      goBack();
     });
+
 
     document.getElementById('save-profile-btn')?.addEventListener('click', async () => {
       await saveProfile(userData);
     });
 
-    document.getElementById('my-orders-btn')?.addEventListener('click', () => {
+    ocument.getElementById('my-orders-btn')?.addEventListener('click', () => {
       openView(() => {
         showOrdersScreen();
         loadUserOrders(userData);
-      }, 'orders');
+      }, 'user-orders');
     });
+
+  })(); // ← вот эта строка закрывает async-функцию
 }
 
 window.initUserPage = initUserPage;
@@ -104,9 +108,6 @@ function showOrdersScreen(params = {}) {
   }, 50);
 }
 
-// Теперь всегда вызывай так:
-openView(showOrdersScreen, {});
-
 
 function formatPrice(price) {
   if (price == null) return '0.00';
@@ -117,7 +118,7 @@ function formatPrice(price) {
 }
 
 function viewOrderDetail(orderId) {
-  openView(renderOrderDetail, { orderId });
+  openView(() => renderOrderDetail({ orderId }), 'order-detail');
 }
 
 async function renderOrderDetail(params) {
@@ -284,7 +285,7 @@ async function saveProfile(user) {
       user.phone = phone;
       localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
 
-      showPersonalCabinet(user);
+      openView(() => showPersonalCabinet(user), 'user');
       document.getElementById('edit-form').style.display = 'none';
       showToast("Данные успешно сохранены");
     } else {
