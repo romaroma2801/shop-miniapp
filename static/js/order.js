@@ -9,10 +9,6 @@ function initOrderPage() {
       <img src="/static/logo22.png" alt="Логотип" class="logo">
     </div>
 
-    <button id="back-button" onclick="goBack()">
-      <img src="/static/back.svg" alt="Назад">
-    </button>
-
     <div id="order-content">
       <h2 class="order-title">Оформление заказа</h2>
       
