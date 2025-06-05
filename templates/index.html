@@ -208,7 +208,9 @@
         let currentCity = null;
         showHome();
         const contentDiv = document.getElementById('content');
-        window.historyStack = [];
+        window.globalHistory = [];
+        window.currentState = null;
+        window.currentRenderFunction = null;
         window.currentView = null;
         
         function openView(viewFn) {
@@ -220,26 +222,27 @@
         }
         
         function goBack() {
-          if (window.historyStack.length > 0) {
-            const lastView = window.historyStack.pop();
-            window.currentView = lastView;
+          if (window.globalHistory.length) {
+            const { state, render } = window.globalHistory.pop();
+            window.currentState = state;
+            window.currentRenderFunction = render;
             toggleBackButton();
-            lastView();
+            render();
           } else {
             showHome();
-            window.currentView = null;
-            window.historyStack = [];
+            window.currentState = 'home';
+            window.currentRenderFunction = null;
             toggleBackButton();
           }
         }
+        window.goBack = goBack;
+
         
         function toggleBackButton() {
-          const backButton = document.getElementById("back-button");
-          if (backButton) {
-            backButton.style.display = window.historyStack.length > 0 ? "block" : "none";
-          }
+          const btn = document.getElementById("back-button");
+          if (!btn) return;
+          btn.style.display = window.globalHistory.length ? "block" : "none";
         }
-
         contentDiv.addEventListener('click', (e) => {
             if (e.target.closest('#back-button')) {
                 goBack();
@@ -327,12 +330,7 @@
                 const intervalId = carousel.dataset.intervalId;
                 if (intervalId) clearInterval(intervalId);
             });
-            if (backButton) {
-                backButton.style.display = showBack ? 'block' : 'none';
-            } else {
-                console.warn('⚠️ #back-button не найден в DOM');
-            }
-
+            toggleBackButton();
             contentDiv.classList.add('hidden');
             setTimeout(() => {
                 contentDiv.innerHTML = content;
