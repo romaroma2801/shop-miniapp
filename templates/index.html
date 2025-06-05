@@ -210,24 +210,33 @@
         const contentDiv = document.getElementById('content');
         window.historyStack = [];
         window.currentView = null;
+        window.currentParams = null;
         
-        function openView(viewFn) {
+        function openView(viewFn, params) {
           if (typeof viewFn !== 'function') return;
-          if (window.currentView) window.historyStack.push(window.currentView);
+          if (window.currentView) {
+            window.historyStack.push({
+              viewFn: window.currentView,
+              params: window.currentParams
+            });
+          }
           window.currentView = viewFn;
+          window.currentParams = params;
           toggleBackButton();
-          viewFn();
+          viewFn(params);
         }
         
         function goBack() {
           if (window.historyStack.length > 0) {
-            const lastView = window.historyStack.pop();
-            window.currentView = lastView;
+            const last = window.historyStack.pop();
+            window.currentView = last.viewFn;
+            window.currentParams = last.params;
             toggleBackButton();
-            lastView();
+            last.viewFn(last.params);
           } else {
             showHome();
             window.currentView = null;
+            window.currentParams = null;
             window.historyStack = [];
             toggleBackButton();
           }
