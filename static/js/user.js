@@ -82,10 +82,11 @@ function initUserPage() {
     });
 
     document.getElementById('my-orders-btn')?.addEventListener('click', () => {
-      showOrdersScreen();
-      loadUserOrders(userData);
+      openView(() => {
+        showOrdersScreen();
+        loadUserOrders(userData);
+      }, 'orders');
     });
-  })();
 }
 
 window.initUserPage = initUserPage;
