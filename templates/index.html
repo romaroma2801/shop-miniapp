@@ -213,39 +213,24 @@
         window.currentRenderFunction = null;
         window.currentView = null;
         
-        function toggleBackButton() {
-          const btn = document.getElementById("back-button");
-          if (!btn) return;
-          btn.style.display = window.globalHistory.length ? "block" : "none";
-        }
         
-        function openView(renderFn, stateName = null) {
+        function openView(renderFn, screenName = null) {
+          if (screenName) {
+            pushScreen(screenName); // Добавляем в стек
+          }
+        
           if (typeof window.currentRenderFunction === 'function') {
             window.globalHistory.push({
               state: window.currentState,
               render: window.currentRenderFunction
             });
           }
+        
           window.currentRenderFunction = renderFn;
-          window.currentState = stateName;
-          toggleBackButton();
+          window.currentState = screenName; // сохраняем состояние
           renderFn();
         }
         
-        function goBack() {
-          if (window.globalHistory.length) {
-            const { state, render } = window.globalHistory.pop();
-            window.currentState = state;
-            window.currentRenderFunction = render;
-            toggleBackButton();
-            render();
-          } else {
-            showHome();
-            window.currentState = 'home';
-            window.currentRenderFunction = null;
-            toggleBackButton();
-          }
-        }
         contentDiv.addEventListener('click', (e) => {
             if (e.target.closest('#back-button')) {
                 goBack();
@@ -347,6 +332,7 @@
 
 
         function showHome() {
+            pushScreen("Home");
             currentState = "home";
             
             // Загружаем акции для карусели
@@ -521,6 +507,7 @@
         
 
         function showRegions() {
+          pushScreen("Regions")
           openView(async () => {
             currentState = "regions";
             const regions = await loadData('regions');
@@ -534,6 +521,7 @@
 
 
         function showCities(region) {
+          pushScreen("Cities")
           openView(async () => {
             currentState = "cities";
             currentRegion = region;
@@ -548,6 +536,7 @@
 
 
         function showStores(city, region) {
+          pushScreen("Stores")
           openView(async () => {
             currentState = "stores";
             currentCity = city;
@@ -562,6 +551,7 @@
 
 
         function showStoreDetails(storeName) {
+          pushScreen("StoreDetails")
           openView(async () => {
             currentState = "storeDetails";
             const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
@@ -678,6 +668,7 @@
         }
 
         function showReviewForm() {
+            pushScreen("Review")
             currentState = "review";
 
             showContent(`
@@ -770,6 +761,8 @@
         }
 
         async function showPromotions() {
+            pushScreen("Promotions");
+            openView(renderPromotions, 'promotions');
             currentState = "promotions"; // Добавляем сохранение состояния
             showContent(`<p>Загрузка акций...</p>`, true);
             
@@ -825,35 +818,38 @@
             }, 50);
         }
         function showPromotionDetail(promoData) {
-            currentState = "promotionDetail";
+            pushScreen("PromotionDetail");
+            openView(() => {
+                currentState = "promotionDetail";
+                
+                promotionsScrollPosition = window.scrollY;
+                window.scrollTo(0, 0);
+                
+                let processedContent = promoData.full_content || promoData.description || 'Нет содержания';
+                processedContent = processedContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1');
+                processedContent = processedContent.replace(/<(?!\/?(p|br|img|h3|h4|ul|li|strong|em)(?=>|\s.*>))\/?.*?>/gi, '');
+                processedContent = processedContent.replace(/<img([^>]+)src="([^"]+)"/gi, 
+                    (match, attrs, src) => `<img${attrs}src="${src}" style="max-width:100%; height:auto; border-radius:8px; margin:10px 0;"`);
             
-            promotionsScrollPosition = window.scrollY;
-            window.scrollTo(0, 0);
-            
-            let processedContent = promoData.full_content || promoData.description || 'Нет содержания';
-            processedContent = processedContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1');
-            processedContent = processedContent.replace(/<(?!\/?(p|br|img|h3|h4|ul|li|strong|em)(?=>|\s.*>))\/?.*?>/gi, '');
-            processedContent = processedContent.replace(/<img([^>]+)src="([^"]+)"/gi, 
-                (match, attrs, src) => `<img${attrs}src="${src}" style="max-width:100%; height:auto; border-radius:8px; margin:10px 0;"`);
-        
-            showContent(`
-                <div class="promotion-detail">
-                    <img src="${promoData.image}" alt="${promoData.title}" 
-                         style="width:100%; border-radius:12px; margin-bottom:15px;"
-                         onerror="this.onerror=null;this.src='/static/no-image.png'">
-                    
-                    <h3 style="margin-bottom:15px; color:#333;">${promoData.title}</h3>
-                    
-                    <div class="news-content" style="white-space:pre-line; line-height:1.5; font-size:16px; color:#444; margin-bottom:20px;">
-                        ${processedContent}
+                showContent(`
+                    <div class="promotion-detail">
+                        <img src="${promoData.image}" alt="${promoData.title}" 
+                             style="width:100%; border-radius:12px; margin-bottom:15px;"
+                             onerror="this.onerror=null;this.src='/static/no-image.png'">
+                        
+                        <h3 style="margin-bottom:15px; color:#333;">${promoData.title}</h3>
+                        
+                        <div class="news-content" style="white-space:pre-line; line-height:1.5; font-size:16px; color:#444; margin-bottom:20px;">
+                            ${processedContent}
+                        </div>
+                        
+                        <button onclick="window.open('${promoData.link}', '_blank')" 
+                                style="margin-top:20px; padding:12px 24px; background:#ff0000; color:white; border:none; border-radius:25px; font-size:16px; cursor:pointer; width:100%;">
+                            Посмотреть на сайте
+                        </button>
                     </div>
-                    
-                    <button onclick="window.open('${promoData.link}', '_blank')" 
-                            style="margin-top:20px; padding:12px 24px; background:#ff0000; color:white; border:none; border-radius:25px; font-size:16px; cursor:pointer; width:100%;">
-                        Посмотреть на сайте
-                    </button>
-                </div>
-            `, true);
+                `, true);
+            }, 'promotionDetail');
         }
         function goHome() {
             document.getElementById('content').classList.add('fade-out');
@@ -993,7 +989,10 @@
         window.goBack = goBack;
         window.showSection = showSection;
         window.copyPhoneNumber = copyPhoneNumber;
-
+        window.showCatalog = showCatalogPage;
+        window.showUser = showUserPage;
+        window.showOrder = showOrderPage;
+        window.showPromotions = showPromotions;
         // Функции для магазинов
         window.showRegions = showRegions;
         window.showCities = showCities;
@@ -1001,6 +1000,7 @@
         window.showStoreDetails = showStoreDetails;
         
     </script>
+    <script src="/static/js/navigation.js"></script>
     <script src="/static/js/footer.js"></script>
     <script src="/static/js/user.js"></script>
 </body>
