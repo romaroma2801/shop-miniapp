@@ -522,8 +522,12 @@
 
 
         function showCities(region) {
-          pushScreen("Cities")
+          if (!region) {
+            console.error("Не указан регион");
+            return;
+          }
           window.currentRegion = region;
+          pushScreen("Cities")
           openView(async () => {
             currentState = "cities";
             currentRegion = region;
@@ -765,58 +769,67 @@
         }
 
         async function showPromotions() {
-            pushScreen("Promotions");
-            openView(() => renderPromotions(), 'promotions');
-            
             currentState = "promotions";
-            showContent(`<p>Загрузка акций...</p>`, true);
+            
+            // Сначала пытаемся получить кэшированные данные
+            const cached = localStorage.getItem('cachedPromotions');
+            let promotions = null;
         
-            try {
-                const response = await fetch('https://nekuri.by/api/news-feed.php'); 
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            if (cached) {
+                try {
+                    promotions = JSON.parse(cached);
+                } catch (e) {
+                    console.error("Ошибка парсинга кэша акций:", e);
                 }
+            }
         
-                const promotions = await response.json();
+            // Функция для рендеринга, используемая как в случае успеха, так и с кэшем
+            window.currentRenderFunction = () => {
+                showContent(`
+                    <h2>Акции</h2>
+                    ${createPromotionsListHTML(promotions || [])}
+                `, true);
+            };
         
-                if (!Array.isArray(promotions)) {
-                    throw new Error("Некорректный формат данных акций");
-                }
+            openView(window.currentRenderFunction, 'promotions');
         
-                // Сохраняем данные в кэш
-                localStorage.setItem('cachedPromotions', JSON.stringify(promotions));
-                localStorage.setItem('promotionsCacheTime', Date.now().toString());
+            // Если нет кэша или нужно обновить данные
+            if (!promotions || Date.now() - parseInt(localStorage.getItem('promotionsCacheTime') || 0) > 300000) { // 5 минут
+                try {
+                    const response = await fetch('https://nekuri.by/api/news-feed.php'); 
         
-                // Рендерим акции
-                renderPromotions(promotions);
-            } catch (error) {
-                console.error("Ошибка загрузки акций:", error);
-                const cached = localStorage.getItem('cachedPromotions');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
-                // Если есть кэшированные данные — отображаем их
-                if (cached) {
-                    try {
-                        const parsedCached = JSON.parse(cached);
-                        if (Array.isArray(parsedCached) && parsedCached.length > 0) {
-                            renderPromotions(parsedCached);
-                            showToast("Используются кэшированные данные");
-                            return;
-                        }
-                    } catch (e) {
-                        console.error("Ошибка парсинга кэшированных данных:", e);
+                    const freshPromotions = await response.json();
+        
+                    if (!Array.isArray(freshPromotions)) {
+                        throw new Error("Некорректный формат данных акций");
+                    }
+        
+                    // Сохраняем свежие данные
+                    localStorage.setItem('cachedPromotions', JSON.stringify(freshPromotions));
+                    localStorage.setItem('promotionsCacheTime', Date.now().toString());
+        
+                    promotions = freshPromotions;
+                    window.currentRenderFunction();
+                } catch (error) {
+                    console.error("Ошибка загрузки новых акций:", error);
+        
+                    // Если нет кэшированных данных вообще
+                    if (!promotions) {
+                        showContent(`
+                            <div class="error-message">
+                                <p>Не удалось загрузить акции</p>
+                                <button onclick="showPromotions()">Попробовать снова</button>
+                                <button data-action="goHome">На главную</button>
+                            </div>
+                        `, true);
+                        return;
                     }
                 }
-        
-                // Если нет данных — показываем сообщение об ошибке
-                showContent(`
-                    <div class="error-message">
-                        <p>Не удалось загрузить акции</p>
-                        <button onclick="showPromotions()">Попробовать снова</button>
-                        <button data-action="goHome">На главную</button>
-                    </div>
-                `, true);
             }
+        
+            showToast("Используются актуальные данные", 1500);
         }
         let promotionsScrollPosition = 0;
         function renderPromotions(promotions) {
@@ -844,8 +857,15 @@
             }, 50);
         }
         function showPromotionDetail(promoData) {
-            pushScreen("PromotionDetail");
+            if (!promoData || !promoData.id) {
+              console.error("Неверные данные акции", promoData);
+              return;
+            }
+            
+            // Сохраняем данные акции глобально
             window.currentPromotion = promoData;
+            pushScreen("PromotionDetail");
+
             openView(() => {
                 currentState = "promotionDetail";
                 
