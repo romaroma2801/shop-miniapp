@@ -30,14 +30,14 @@ window.goBack = function () {
   const previousScreen = popScreen();
 
   if (previousScreen && typeof window[`show${previousScreen}`] === 'function') {
-    window[`show${previousScreen}`]();
-  } else {
-    // Если нет предыдущего экрана — закрываем приложение
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.close();
-    } else {
-      window.location.href = '/';
+    try {
+      window[`show${previousScreen}`]();
+    } catch (e) {
+      console.error("Ошибка при возврате к экрану:", previousScreen, e);
+      showHome();
     }
+  } else {
+    showHome();
   }
 };
 
