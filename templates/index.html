@@ -326,23 +326,29 @@
             }, duration);
         }
         function showContent(content, showBack = true, onRendered = null) {
-            const contentDiv = document.getElementById('content');
-            const backButton = document.getElementById('back-button');
-            const carousels = document.querySelectorAll('.promotions-carousel');
-            carousels.forEach(carousel => {
-                const intervalId = carousel.dataset.intervalId;
-                if (intervalId) clearInterval(intervalId);
-            });
-            toggleBackButton();
-            contentDiv.classList.add('hidden');
+          const contentDiv = document.getElementById('content');
+          const backButton = document.getElementById('back-button');
+        
+          if (backButton) {
+            backButton.style.display = showBack ? 'block' : 'none';
+          }
+        
+          const carousels = document.querySelectorAll('.promotions-carousel');
+          carousels.forEach(carousel => {
+            const intervalId = carousel.dataset.intervalId;
+            if (intervalId) clearInterval(intervalId);
+          });
+        
+          contentDiv.classList.add('hidden');
+          setTimeout(() => {
+            contentDiv.innerHTML = content;
             setTimeout(() => {
-                contentDiv.innerHTML = content;
-                setTimeout(() => {
-                    contentDiv.classList.remove('hidden');
-                    if (typeof onRendered === 'function') onRendered();
-                }, 50);
-            }, 300);
+              contentDiv.classList.remove('hidden');
+              if (typeof onRendered === 'function') onRendered();
+            }, 50);
+          }, 300);
         }
+
 
 
 
@@ -894,12 +900,6 @@
               showToast('Не удалось загрузить личный кабинет');
             });
         }
-        function showContent(html, clear = true, callback = null) {
-          const content = document.getElementById('content');
-          if (clear) content.innerHTML = '';
-          content.innerHTML = html;
-          if (typeof callback === 'function') callback();
-        }
         window.showUserPage = showUserPage;
         
         function showOrderPage() {
@@ -927,12 +927,16 @@
             script.src = '/static/js/order.js';
             script.onload = () => {
               document.getElementById('global-loader')?.remove();
-              if (typeof initOrderPage === 'function') openView(() => initOrderPage(), 'order');
+              openView(() => {
+                  if (typeof initOrderPage === 'function') initOrderPage();
+                }, 'order');
             };
             document.body.appendChild(script);
           } else {
             document.getElementById('global-loader')?.remove();
-            if (typeof initOrderPage === 'function') openView(() => initOrderPage(), 'order');
+            openView(() => {
+              if (typeof initOrderPage === 'function') initOrderPage();
+            }, 'order');
           }
         }
         window.showOrderPage = showOrderPage;
