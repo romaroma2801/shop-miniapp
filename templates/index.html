@@ -576,20 +576,32 @@
 
 
         function showStoreDetails(storeName) {
-          pushScreen("StoreDetails")
-          openView(async () => {
-            currentState = "storeDetails";
-            const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
-            const store = stores.find(s => s.name === storeName);
-            if (store) {
-              showContent(`
-                <h3>${store.name}</h3>
-                <p><strong>Адрес:</strong> ${store.address}</p>
-                <p><strong>Режим работы:</strong> ${store.hours.replace(/\n/g, '<br>')}</p>
-                <button class="secondary" onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
-              `, true);
+            if (!storeName) {
+                console.warn("Имя магазина не передано");
+                return;
             }
-          });
+            window.currentStoreName = storeName; // Сохраняем имя магазина
+            pushScreen("StoreDetails");
+            openView(async () => {
+                currentState = "storeDetails";
+                try {
+                    const stores = await loadData(`stores/${window.currentRegion}/${window.currentCity}`);
+                    const store = stores.find(s => s.name === storeName);
+                    if (store) {
+                        showContent(`
+                            <h3>${store.name}</h3>
+                            <p><strong>Адрес:</strong> ${store.address}</p>
+                            <p><strong>Режим работы:</strong> ${store.hours.replace(/\n/g, '<br>')}</p>
+                            <button class="secondary" onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
+                        `, true);
+                    } else {
+                        showContent(`<p>Магазин не найден</p><button data-action="goBack">Назад</button>`, true);
+                    }
+                } catch (error) {
+                    console.error("Ошибка загрузки данных магазина", error);
+                    showContent(`<p>Произошла ошибка</p><button data-action="goBack">Назад</button>`, true);
+                }
+            });
         }
 
 
@@ -841,42 +853,69 @@
             }, 50);
         }
         function showPromotionDetail(promoData) {
-            if (!promoData || !promoData.id) {
-              console.error("Неверные данные акции", promoData);
-              return;
+            if (!promoData || !promoData.title || !promoData.image) {
+                console.error("Недостаточно данных для отображения акции", promoData);
+                showToast("Не удалось загрузить детали акции");
+                return;
             }
-            
+        
+            // Приводим к единому формату (если id нет, создаём его на основе заголовка или описания)
+            const promoId = promoData.id || promoData.title.toLowerCase().replace(/\s+/g, '-') || 'default-id';
+        
             // Сохраняем данные акции глобально
-            window.currentPromotion = promoData;
-            pushScreen("PromotionDetail");
-
+            window.currentPromotion = { ...promoData, id: promoId };
+        
             openView(() => {
                 currentState = "promotionDetail";
+        
+                // Запоминаем позицию прокрутки
+                const promotionsScrollPosition = window.scrollY;
+        
+                // Очищаем и рендерим детальную страницу акции
+                let processedContent = promoData.full_content || promoData.description || 'Нет подробного описания.';
                 
-                promotionsScrollPosition = window.scrollY;
-                window.scrollTo(0, 0);
-                
-                let processedContent = promoData.full_content || promoData.description || 'Нет содержания';
-                processedContent = processedContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1');
-                processedContent = processedContent.replace(/<(?!\/?(p|br|img|h3|h4|ul|li|strong|em)(?=>|\s.*>))\/?.*?>/gi, '');
-                processedContent = processedContent.replace(/<img([^>]+)src="([^"]+)"/gi, 
-                    (match, attrs, src) => `<img${attrs}src="${src}" style="max-width:100%; height:auto; border-radius:8px; margin:10px 0;"`);
-            
+                // Удаляем нежелательные теги, но сохраняем img, p, br, h3, h4, ul, li, strong, em
+                processedContent = processedContent
+                    .replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1') // Удаляем ссылки, оставляя текст
+                    .replace(/<(?!\/?(p|br|img|h3|h4|ul|li|strong|em)(?=>|\s.*>))\/?.*?>/gi, '') // Удаление всех не разрешенных тегов
+                    .replace(/<img([^>]+)src="([^"]+)"/gi,
+                        (match, attrs, src) => `<img${attrs}src="${src}" style="max-width:100%; height:auto; border-radius:8px; margin:10px 0;" alt="Изображение">`)
+                    .replace(/<p>/gi, '<p style="margin: 10px 0;">')
+                    .replace(/<ul>/gi, '<ul style="padding-left: 20px; margin: 10px 0;">')
+                    .replace(/<li>/gi, '<li style="margin: 5px 0;">');
+        
+                // Добавляем уникальный ID в promoData для корректной работы
+                const finalPromo = { ...promoData, id: promoId };
+        
+                // Рендерим детали акции
                 showContent(`
                     <div class="promotion-detail">
-                        <img src="${promoData.image}" alt="${promoData.title}" 
+                        <img src="${finalPromo.image}" 
+                             alt="${finalPromo.title}" 
                              style="width:100%; border-radius:12px; margin-bottom:15px;"
-                             onerror="this.onerror=null;this.src='/static/no-image.png'">
-                        
-                        <h3 style="margin-bottom:15px; color:#333;">${promoData.title}</h3>
-                        
-                        <div class="news-content" style="white-space:pre-line; line-height:1.5; font-size:16px; color:#444; margin-bottom:20px;">
+                             onerror="this.onerror=null; this.src='/static/no-image.png'">
+        
+                        <h3 style="margin-bottom:15px; color:#1f2937; font-size:24px; font-weight:600;">
+                            ${finalPromo.title}
+                        </h3>
+        
+                        <div class="news-content" style="white-space:pre-line; line-height:1.6; font-size:16px; color:#4b5563; margin-bottom:20px;">
                             ${processedContent}
                         </div>
-                        
-                        <button onclick="window.open('${promoData.link}', '_blank')" 
-                                style="margin-top:20px; padding:12px 24px; background:#ff0000; color:white; border:none; border-radius:25px; font-size:16px; cursor:pointer; width:100%;">
-                            Посмотреть на сайте
+        
+                        ${finalPromo.link ? `
+                        <button onclick="window.open('${finalPromo.link}', '_blank')"
+                                style="margin-top:20px; padding:12px 24px; background:#ef4444; color:white; border:none; border-radius:9999px; font-size:16px; cursor:pointer; width:100%; transition: background 0.3s ease;"
+                                onmouseover="this.style.background='#dc2626'"
+                                onmouseout="this.style.background='#ef4444'">
+                            Подробнее на сайте
+                        </button>` : ''}
+        
+                        <button onclick="goBack()"
+                                style="margin-top:10px; padding:10px 20px; background:#9ca3af; color:white; border:none; border-radius:9999px; font-size:14px; cursor:pointer; width:100%; transition: background 0.3s ease;"
+                                onmouseover="this.style.background='#6b7280'"
+                                onmouseout="this.style.background='#9ca3af'">
+                            Назад к акциям
                         </button>
                     </div>
                 `, true);
