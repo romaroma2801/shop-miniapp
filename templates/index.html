@@ -840,32 +840,6 @@
                 window.scrollTo(0, promotionsScrollPosition);
             }, 50);
         }
-
-        let promotionsScrollPosition = 0;
-        function renderPromotions(promotions) {
-            if (!promotions || !Array.isArray(promotions)) {
-                showContent(`<p>Нет данных об акциях</p><button data-action="goHome">На главную</button>`, true);
-                return;
-            }
-        
-            const promotionsHTML = promotions.map(promo => `
-                <div class="promotion-item" data-action="showPromoDetail" data-promo='${JSON.stringify(promo).replace(/'/g, "\\'")}'>
-                    <img src="${promo.image}" alt="${promo.title}" 
-                         onerror="this.onerror=null;this.src='/static/no-image.png'">
-                    <h4>${promo.title}</h4>
-                    ${promo.description ? `<p>${promo.description.substring(0, 100)}...</p>` : ''}
-                </div>
-            `).join('');
-        
-            showContent(`
-                <h3>Актуальные акции</h3>
-                ${promotionsHTML.length ? promotionsHTML : '<p>Нет доступных акций</p>'}
-                <button data-action="goHome" style="margin-top: 20px;">На главную</button>
-            `, true);
-            setTimeout(() => {
-                window.scrollTo(0, promotionsScrollPosition);
-            }, 50);
-        }
         function showPromotionDetail(promoData) {
             if (!promoData || !promoData.id) {
               console.error("Неверные данные акции", promoData);
