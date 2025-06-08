@@ -27,18 +27,19 @@ function updateBackButton() {
 }
 
 window.goBack = function () {
-  const previousScreen = popScreen();
+    const previousScreen = popScreen();
 
-  if (previousScreen && typeof window[`show${previousScreen}`] === 'function') {
-    try {
-      window[`show${previousScreen}`]();
-    } catch (e) {
-      console.error("Ошибка при возврате к экрану:", previousScreen, e);
-      showHome();
+    if (previousScreen && typeof window[`show${previousScreen}`] === 'function') {
+        try {
+            window[`show${previousScreen}`]();
+        } catch (e) {
+            console.error("Ошибка при возврате к экрану:", previousScreen, e);
+            showHome();
+        }
+    } else {
+        // Если предыдущего экрана нет — возвращаемся на главную
+        showHome();
     }
-  } else {
-    showHome();
-  }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
