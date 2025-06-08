@@ -16,14 +16,14 @@ function popScreen() {
 }
 
 function updateBackButton() {
-  const backButton = document.getElementById('back-button');
-  if (!backButton) return;
+    const backButton = document.getElementById('back-button');
+    if (!backButton) return;
 
-  if (navigationStack.length > 1) {
-    backButton.style.display = 'block';
-  } else {
-    backButton.style.display = 'none';
-  }
+    if (navigationStack.length > 1) {
+        backButton.style.display = 'block';
+    } else {
+        backButton.style.display = 'none';
+    }
 }
 
 window.goBack = function () {
