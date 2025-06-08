@@ -31,13 +31,13 @@ window.goBack = function () {
 
     if (previousScreen && typeof window[`show${previousScreen}`] === 'function') {
         try {
+            // Просто вызываем show... функцию
             window[`show${previousScreen}`]();
         } catch (e) {
             console.error("Ошибка при возврате к экрану:", previousScreen, e);
             showHome();
         }
     } else {
-        // Если предыдущего экрана нет — возвращаемся на главную
         showHome();
     }
 };
