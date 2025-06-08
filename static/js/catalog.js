@@ -137,7 +137,7 @@ function viewProduct(i) {
   const p = productViewData[i];
   selectedOptionImage = p.image;
   selectedOptionName = '';
-  const returnData = { products: productViewData, view: currentData };
+  const returnData = { products: productViewData };
 
   function renderDetailView() {
     const attributesTable = p.attributes?.length ? `
