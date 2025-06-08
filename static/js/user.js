@@ -1,22 +1,24 @@
 function initUserPage() {
-  let userData = null;
+  window.currentUserData = null;
   currentState = "user";
+  
   (async () => {
     if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
       showToast("Вы не авторизованы");
       goHome();
       return;
     }
-
+  
     const tgUser = Telegram.WebApp.initDataUnsafe.user;
     const userKey = `user_${tgUser.id}`;
-    userData = JSON.parse(localStorage.getItem(userKey)) || {
+    window.currentUserData = JSON.parse(localStorage.getItem(userKey)) || {
       id: tgUser.id,
       username: tgUser.username || `id${tgUser.id}`,
       first_name: tgUser.first_name || '',
       phone: tgUser.phone_number || '',
       photo_url: tgUser.photo_url || '/static/user-avatar.png'
     };
+
 
     const welcomeAvatar = document.getElementById('welcome-avatar');
     const welcomeMsg = document.getElementById('welcome-message');
@@ -43,11 +45,11 @@ function initUserPage() {
         });
       }
 
-      openView(() => showPersonalCabinet(userData), 'user'); 
+      openView(() => showPersonalCabinet(window.currentUserData), 'user');
     } catch (error) {
       console.error('Ошибка загрузки данных:', error);
       showToast("Используются сохранённые данные");
-      openView(() => showPersonalCabinet(userData), 'user');
+      openView(() => showPersonalCabinet(window.currentUserData), 'user');
     }
     // Отладочный код - проверяем наличие кнопок в DOM
     console.log('Проверка кнопок "Назад":');
@@ -228,6 +230,7 @@ function getStatusColor(status) {
 }
 
 function showPersonalCabinet(user) {
+  user = user || window.currentUserData;
   const welcomeScreen = document.getElementById('welcome-screen');
   const personalCabinet = document.getElementById('personal-cabinet');
 
