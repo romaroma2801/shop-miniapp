@@ -213,12 +213,23 @@
         window.currentRenderFunction = null;
         window.currentView = null;
         
-        function openView(viewFn) {
-          if (typeof viewFn !== 'function') return;
-          if (window.currentView) window.historyStack.push(window.currentView);
-          window.currentView = viewFn;
+        function toggleBackButton() {
+          const btn = document.getElementById("back-button");
+          if (!btn) return;
+          btn.style.display = window.globalHistory.length ? "block" : "none";
+        }
+        
+        function openView(renderFn, stateName = null) {
+          if (typeof window.currentRenderFunction === 'function') {
+            window.globalHistory.push({
+              state: window.currentState,
+              render: window.currentRenderFunction
+            });
+          }
+          window.currentRenderFunction = renderFn;
+          window.currentState = stateName;
           toggleBackButton();
-          viewFn();
+          renderFn();
         }
         
         function goBack() {
@@ -234,14 +245,6 @@
             window.currentRenderFunction = null;
             toggleBackButton();
           }
-        }
-        window.goBack = goBack;
-
-        
-        function toggleBackButton() {
-          const btn = document.getElementById("back-button");
-          if (!btn) return;
-          btn.style.display = window.globalHistory.length ? "block" : "none";
         }
         contentDiv.addEventListener('click', (e) => {
             if (e.target.closest('#back-button')) {
