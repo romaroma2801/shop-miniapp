@@ -336,7 +336,16 @@
         function showHome() {
             pushScreen("Home");
             currentState = "home";
-            setStack(['main']);
+        
+            // Очищаем стек и добавляем только 'main'
+            if (typeof navigationStack !== 'undefined') {
+                navigationStack.length = 0;
+                navigationStack.push('main');
+                updateBackButton();
+            } else {
+                console.warn("navigationStack не найден — кнопка 'Назад' может работать некорректно");
+            }
+        
             // Загружаем акции для карусели
             loadPromotionsForCarousel().then(carouselHTML => {
                 showContent(`
@@ -344,12 +353,11 @@
                     <button data-action="section:review">Оставить отзыв</button>
                     <button data-action="section:contacts">Контакты</button>
                     <button data-action="section:jobs">Вакансии</button>
-                    
                     ${carouselHTML}
                 `, false, () => {
                     initCarousel();
                     document.getElementById('content').scrollTo(0, 0);
-                    updateBackButton();
+                    updateBackButton(); // обновляем состояние кнопки после рендера
                 });
             });
         }
