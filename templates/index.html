@@ -532,27 +532,33 @@
 
 
         function showCities(region) {
-            // Если регион не передан — пытаемся восстановить его
+            // Пытаемся восстановить регион из сохраненного значения
             if (!region && window.currentRegion) {
                 region = window.currentRegion;
             }
         
             if (!region) {
-                console.warn("Не указан регион", { region, currentRegion: window.currentRegion });
-                showHome(); // Возвращаемся на главную, если регион не найден
+                console.error("Не указан регион");
+                showContent(`
+                    <p>Не выбран регион</p>
+                    <button data-action="regions">Выбрать регион</button>
+                `, true);
                 return;
             }
         
-            window.currentRegion = region; // Сохраняем для следующих шагов
+            // Сохраняем регион для следующих шагов
+            window.currentRegion = region;
             pushScreen("Cities");
         
             openView(async () => {
                 currentState = "cities";
                 const cities = await loadData(`cities/${region}`);
+        
                 if (cities) {
                     const buttons = cities.map(city => 
                         `<button data-action="store:${city}:${region}">${city}</button>`
                     ).join('');
+        
                     showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
                 }
             });
@@ -565,10 +571,12 @@
                 return;
             }
         
+            // Сохраняем для последующего использования
             window.currentCity = city;
             window.currentRegion = region;
         
             pushScreen("Stores");
+        
             openView(async () => {
                 currentState = "stores";
                 const stores = await loadData(`stores/${region}/${city}`);
@@ -583,7 +591,6 @@
             });
         }
 
-
         function showStoreDetails(storeName) {
             if (!storeName) {
                 console.warn("Имя магазина не передано");
@@ -593,8 +600,15 @@
             const region = window.currentRegion;
             const city = window.currentCity;
         
-            // Сохраняем текущее состояние
-            window.currentStoreName = storeName;
+            if (!region || !city) {
+                console.error("Не найдены данные региона или города");
+                showContent(`
+                    <p>Ошибка: Не удалось загрузить данные магазина</p>
+                    <button data-action="goBack">Назад</button>
+                `, true);
+                return;
+            }
+        
             pushScreen("StoreDetails");
         
             openView(async () => {
@@ -612,11 +626,17 @@
                             <button class="secondary" onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
                         `, true);
                     } else {
-                        showContent(`<p>Магазин не найден</p><button data-action="goBack">Назад</button>`, true);
+                        showContent(`
+                            <p>Магазин не найден</p>
+                            <button data-action="goBack">Назад</button>
+                        `, true);
                     }
                 } catch (error) {
                     console.error("Ошибка загрузки данных магазина", error);
-                    showContent(`<p>Произошла ошибка</p><button data-action="goBack">Назад</button>`, true);
+                    showContent(`
+                        <p>Произошла ошибка</p>
+                        <button data-action="goBack">Назад</button>
+                    `, true);
                 }
             });
         }
@@ -816,11 +836,8 @@
 
         function showPromotions() {
             currentState = "promotions";
-        
-            // Сохраняем экран в стек
             pushScreen("Promotions");
         
-            // Пытаемся взять кэш
             const cached = localStorage.getItem('cachedPromotions');
             let promotions = null;
         
@@ -886,7 +903,7 @@
         
                 // Запоминаем позицию прокрутки
                 const promotionsScrollPosition = window.scrollY;
-        
+                window.scrollTo(0, 0);
                 // Очищаем и рендерим детальную страницу акции
                 let processedContent = promoData.full_content || promoData.description || 'Нет подробного описания.';
                 
