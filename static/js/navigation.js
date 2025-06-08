@@ -18,12 +18,7 @@ function popScreen() {
 function updateBackButton() {
     const backButton = document.getElementById('back-button');
     if (!backButton) return;
-
-    if (navigationStack.length > 1) {
-        backButton.style.display = 'block';
-    } else {
-        backButton.style.display = 'none';
-    }
+    backButton.style.display = navigationStack.length > 1 ? 'block' : 'none';
 }
 
 window.goBack = function () {
@@ -31,7 +26,6 @@ window.goBack = function () {
 
     if (previousScreen && typeof window[`show${previousScreen}`] === 'function') {
         try {
-            // Просто вызываем show... функцию
             window[`show${previousScreen}`]();
         } catch (e) {
             console.error("Ошибка при возврате к экрану:", previousScreen, e);
