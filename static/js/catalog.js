@@ -15,6 +15,7 @@ const categoryIcons = {
 
 function initCatalogPage() {
   window.currentState = "catalog";
+  pushScreen("CatalogHome");
   const catalogHTML = `
     <div class="header">
       <img src="/static/logo22.png" alt="Логотип" class="logo">
@@ -64,6 +65,7 @@ function renderMainCategories() {
 function openCategory(id) {
   const cat = catalog[id];
   if (!cat) return;
+  pushScreen(`Category:${id}`);
   if (cat.subcategories && Object.keys(cat.subcategories).length) {
     openView(() => renderSubcategories(cat.subcategories), 'catalog-subcategories');
   } else if (cat.products?.length) {
@@ -101,6 +103,7 @@ let selectedOptionImage = '';
 
 function renderProducts(arr) {
   productViewData = arr;
+  pushScreen("Products");
   setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
     <div class="sort-buttons">
       <button onclick="sortBy('price')">По цене</button>
@@ -198,7 +201,8 @@ function viewProduct(i) {
 
   const originalGoBack = window.goBack;
 
-  openView(renderDetailView, 'catalog-product-detail');
+  pushScreen(`Product:${p.id}`);
+  openView(renderDetailView, `catalog-product-detail`);
 }
 
 function fixImg(url) {
@@ -211,7 +215,8 @@ function search(e) {
   const val = document.getElementById('search-bar').value.toLowerCase();
   const arr = Object.values(catalog).flatMap(c => c.products || []);
   const found = arr.filter(p => p.title.toLowerCase().includes(val));
-  openView(() => renderProducts(found), 'catalog-search-results');
+  pushScreen(`SearchResults:${query}`);
+  renderProducts(results);
 }
 
 function setContent(html) {
