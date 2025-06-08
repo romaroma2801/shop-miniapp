@@ -15,7 +15,7 @@ const categoryIcons = {
 
 function initCatalogPage() {
   window.currentState = "catalog";
-  pushScreen("CatalogHome");
+
   const catalogHTML = `
     <div class="header">
       <img src="/static/logo22.png" alt="Логотип" class="logo">
@@ -27,7 +27,13 @@ function initCatalogPage() {
   `;
 
   showContent(catalogHTML);
-  loadCatalog();
+
+  loadCatalog().then(() => {
+    // Теперь здесь вызываем openView с renderMainCategories
+    openView(() => {
+      renderMainCategories();
+    }, 'catalog-main');
+  });
 }
 
 async function loadCatalog() {
