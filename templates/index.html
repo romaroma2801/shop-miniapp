@@ -213,23 +213,12 @@
         window.currentRenderFunction = null;
         window.currentView = null;
         
-        function toggleBackButton() {
-          const btn = document.getElementById("back-button");
-          if (!btn) return;
-          btn.style.display = window.globalHistory.length ? "block" : "none";
-        }
-        
-        function openView(renderFn, stateName = null) {
-          if (typeof window.currentRenderFunction === 'function') {
-            window.globalHistory.push({
-              state: window.currentState,
-              render: window.currentRenderFunction
-            });
-          }
-          window.currentRenderFunction = renderFn;
-          window.currentState = stateName;
+        function openView(viewFn) {
+          if (typeof viewFn !== 'function') return;
+          if (window.currentView) window.historyStack.push(window.currentView);
+          window.currentView = viewFn;
           toggleBackButton();
-          renderFn();
+          viewFn();
         }
         
         function goBack() {
@@ -245,6 +234,14 @@
             window.currentRenderFunction = null;
             toggleBackButton();
           }
+        }
+        window.goBack = goBack;
+
+        
+        function toggleBackButton() {
+          const btn = document.getElementById("back-button");
+          if (!btn) return;
+          btn.style.display = window.globalHistory.length ? "block" : "none";
         }
         contentDiv.addEventListener('click', (e) => {
             if (e.target.closest('#back-button')) {
@@ -326,29 +323,23 @@
             }, duration);
         }
         function showContent(content, showBack = true, onRendered = null) {
-          const contentDiv = document.getElementById('content');
-          const backButton = document.getElementById('back-button');
-        
-          if (backButton) {
-            backButton.style.display = showBack ? 'block' : 'none';
-          }
-        
-          const carousels = document.querySelectorAll('.promotions-carousel');
-          carousels.forEach(carousel => {
-            const intervalId = carousel.dataset.intervalId;
-            if (intervalId) clearInterval(intervalId);
-          });
-        
-          contentDiv.classList.add('hidden');
-          setTimeout(() => {
-            contentDiv.innerHTML = content;
+            const contentDiv = document.getElementById('content');
+            const backButton = document.getElementById('back-button');
+            const carousels = document.querySelectorAll('.promotions-carousel');
+            carousels.forEach(carousel => {
+                const intervalId = carousel.dataset.intervalId;
+                if (intervalId) clearInterval(intervalId);
+            });
+            toggleBackButton();
+            contentDiv.classList.add('hidden');
             setTimeout(() => {
-              contentDiv.classList.remove('hidden');
-              if (typeof onRendered === 'function') onRendered();
-            }, 50);
-          }, 300);
+                contentDiv.innerHTML = content;
+                setTimeout(() => {
+                    contentDiv.classList.remove('hidden');
+                    if (typeof onRendered === 'function') onRendered();
+                }, 50);
+            }, 300);
         }
-
 
 
 
@@ -900,6 +891,12 @@
               showToast('Не удалось загрузить личный кабинет');
             });
         }
+        function showContent(html, clear = true, callback = null) {
+          const content = document.getElementById('content');
+          if (clear) content.innerHTML = '';
+          content.innerHTML = html;
+          if (typeof callback === 'function') callback();
+        }
         window.showUserPage = showUserPage;
         
         function showOrderPage() {
@@ -927,16 +924,12 @@
             script.src = '/static/js/order.js';
             script.onload = () => {
               document.getElementById('global-loader')?.remove();
-              openView(() => {
-                  if (typeof initOrderPage === 'function') initOrderPage();
-                }, 'order');
+              if (typeof initOrderPage === 'function') openView(() => initOrderPage(), 'order');
             };
             document.body.appendChild(script);
           } else {
             document.getElementById('global-loader')?.remove();
-            openView(() => {
-              if (typeof initOrderPage === 'function') initOrderPage();
-            }, 'order');
+            if (typeof initOrderPage === 'function') openView(() => initOrderPage(), 'order');
           }
         }
         window.showOrderPage = showOrderPage;
