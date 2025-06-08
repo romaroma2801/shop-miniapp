@@ -336,7 +336,7 @@
         function showHome() {
             pushScreen("Home");
             currentState = "home";
-            
+            setStack(['main']);
             // Загружаем акции для карусели
             loadPromotionsForCarousel().then(carouselHTML => {
                 showContent(`
@@ -349,6 +349,7 @@
                 `, false, () => {
                     initCarousel();
                     document.getElementById('content').scrollTo(0, 0);
+                    updateBackButton();
                 });
             });
         }
@@ -523,18 +524,20 @@
 
 
         function showCities(region) {
+            // Если регион не передан — пытаемся восстановить его
             if (!region && window.currentRegion) {
                 region = window.currentRegion;
             }
         
             if (!region) {
-                console.error("Не указан регион");
+                console.warn("Не указан регион", { region, currentRegion: window.currentRegion });
+                showHome(); // Возвращаемся на главную, если регион не найден
                 return;
             }
         
-            window.currentRegion = region;
-        
+            window.currentRegion = region; // Сохраняем для следующих шагов
             pushScreen("Cities");
+        
             openView(async () => {
                 currentState = "cities";
                 const cities = await loadData(`cities/${region}`);
@@ -803,37 +806,33 @@
             });
         }
 
-        async function showPromotions() {
+        function showPromotions() {
             currentState = "promotions";
-            showContent(`<p>Загрузка акций...</p>`, true);
         
-            try {
-                const response = await fetch('https://nekuri.by/api/news-feed.php'); 
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const freshPromotions = await response.json(); // ← используем freshPromotions
-                if (!Array.isArray(freshPromotions)) throw new Error("Некорректный формат данных");
+            // Сохраняем экран в стек
+            pushScreen("Promotions");
         
-                localStorage.setItem('cachedPromotions', JSON.stringify(freshPromotions));
-                localStorage.setItem('promotionsCacheTime', Date.now().toString());
+            // Пытаемся взять кэш
+            const cached = localStorage.getItem('cachedPromotions');
+            let promotions = null;
         
-                renderPromotions(freshPromotions);
-            } catch (error) {
-                console.error("Ошибка загрузки акций:", error);
-                const cached = localStorage.getItem('cachedPromotions');
-        
-                if (cached) {
-                    const cachedPromotions = JSON.parse(cached); // ← другое имя переменной
-                    renderPromotions(cachedPromotions);
-                    showToast("Используются кэшированные данные");
-                } else {
-                    showContent(`
-                        <p>Не удалось загрузить акции</p>
-                        <button onclick="showPromotions()">Попробовать снова</button>
-                        <button data-action="goHome">На главную</button>
-                    `, true);
+            if (cached) {
+                try {
+                    promotions = JSON.parse(cached);
+                } catch (e) {
+                    console.error("Ошибка парсинга кэша акций", e);
                 }
             }
+        
+            window.currentRenderFunction = () => {
+                if (promotions && Array.isArray(promotions) && promotions.length > 0) {
+                    renderPromotions(promotions);
+                } else {
+                    loadPromotions(); // Запрашиваем свежие данные
+                }
+            };
+        
+            openView(window.currentRenderFunction, 'promotions');
         }
         let promotionsScrollPosition = 0;
         function renderPromotions(promotions) {
@@ -844,8 +843,7 @@
         
             const promotionsHTML = promotions.map(promo => `
                 <div class="promotion-item" data-action="showPromoDetail" data-promo='${JSON.stringify(promo).replace(/'/g, "\\'")}'>
-                    <img src="${promo.image}" alt="${promo.title}" 
-                         onerror="this.onerror=null;this.src='/static/no-image.png'">
+                    <img src="${promo.image}" alt="${promo.title}" onerror="this.onerror=null; this.src='/static/no-image.png'">
                     <h4>${promo.title}</h4>
                     ${promo.description ? `<p>${promo.description.substring(0, 100)}...</p>` : ''}
                 </div>
@@ -856,6 +854,7 @@
                 ${promotionsHTML.length ? promotionsHTML : '<p>Нет доступных акций</p>'}
                 <button data-action="goHome" style="margin-top: 20px;">На главную</button>
             `, true);
+        
             setTimeout(() => {
                 window.scrollTo(0, promotionsScrollPosition);
             }, 50);
