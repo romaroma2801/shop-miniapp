@@ -198,7 +198,7 @@ function viewProduct(i) {
 
   const originalGoBack = window.goBack;
 
-  openView(renderDetailView, 'catalog-product-detail');
+  openView(renderDetailView, 'catalog-product-detail', returnData);
 }
 
 function fixImg(url) {
