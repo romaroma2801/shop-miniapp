@@ -523,7 +523,6 @@
 
 
         function showCities(region) {
-            // Если регион не передан — берем из сохраненного значения
             if (!region && window.currentRegion) {
                 region = window.currentRegion;
             }
@@ -536,7 +535,6 @@
             window.currentRegion = region;
         
             pushScreen("Cities");
-        
             openView(async () => {
                 currentState = "cities";
                 const cities = await loadData(`cities/${region}`);
@@ -544,7 +542,6 @@
                     const buttons = cities.map(city => 
                         `<button data-action="store:${city}:${region}">${city}</button>`
                     ).join('');
-        
                     showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
                 }
             });
@@ -561,14 +558,15 @@
             window.currentRegion = region;
         
             pushScreen("Stores");
-        
             openView(async () => {
                 currentState = "stores";
                 const stores = await loadData(`stores/${region}/${city}`);
+        
                 if (stores) {
                     const buttons = stores.map(store => 
                         `<button data-action="detail:${store.name}">${store.name}</button>`
                     ).join('');
+        
                     showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
                 }
             });
@@ -581,23 +579,15 @@
                 return;
             }
         
+            const region = window.currentRegion;
+            const city = window.currentCity;
+        
+            // Сохраняем текущее состояние
+            window.currentStoreName = storeName;
             pushScreen("StoreDetails");
         
             openView(async () => {
                 currentState = "storeDetails";
-        
-                // Берём из глобальных переменных, если они доступны
-                const region = window.currentRegion;
-                const city = window.currentCity;
-        
-                if (!region || !city) {
-                    console.error("Не найдены данные региона или города");
-                    showContent(`
-                        <p>Ошибка: Не удалось загрузить данные магазина</p>
-                        <button data-action="goBack">Назад</button>
-                    `, true);
-                    return;
-                }
         
                 try {
                     const stores = await loadData(`stores/${region}/${city}`);
@@ -611,17 +601,11 @@
                             <button class="secondary" onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
                         `, true);
                     } else {
-                        showContent(`
-                            <p>Магазин не найден</p>
-                            <button data-action="goBack">Назад</button>
-                        `, true);
+                        showContent(`<p>Магазин не найден</p><button data-action="goBack">Назад</button>`, true);
                     }
                 } catch (error) {
                     console.error("Ошибка загрузки данных магазина", error);
-                    showContent(`
-                        <p>Произошла ошибка</p>
-                        <button data-action="goBack">Назад</button>
-                    `, true);
+                    showContent(`<p>Произошла ошибка</p><button data-action="goBack">Назад</button>`, true);
                 }
             });
         }
