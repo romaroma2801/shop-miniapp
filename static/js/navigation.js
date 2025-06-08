@@ -32,7 +32,7 @@ window.goBack = function () {
   if (previousScreen && typeof window[`show${previousScreen}`] === 'function') {
     window[`show${previousScreen}`]();
   } else {
-    // Если нет куда вернуться — закрываем приложение
+    // Если нет предыдущего экрана — закрываем приложение
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.close();
     } else {
@@ -42,7 +42,6 @@ window.goBack = function () {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Telegram WebApp BackButton
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.ready();
     window.Telegram.WebApp.BackButton.onClick(goBack);
@@ -52,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Обработчик клика на нашу кнопку "Назад"
   const backButton = document.getElementById('back-button');
   if (backButton) {
     backButton.addEventListener('click', goBack);
