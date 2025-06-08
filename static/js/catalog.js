@@ -137,7 +137,7 @@ function viewProduct(i) {
   const p = productViewData[i];
   selectedOptionImage = p.image;
   selectedOptionName = '';
-  const returnData = { products: productViewData };
+  const returnData = { products: productViewData }
 
   function renderDetailView() {
     const attributesTable = p.attributes?.length ? `
@@ -198,7 +198,7 @@ function viewProduct(i) {
 
   const originalGoBack = window.goBack;
 
-  openView(renderDetailView, 'catalog-product-detail', returnData);
+  openView(renderDetailView, 'catalog-product-detail');
 }
 
 function fixImg(url) {
@@ -235,5 +235,4 @@ function addProductToCart(product, selectedOption = null) {
 }
 
 window.initCatalogPage = initCatalogPage;
-
 
