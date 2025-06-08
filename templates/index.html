@@ -518,49 +518,48 @@
         
 
         function showRegions() {
-          openView(async () => {
-            currentState = "regions";
-            const regions = await loadData('regions');
-            if (regions) {
-              const buttons = regions.map(region =>
-                `<button data-action="city:${region}">${region}</button>`).join('');
-              showContent(`<h3>Выберите область:</h3>${buttons}`, true);
-            }
+            openView(() => {
+                const regions = await loadData('regions');
+                if (regions) {
+                  const buttons = regions.map(region =>
+                    `<button data-action="city:${region}">${region}</button>`).join('');
+                  showContent(`<h3>Выберите область:</h3>${buttons}`, true);
+                }
+            }, 'Regions');
           });
         }
 
 
         function showCities(region) {
-          openView(async () => {
-            currentState = "cities";
-            currentRegion = region;
-            const cities = await loadData(`cities/${region}`);
-            if (cities) {
-              const buttons = cities.map(city =>
-                `<button data-action="store:${city}:${region}">${city}</button>`).join('');
-              showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
-            }
+            openView(() => {
+                currentRegion = region;
+                const cities = await loadData(`cities/${region}`);
+                if (cities) {
+                  const buttons = cities.map(city =>
+                    `<button data-action="store:${city}:${region}">${city}</button>`).join('');
+                  showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
+                }
+              }, 'Cities');
           });
         }
 
 
         function showStores(city, region) {
-          openView(async () => {
-            currentState = "stores";
-            currentCity = city;
-            const stores = await loadData(`stores/${region}/${city}`);
-            if (stores) {
-              const buttons = stores.map(store =>
-                `<button data-action="detail:${store.name}">${store.name}</button>`).join('');
-              showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
-            }
+            openView(() => {
+                currentCity = city;
+                const stores = await loadData(`stores/${region}/${city}`);
+                if (stores) {
+                  const buttons = stores.map(store =>
+                    `<button data-action="detail:${store.name}">${store.name}</button>`).join('');
+                  showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
+                }
+            }, 'Stores');
           });
         }
 
 
         function showStoreDetails(storeName) {
-          openView(async () => {
-            currentState = "storeDetails";
+            openView(() => {
             const stores = await loadData(`stores/${currentRegion}/${currentCity}`);
             const store = stores.find(s => s.name === storeName);
             if (store) {
@@ -571,6 +570,7 @@
                 <button class="secondary" onclick='window.open("${store.map_url}", "_blank")'>Посмотреть на карте</button>
               `, true);
             }
+            }, 'StoreDetails');
           });
         }
 
@@ -578,7 +578,7 @@
         function showSection(section) {
             openView(() => {
                 if (section === 'contacts') {
-                    currentState = "contacts";
+                    openView(() => {
                     showContent(`
                         <h3>Свяжитесь с нами</h3>
                         <button id="copy-phone-btn">Позвонить: +375 29 225-13-34</button>
@@ -593,11 +593,12 @@
                             copyPhoneNumber();
                         });
                     });
+                }, 'contacts');
                 } else if (section === 'review') {
                     currentState = "review";
                     checkReviewCooldown();
                 } else if (section === 'jobs') {
-                    currentState = "jobs";
+                    openView(() => {
                     showContent(`
                         <div class="vacancy-block">
                             <h3>Продавец-консультант</h3>
@@ -639,6 +640,7 @@
     
                         </div>
                     `, true);
+                }, 'jobs');
                 } else if (section === 'catalog') {
                     // Плавный переход
                     document.getElementById('content').classList.add('fade-out');
@@ -675,7 +677,7 @@
         }
 
         function showReviewForm() {
-            currentState = "review";
+            openView(() => {
 
             showContent(`
                 <h3>Оцените качество обслуживания</h3>
@@ -737,6 +739,7 @@
                 // Инициализация
                 window.reviewStars = 0;
             });
+            }, 'ReviewForm');
         }
 
         function selectStars(count) {
@@ -767,7 +770,7 @@
         }
 
         async function showPromotions() {
-            currentState = "promotions"; // Добавляем сохранение состояния
+            openView(() => {
             showContent(`<p>Загрузка акций...</p>`, true);
             
             try {
@@ -795,6 +798,7 @@
                     `, true);
                 }
             }
+            }, 'promotion');
         }
         let promotionsScrollPosition = 0;
         function renderPromotions(promotions) {
@@ -822,7 +826,7 @@
             }, 50);
         }
         function showPromotionDetail(promoData) {
-            currentState = "promotionDetail";
+            openView(() => {
             
             promotionsScrollPosition = window.scrollY;
             window.scrollTo(0, 0);
@@ -851,6 +855,7 @@
                     </button>
                 </div>
             `, true);
+        }, 'promotionDetail');
         }
         function goHome() {
             document.getElementById('content').classList.add('fade-out');
@@ -890,12 +895,6 @@
               console.error('Ошибка загрузки user.html:', err);
               showToast('Не удалось загрузить личный кабинет');
             });
-        }
-        function showContent(html, clear = true, callback = null) {
-          const content = document.getElementById('content');
-          if (clear) content.innerHTML = '';
-          content.innerHTML = html;
-          if (typeof callback === 'function') callback();
         }
         window.showUserPage = showUserPage;
         
