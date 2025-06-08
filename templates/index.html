@@ -213,7 +213,8 @@
         window.currentState = null;
         window.currentRenderFunction = null;
         window.currentView = null;
-        
+        window.currentRegion = null;
+        window.currentCity = null;
         
         function openView(renderFn, screenName = null) {
           if (screenName) {
@@ -522,39 +523,55 @@
 
 
         function showCities(region) {
-          if (!region) {
-            console.error("Не указан регион");
-            return;
-          }
-          window.currentRegion = region;
-          pushScreen("Cities")
-          openView(async () => {
-            currentState = "cities";
-            currentRegion = region;
-            const cities = await loadData(`cities/${region}`);
-            if (cities) {
-              const buttons = cities.map(city =>
-                `<button data-action="store:${city}:${region}">${city}</button>`).join('');
-              showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
+            // Если регион не передан — берем из сохраненного значения
+            if (!region && window.currentRegion) {
+                region = window.currentRegion;
             }
-          });
+        
+            if (!region) {
+                console.error("Не указан регион");
+                return;
+            }
+        
+            window.currentRegion = region;
+        
+            pushScreen("Cities");
+        
+            openView(async () => {
+                currentState = "cities";
+                const cities = await loadData(`cities/${region}`);
+                if (cities) {
+                    const buttons = cities.map(city => 
+                        `<button data-action="store:${city}:${region}">${city}</button>`
+                    ).join('');
+        
+                    showContent(`<h3>Города в области "${region}":</h3>${buttons}`, true);
+                }
+            });
         }
 
 
         function showStores(city, region) {
-          pushScreen("Stores")
-          window.currentCity = city;
-          window.currentRegion = region;
-          openView(async () => {
-            currentState = "stores";
-            currentCity = city;
-            const stores = await loadData(`stores/${region}/${city}`);
-            if (stores) {
-              const buttons = stores.map(store =>
-                `<button data-action="detail:${store.name}">${store.name}</button>`).join('');
-              showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
+            if (!city || !region) {
+                console.warn("Не указан город или регион", { city, region });
+                return;
             }
-          });
+        
+            window.currentCity = city;
+            window.currentRegion = region;
+        
+            pushScreen("Stores");
+        
+            openView(async () => {
+                currentState = "stores";
+                const stores = await loadData(`stores/${region}/${city}`);
+                if (stores) {
+                    const buttons = stores.map(store => 
+                        `<button data-action="detail:${store.name}">${store.name}</button>`
+                    ).join('');
+                    showContent(`<h3>Магазины в городе "${city}":</h3>${buttons}`, true);
+                }
+            });
         }
 
 
@@ -769,68 +786,61 @@
         }
 
         async function showPromotions() {
-            currentState = "promotions";
+            currentState = "promotions"; // Добавляем сохранение состояния
+            showContent(`<p>Загрузка акций...</p>`, true);
             
-            // Сначала пытаемся получить кэшированные данные
-            const cached = localStorage.getItem('cachedPromotions');
-            let promotions = null;
-        
-            if (cached) {
-                try {
-                    promotions = JSON.parse(cached);
-                } catch (e) {
-                    console.error("Ошибка парсинга кэша акций:", e);
+            try {
+                const response = await fetch('https://nekuri.by/api/news-feed.php');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const promotions = await response.json();
+                if (!Array.isArray(promotions)) throw new Error("Некорректный формат данных");
+                
+                localStorage.setItem('cachedPromotions', JSON.stringify(promotions));
+                localStorage.setItem('promotionsCacheTime', Date.now().toString());
+                
+                renderPromotions(promotions);
+            } catch (error) {
+                console.error("Ошибка загрузки акций:", error);
+                const cached = localStorage.getItem('cachedPromotions');
+                if (cached) {
+                    renderPromotions(JSON.parse(cached));
+                    showToast("Используются кэшированные данные");
+                } else {
+                    showContent(`
+                        <p>Не удалось загрузить акции</p>
+                        <button onclick="showPromotions()">Попробовать снова</button>
+                        <button data-action="goHome">На главную</button>
+                    `, true);
                 }
             }
-        
-            // Функция для рендеринга, используемая как в случае успеха, так и с кэшем
-            window.currentRenderFunction = () => {
-                showContent(`
-                    <h2>Акции</h2>
-                    ${createPromotionsListHTML(promotions || [])}
-                `, true);
-            };
-        
-            openView(window.currentRenderFunction, 'promotions');
-        
-            // Если нет кэша или нужно обновить данные
-            if (!promotions || Date.now() - parseInt(localStorage.getItem('promotionsCacheTime') || 0) > 300000) { // 5 минут
-                try {
-                    const response = await fetch('https://nekuri.by/api/news-feed.php'); 
-        
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-                    const freshPromotions = await response.json();
-        
-                    if (!Array.isArray(freshPromotions)) {
-                        throw new Error("Некорректный формат данных акций");
-                    }
-        
-                    // Сохраняем свежие данные
-                    localStorage.setItem('cachedPromotions', JSON.stringify(freshPromotions));
-                    localStorage.setItem('promotionsCacheTime', Date.now().toString());
-        
-                    promotions = freshPromotions;
-                    window.currentRenderFunction();
-                } catch (error) {
-                    console.error("Ошибка загрузки новых акций:", error);
-        
-                    // Если нет кэшированных данных вообще
-                    if (!promotions) {
-                        showContent(`
-                            <div class="error-message">
-                                <p>Не удалось загрузить акции</p>
-                                <button onclick="showPromotions()">Попробовать снова</button>
-                                <button data-action="goHome">На главную</button>
-                            </div>
-                        `, true);
-                        return;
-                    }
-                }
-            }
-        
-            showToast("Используются актуальные данные", 1500);
         }
+        let promotionsScrollPosition = 0;
+        function renderPromotions(promotions) {
+            if (!promotions || !Array.isArray(promotions)) {
+                showContent(`<p>Нет данных об акциях</p><button data-action="goHome">На главную</button>`, true);
+                return;
+            }
+        
+            const promotionsHTML = promotions.map(promo => `
+                <div class="promotion-item" data-action="showPromoDetail" data-promo='${JSON.stringify(promo).replace(/'/g, "\\'")}'>
+                    <img src="${promo.image}" alt="${promo.title}" 
+                         onerror="this.onerror=null;this.src='/static/no-image.png'">
+                    <h4>${promo.title}</h4>
+                    ${promo.description ? `<p>${promo.description.substring(0, 100)}...</p>` : ''}
+                </div>
+            `).join('');
+        
+            showContent(`
+                <h3>Актуальные акции</h3>
+                ${promotionsHTML.length ? promotionsHTML : '<p>Нет доступных акций</p>'}
+                <button data-action="goHome" style="margin-top: 20px;">На главную</button>
+            `, true);
+            setTimeout(() => {
+                window.scrollTo(0, promotionsScrollPosition);
+            }, 50);
+        }
+
         let promotionsScrollPosition = 0;
         function renderPromotions(promotions) {
             if (!promotions || !Array.isArray(promotions)) {
