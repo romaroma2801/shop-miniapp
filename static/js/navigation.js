@@ -24,7 +24,7 @@ function updateBackButton() {
 }
 
 
-let isRestoring = false;
+window.isRestoring = false;
 
 window.goBack = function () {
   const previous = popScreen();
