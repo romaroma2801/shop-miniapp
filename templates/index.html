@@ -516,8 +516,10 @@
         
 
         function showRegions() {
-          pushScreen("Regions", () => showRegions());
-        
+          
+          if (!window.isRestoring) {
+            pushScreen("Regions", () => showRegions());
+          }
           openView(async () => {
             currentState = "regions";
             const regions = await loadData('regions');
@@ -547,8 +549,10 @@
         
           window.currentRegion = region;
         
-          pushScreen("Cities", () => showCities(region));
-        
+          
+          if (!window.isRestoring) {
+            pushScreen("Cities", () => showCities(region));
+          }
           openView(async () => {
             currentState = "cities";
             const cities = await loadData(`cities/${region}`);
@@ -574,8 +578,10 @@
           window.currentCity = city;
           window.currentRegion = region;
         
-          pushScreen("Stores", () => showStores(city, region));
-        
+          
+          if (!window.isRestoring) {
+            pushScreen("Stores", () => showStores(city, region));
+          }
           openView(async () => {
             currentState = "stores";
             const stores = await loadData(`stores/${region}/${city}`);
@@ -609,8 +615,10 @@
             return;
           }
         
-          pushScreen("StoreDetails", () => showStoreDetails(storeName));
-        
+          
+          if (!window.isRestoring) {
+            pushScreen("StoreDetails", () => showStoreDetails(storeName));
+          }
           openView(async () => {
             currentState = "storeDetails";
         
