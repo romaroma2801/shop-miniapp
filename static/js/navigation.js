@@ -28,18 +28,20 @@ window.isRestoring = false;
 
 window.goBack = function () {
   const previous = popScreen();
+  console.log("goBack вызван, стек:", navigationStack.map(s => s.name));
 
   if (previous && typeof previous.callback === 'function') {
     try {
-      window.isRestoring = true; // ← ← ← ВАЖНО
+      window.isRestoring = true;
       previous.callback();
     } catch (e) {
       console.error("Ошибка при возврате к экрану:", previous.name, e);
-      showHome();
+      // только при ошибке: showHome()
     } finally {
-      window.isRestoring = false; // ← обязательно сбрасываем
+      window.isRestoring = false;
     }
   } else {
+    console.warn("goBack: стек пуст, вызываем showHome");
     showHome();
   }
 };
