@@ -8,11 +8,7 @@ function pushScreen(name, callback) {
 }
 
 function popScreen() {
-  if (navigationStack.length > 1) {
-    navigationStack.pop();
-    return navigationStack[navigationStack.length - 1];
-  }
-  return null;
+  return navigationStack.pop();
 }
 
 function updateBackButton() {
