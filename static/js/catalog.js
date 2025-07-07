@@ -71,7 +71,7 @@ function renderMainCategories() {
 function openCategory(id) {
   const cat = catalog[id];
   if (!cat) return;
-  pushScreen(`Category:${id}`);
+    pushScreen(`Category:${id}`, () => openCategory(id));
   if (cat.subcategories && Object.keys(cat.subcategories).length) {
     openView(() => renderSubcategories(cat.subcategories), 'catalog-subcategories');
   } else if (cat.products?.length) {
@@ -96,6 +96,7 @@ function cache(obj) { subCache.push(obj); return subCache.length - 1; }
 function openSubSub(index) {
   const s = subCache[index];
   if (!s) return;
+    pushScreen(`SubSub:${s.id}`, () => openSubSub(index));
   if (s.subcategories && Object.keys(s.subcategories).length) {
     openView(() => renderSubcategories(s.subcategories), `catalog-subcategories-${s.id}`);
   } else {
@@ -109,7 +110,7 @@ let selectedOptionImage = '';
 
 function renderProducts(arr) {
   productViewData = arr;
-  pushScreen("Products");
+  pushScreen("Products", () => renderProducts(productViewData));
   setContent(`<form onsubmit="search(event)"><input id="search-bar" placeholder="Поиск"></form>
     <div class="sort-buttons">
       <button onclick="sortBy('price')">По цене</button>
@@ -207,7 +208,7 @@ function viewProduct(i) {
 
   const originalGoBack = window.goBack;
 
-  pushScreen(`Product:${p.id}`);
+  pushScreen(`Product:${p.id}`, () => viewProduct(i));
   openView(renderDetailView, `catalog-product-detail`);
 }
 
