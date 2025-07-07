@@ -2,15 +2,15 @@
 
 const navigationStack = [];
 
-function pushScreen(screenName) {
-  navigationStack.push(screenName);
+function pushScreen(name, callback) {
+  navigationStack.push({ name, callback });
   updateBackButton();
 }
 
 function popScreen() {
   if (navigationStack.length > 1) {
-    navigationStack.pop(); // Удаляем текущий экран
-    return navigationStack[navigationStack.length - 1]; // Возвращаем предыдущий
+    navigationStack.pop();
+    return navigationStack[navigationStack.length - 1];
   }
   return null;
 }
@@ -22,18 +22,17 @@ function updateBackButton() {
 }
 
 window.goBack = function () {
-    const previousScreen = popScreen();
-
-    if (previousScreen && typeof window[`show${previousScreen}`] === 'function') {
-        try {
-            window[`show${previousScreen}`]();
-        } catch (e) {
-            console.error("Ошибка при возврате к экрану:", previousScreen, e);
-            showHome();
-        }
-    } else {
-        showHome();
+  const previous = popScreen();
+  if (previous && typeof previous.callback === 'function') {
+    try {
+      previous.callback();
+    } catch (e) {
+      console.error("Ошибка при возврате к экрану:", previous.name, e);
+      showHome();
     }
+  } else {
+    showHome();
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
