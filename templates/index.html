@@ -824,7 +824,7 @@
         function sendReviewToTelegram(stars, text) {
             const username = Telegram.WebApp.initDataUnsafe?.user?.username || 'Без username';
             const message = `⭐ Оценка: ${stars}/5\n✍️ Отзыв: ${text}\n👤 Пользователь: @${username}`;
-            fetch('https://api.telegram.org/bot7210822073:AAFM7PAj5D9PEJrvwArF8rSaU4FqsyT-3ns/sendMessage', {
+            fetch('https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
