@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
+from requests import post
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
@@ -284,10 +284,14 @@ def send_order_notification(order_id, order_data):
             message += f"📱 <b>Телефон:</b> {order_data['phone']}\n"
         
         # Отправляем сообщение в Telegram (используем тот же чат, что и для отзывов)
-        requests.post(
-            'https://api.telegram.org/bot7210822073:AAFM7PAj5D9PEJrvwArF8rSaU4FqsyT-3ns/sendMessage',
+        
+        TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN') 
+        CHAT_ID = '568416622' 
+        
+        response = post(
+            f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage',
             json={
-                'chat_id': '568416622',
+                'chat_id': CHAT_ID,
                 'text': message,
                 'parse_mode': 'HTML'
             }
