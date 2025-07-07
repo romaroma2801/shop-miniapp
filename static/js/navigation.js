@@ -14,10 +14,16 @@ function popScreen() {
 function updateBackButton() {
     const backButton = document.getElementById('back-button');
     if (!backButton) return;
-    backButton.style.display = navigationStack.length > 1 ? 'block' : 'none';
+
+    const visible = navigationStack.length > 1;
+    console.log("Кнопка назад:", visible ? "показана" : "скрыта");
+
+    backButton.style.display = visible ? 'block' : 'none';
 }
 
+
 window.goBack = function () {
+  console.log("goBack вызван, стек:", navigationStack.map(s => s.name));
   const previous = popScreen();
   if (previous && typeof previous.callback === 'function') {
     try {
@@ -30,6 +36,7 @@ window.goBack = function () {
     showHome();
   }
 };
+
 
 document.addEventListener('DOMContentLoaded', () => {
   if (window.Telegram?.WebApp) {
