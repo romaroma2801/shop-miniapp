@@ -87,6 +87,12 @@ function initUserPage() {
       openView(() => {
         showOrdersScreen();
         loadUserOrders(userData);
+        pushScreen('user-orders', () => {
+          openView(() => {
+            showOrdersScreen();
+            loadUserOrders(userData);
+          }, 'user-orders');
+        });
       }, 'user-orders');
     });
 
@@ -118,6 +124,7 @@ function formatPrice(price) {
 }
 
 function viewOrderDetail(orderId) {
+  pushScreen(`order-detail-${orderId}`, () => viewOrderDetail(orderId));
   openView(() => renderOrderDetail({ orderId }), 'order-detail');
 }
 
