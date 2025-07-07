@@ -28,15 +28,16 @@ window.isRestoring = false;
 
 window.goBack = function () {
   const previous = popScreen();
+
   if (previous && typeof previous.callback === 'function') {
     try {
-      isRestoring = true; // ← 👈 включаем флаг
+      window.isRestoring = true; // ← ← ← ВАЖНО
       previous.callback();
     } catch (e) {
       console.error("Ошибка при возврате к экрану:", previous.name, e);
       showHome();
     } finally {
-      isRestoring = false; // ← 👈 выключаем после выполнения
+      window.isRestoring = false; // ← обязательно сбрасываем
     }
   } else {
     showHome();
