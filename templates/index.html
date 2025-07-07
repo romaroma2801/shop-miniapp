@@ -334,33 +334,31 @@
 
 
         function showHome() {
-            pushScreen("Home");
-            currentState = "home";
+          currentState = "home";
         
-            // Очищаем стек и добавляем только 'main'
-            if (typeof navigationStack !== 'undefined') {
-                navigationStack.length = 0;
-                navigationStack.push('main');
-                updateBackButton();
-            } else {
-                console.warn("navigationStack не найден — кнопка 'Назад' может работать некорректно");
-            }
+          // Сброс навигации и добавление главного экрана как первого шага
+          if (typeof navigationStack !== 'undefined') {
+            navigationStack.length = 0;
+            pushScreen("Home", () => showHome());
+          } else {
+            console.warn("navigationStack не найден — кнопка 'Назад' может работать некорректно");
+          }
         
-            // Загружаем акции для карусели
-            loadPromotionsForCarousel().then(carouselHTML => {
-                showContent(`
-                    <button data-action="regions">Адреса магазинов</button>
-                    <button data-action="section:review">Оставить отзыв</button>
-                    <button data-action="section:contacts">Контакты</button>
-                    <button data-action="section:jobs">Вакансии</button>
-                    ${carouselHTML}
-                `, false, () => {
-                    initCarousel();
-                    document.getElementById('content').scrollTo(0, 0);
-                    updateBackButton(); // обновляем состояние кнопки после рендера
-                });
+          loadPromotionsForCarousel().then(carouselHTML => {
+            showContent(`
+              <button data-action="regions">Адреса магазинов</button>
+              <button data-action="section:review">Оставить отзыв</button>
+              <button data-action="section:contacts">Контакты</button>
+              <button data-action="section:jobs">Вакансии</button>
+              ${carouselHTML}
+            `, false, () => {
+              initCarousel();
+              document.getElementById('content').scrollTo(0, 0);
+              updateBackButton();
             });
+          });
         }
+
         async function loadPromotionsForCarousel() {
             try {
                 // Пробуем загрузить свежие акции
