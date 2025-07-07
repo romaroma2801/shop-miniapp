@@ -3,9 +3,11 @@
 const navigationStack = [];
 
 function pushScreen(name, callback) {
+  console.log("→ push:", name, "callback is", typeof callback);
   navigationStack.push({ name, callback });
   updateBackButton();
 }
+
 
 function popScreen() {
   return navigationStack.pop();
