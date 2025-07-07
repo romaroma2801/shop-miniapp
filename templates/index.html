@@ -518,7 +518,7 @@
         
 
         function showRegions() {
-          pushScreen("Regions")
+          pushScreen("Regions", () => showRegions());
           openView(async () => {
             currentState = "regions";
             const regions = await loadData('regions');
@@ -548,7 +548,7 @@
         
             // Сохраняем регион для следующих шагов
             window.currentRegion = region;
-            pushScreen("Cities");
+            pushScreen("Cities", () => showCities(region));
         
             openView(async () => {
                 currentState = "cities";
@@ -575,7 +575,7 @@
             window.currentCity = city;
             window.currentRegion = region;
         
-            pushScreen("Stores");
+            pushScreen("Stores", () => showStores(city, region));
         
             openView(async () => {
                 currentState = "stores";
@@ -609,7 +609,7 @@
                 return;
             }
         
-            pushScreen("StoreDetails");
+            pushScreen("StoreDetails", () => showStoreDetails(storeName));
         
             openView(async () => {
                 currentState = "storeDetails";
