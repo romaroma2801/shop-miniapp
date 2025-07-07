@@ -24,20 +24,25 @@ function updateBackButton() {
 }
 
 
+let isRestoring = false;
+
 window.goBack = function () {
-  console.log("goBack вызван, стек:", navigationStack.map(s => s.name));
   const previous = popScreen();
   if (previous && typeof previous.callback === 'function') {
     try {
+      isRestoring = true; // ← 👈 включаем флаг
       previous.callback();
     } catch (e) {
       console.error("Ошибка при возврате к экрану:", previous.name, e);
       showHome();
+    } finally {
+      isRestoring = false; // ← 👈 выключаем после выполнения
     }
   } else {
     showHome();
   }
 };
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
