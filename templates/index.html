@@ -336,12 +336,10 @@
         function showHome() {
           currentState = "home";
         
-          // Сброс навигации и добавление главного экрана как первого шага
-          if (typeof navigationStack !== 'undefined') {
+          // Сброс стека только если это НЕ восстановление
+          if (!window.isRestoring) {
             navigationStack.length = 0;
             pushScreen("Home", () => showHome());
-          } else {
-            console.warn("navigationStack не найден — кнопка 'Назад' может работать некорректно");
           }
         
           loadPromotionsForCarousel().then(carouselHTML => {
@@ -358,6 +356,7 @@
             });
           });
         }
+
 
         async function loadPromotionsForCarousel() {
             try {
