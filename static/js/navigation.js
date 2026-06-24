@@ -1,22 +1,28 @@
-// navigation.js
+// navigation.js - Умная навигация с синхронизацией футера
+
 const navigationStack = [];
 let isNavigating = false;
 
-function pushScreen(name, callback, footerSection = null) {
-    console.log("→ push:", name, "callback is", typeof callback);
-    
-    // Если это не восстановление состояния, добавляем в стек
-    if (!window.isRestoring) {
-        navigationStack.push({ 
-            name, 
-            callback,
-            footerSection: footerSection || window.currentFooterSection || 'catalog'
-        });
-    }
-    
-    updateBackButton();
-}
+// Глобальное состояние
+window.currentFooterSection = 'home';
+window.isRestoring = false;
 
+/**
+ * Добавить экран в стек навигации
+ */
+window.pushScreen = function(name, footerSection = null) {
+    if (window.isRestoring) return;
+    
+    const section = footerSection || window.currentFooterSection;
+    navigationStack.push({ name, footerSection: section });
+    
+    console.log(`→ push: ${name}, стек: [${navigationStack.map(s => s.name).join(', ')}]`);
+    updateBackButton();
+};
+
+/**
+ * Удалить последний экран из стека
+ */
 function popScreen() {
     if (navigationStack.length > 1) {
         return navigationStack.pop();
@@ -24,6 +30,9 @@ function popScreen() {
     return null;
 }
 
+/**
+ * Обновить видимость кнопки "Назад"
+ */
 function updateBackButton() {
     const backButton = document.getElementById('back-button');
     if (!backButton) return;
@@ -31,7 +40,6 @@ function updateBackButton() {
     const visible = navigationStack.length > 1;
     backButton.style.display = visible ? 'block' : 'none';
     
-    // Синхронизируем с Telegram WebApp
     if (window.Telegram?.WebApp) {
         if (visible) {
             window.Telegram.WebApp.BackButton.show();
@@ -41,15 +49,16 @@ function updateBackButton() {
     }
 }
 
-window.isRestoring = false;
-window.currentFooterSection = 'home';
-
+/**
+ * Вернуться на предыдущий экран
+ */
 window.goBack = function() {
     if (isNavigating) return;
     isNavigating = true;
     
+    console.log(`goBack вызван, стек: [${navigationStack.map(s => s.name).join(', ')}]`);
+    
     const previous = popScreen();
-    console.log("goBack вызван, стек:", navigationStack.map(s => s.name));
     
     if (previous && navigationStack.length > 0) {
         const target = navigationStack[navigationStack.length - 1];
@@ -65,9 +74,9 @@ window.goBack = function() {
                 }
             }
             
-            // Вызываем callback предыдущего экрана
-            if (typeof target.callback === 'function') {
-                target.callback();
+            // Вызываем глобальную функцию восстановления экрана
+            if (window.restoreScreen && typeof window.restoreScreen === 'function') {
+                window.restoreScreen(target.name);
             }
             
         } catch (e) {
@@ -77,7 +86,6 @@ window.goBack = function() {
             isNavigating = false;
         }
     } else {
-        // Если стек пуст, возвращаемся на главную
         console.warn("goBack: стек пуст, вызываем showHome");
         if (window.showHome) {
             window.showHome();
@@ -88,22 +96,14 @@ window.goBack = function() {
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-    // Telegram WebApp
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.ready();
         
-        // Обработчик кнопки "Назад" из Telegram
         window.Telegram.WebApp.BackButton.onClick(() => {
             window.goBack();
         });
-        
-        // Очистка при закрытии
-        window.addEventListener('beforeunload', () => {
-            window.Telegram.WebApp.BackButton.offClick(window.goBack);
-        });
     }
     
-    // HTML кнопка "Назад"
     const backButton = document.getElementById('back-button');
     if (backButton) {
         backButton.addEventListener('click', (e) => {
@@ -113,7 +113,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Делаем функции доступными глобально
-window.pushScreen = pushScreen;
 window.popScreen = popScreen;
 window.updateBackButton = updateBackButton;
