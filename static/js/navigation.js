@@ -9,9 +9,11 @@ window.isRestoring = false;
 
 /**
  * Добавить экран в стек навигации
+ * @param {string} name - Имя экрана
+ * @param {string} footerSection - Какая вкладка футера должна быть активна
  */
 window.pushScreen = function(name, footerSection = null) {
-    if (window.isRestoring) return;
+    if (window.isRestoring) return; // Не добавляем в стек при восстановлении
     
     const section = footerSection || window.currentFooterSection;
     navigationStack.push({ name, footerSection: section });
@@ -40,6 +42,7 @@ function updateBackButton() {
     const visible = navigationStack.length > 1;
     backButton.style.display = visible ? 'block' : 'none';
     
+    // Синхронизируем с Telegram WebApp
     if (window.Telegram?.WebApp) {
         if (visible) {
             window.Telegram.WebApp.BackButton.show();
@@ -86,6 +89,7 @@ window.goBack = function() {
             isNavigating = false;
         }
     } else {
+        // Если стек пуст, возвращаемся на главную
         console.warn("goBack: стек пуст, вызываем showHome");
         if (window.showHome) {
             window.showHome();
@@ -96,14 +100,17 @@ window.goBack = function() {
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
+    // Telegram WebApp
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.ready();
         
+        // Обработчик кнопки "Назад" из Telegram
         window.Telegram.WebApp.BackButton.onClick(() => {
             window.goBack();
         });
     }
     
+    // HTML кнопка "Назад"
     const backButton = document.getElementById('back-button');
     if (backButton) {
         backButton.addEventListener('click', (e) => {
@@ -113,5 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Делаем функции доступными глобально
 window.popScreen = popScreen;
 window.updateBackButton = updateBackButton;
