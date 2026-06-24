@@ -29,7 +29,6 @@ def get_gsheets_creds():
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
-    # Убраны лишние пробелы в ключах, которые ломали авторизацию
     creds_dict = {
         "type": "service_account",
         "project_id": os.getenv("GSHEETS_PROJECT_ID"),
@@ -52,7 +51,7 @@ def get_orders_sheet():
     client = gspread.authorize(get_gsheets_creds())
     return client.open("ORDERS").sheet1
 
-# --- Flask Routes (Frontend Pages) ---
+# --- Flask Routes ---
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -65,7 +64,6 @@ def user_page():
 def order_page():
     return render_template('order.html')
 
-# --- API Routes ---
 @app.route('/api/get-user')
 def get_user():
     username = request.args.get('username')
@@ -93,8 +91,6 @@ def save_user():
             
         sheet = get_users_sheet()
         records = sheet.get_all_records()
-        
-        # Ищем пользователя (исправлено 'User name' на 'Username')
         user_index = next((i for i, u in enumerate(records) if u.get('Username', '').lower() == data['username'].lower()), None)
         
         if user_index is not None:
@@ -143,8 +139,6 @@ def get_promotions():
 def create_order():
     try:
         data = request.json
-        # УБРАНО: Telegram.WebApp... (это JS, в Python не работает). 
-        # Фронтенд (order.js) сам передает username в JSON.
         if not data.get('username'):
             return jsonify({'status': 'error', 'message': 'Username is required'}), 400
             
@@ -152,12 +146,10 @@ def create_order():
         records = sheet.get_all_records()
         
         last_order_id = records[-1].get('order_id', 0) if records else 0
-        # Если ID не число, берем просто длину + 1
         if not isinstance(last_order_id, int):
             last_order_id = len(records)
         order_id = int(last_order_id) + 1
         
-        # Время по Минску (UTC+3)
         order_date = (datetime.utcnow() + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S")
         items_str = json.dumps(data['items'], ensure_ascii=False)
         
@@ -189,7 +181,7 @@ def get_orders():
         logging.error(f"Error in get_orders: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/api/get-order/<int:order_id>') # ИСПРАВЛЕНО: было сломано
+@app.route('/api/get-order/<int:order_id>')
 def get_order(order_id):
     try:
         sheet = get_orders_sheet()
@@ -231,10 +223,8 @@ BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 telegram_app = Application.builder().token(BOT_TOKEN).build()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Получаем URL текущего приложения (для Render это переменная окружения)
-    web_app_url = os.getenv('RENDER_EXTERNAL_URL', 'https://your-app.onrender.com')
+    web_app_url = os.getenv('RENDER_EXTERNAL_URL', 'https://shop-miniapp.onrender.com')
     
-    # Создаем современную кнопку для запуска Mini App
     keyboard = [
         [InlineKeyboardButton("🛒 Открыть магазин", web_app=WebAppInfo(url=web_app_url))]
     ]
@@ -262,11 +252,10 @@ async def handle_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_city))
 
-# --- Webhook Route for Telegram (Исправлено для Flask + PTB v20) ---
+# --- Webhook Route for Telegram ---
 @app.route('/webhook', methods=['POST'])
 def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-    # Запускаем асинхронную обработку в новом цикле событий
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
@@ -275,14 +264,23 @@ def telegram_webhook():
         loop.close()
     return 'ok'
 
+# --- Health Check Route ---
+@app.route('/health')
+def health():
+    return 'OK', 200
+
+# --- Set Webhook on Startup ---
+def set_webhook():
+    webhook_url = os.getenv('RENDER_EXTERNAL_URL')
+    if webhook_url:
+        telegram_app.bot.set_webhook(url=f"{webhook_url}/webhook")
+        logging.info(f"✅ Webhook установлен: {webhook_url}/webhook")
+
 # --- Launch Flask App ---
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     
-    # Устанавливаем вебхук при старте (важно для Render)
-    webhook_url = os.getenv('RENDER_EXTERNAL_URL')
-    if webhook_url:
-        telegram_app.bot.set_webhook(url=f"{webhook_url}/webhook")
-        logging.info(f"Webhook set to {webhook_url}/webhook")
-        
+    # Устанавливаем webhook перед запуском
+    set_webhook()
+    
     app.run(host='0.0.0.0', port=PORT)
