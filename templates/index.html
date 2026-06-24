@@ -4,32 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NEKURI - Мини-приложение</title>
+    
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/catalog.css">
     <link rel="stylesheet" href="/static/css/cart.css">
     <link rel="stylesheet" href="/static/css/footer.css">
+    <link rel="stylesheet" href="/static/css/user.css">
+    <link rel="stylesheet" href="/static/css/order.css">
 </head>
 <body>
-    <!-- Кнопка назад -->
+
+    <!-- Глобальный лоадер -->
+    <div id="global-loader" style="display: none;">
+        <img src="/static/Eicon.png" alt="Загрузка...">
+    </div>
+
+    <!-- Кнопка "Назад" (управляется через navigation.js) -->
     <button id="back-button" style="display: none;">
         <img src="/static/back.svg" alt="Назад">
     </button>
-    
-    <!-- Основной контент -->
-    <div id="content">
-        <div class="menu-vertical">
-            <button onclick="showRegions()">Адреса магазинов</button>
-            <button onclick="showFeedback()">Оставить отзыв</button>
-            <button onclick="showContacts()">Контакты</button>
-            <button onclick="showVacancies()">Вакансии</button>
-        </div>
-        
-        <!-- Карусель акций -->
-        <div class="promotions-carousel" id="promotions-carousel"></div>
+
+    <!-- Шапка -->
+    <div class="header">
+        <img src="/static/logo22.png" alt="Логотип" class="logo">
     </div>
-    
-    <!-- Футер -->
+
+    <!-- Основной контейнер контента -->
+    <div id="content">
+        <!-- Главный экран (Домой) -->
+        <div id="home-screen">
+            <div class="menu-vertical">
+                <button onclick="showRegions()">Адреса магазинов</button>
+                <button onclick="showFeedback()">Оставить отзыв</button>
+                <button onclick="showContacts()">Контакты</button>
+                <button onclick="showVacancies()">Вакансии</button>
+            </div>
+            
+            <!-- Карусель акций -->
+            <div class="promotions-carousel" id="promotions-carousel">
+                <!-- Акции загружаются через JS -->
+            </div>
+        </div>
+
+        <!-- Контейнер для каталога (рендерится через catalog.js) -->
+        <div id="catalog-container" style="display: none;">
+            <div id="loader" class="loader" style="display: none;">
+                <img src="/static/Eicon.png" alt="Загрузка...">
+            </div>
+            <div id="catalog-content"></div>
+        </div>
+    </div>
+
+    <!-- Оверлей корзины (нужен для cart.js и footer.js) -->
+    <div id="cart-overlay" class="cart-overlay">
+        <div class="cart-header">
+            Ваша корзина
+        </div>
+        <div class="cart-content" id="cart-items">
+            <!-- Товары будут здесь -->
+        </div>
+        <div class="cart-summary">
+            <div class="cart-summary-row">
+                <span>Скидка 3% за регистрацию</span>
+                <span id="cart-discount">-0.00 BYN</span>
+            </div>
+            <div class="cart-summary-row cart-summary-total">
+                <span>Итого:</span>
+                <span id="cart-total">0.00 BYN</span>
+            </div>
+            <button class="cart-checkout-btn">Оформить заказ</button>
+        </div>
+    </div>
+
+    <!-- Плавающая кнопка корзины -->
+    <div class="cart-button-container">
+        <button class="cart-button" id="main-cart-button">
+            <img src="/static/shop.svg" alt="Корзина">
+            <span id="cart-badge" class="cart-badge">0</span>
+        </button>
+    </div>
+
+    <!-- Нижняя навигация (Футер) -->
     <nav class="footer-nav">
         <div class="footer-item active" data-section="home" id="home-button">
             <img src="/static/home.svg" alt="Домой">
@@ -52,55 +111,74 @@
             <span>Кабинет</span>
         </div>
     </nav>
-    
+
+    <!-- Скрипты (порядок важен!) -->
     <script src="/static/js/navigation.js"></script>
     <script src="/static/js/cart.js"></script>
     <script src="/static/js/catalog.js"></script>
     <script src="/static/js/footer.js"></script>
+    <script src="/static/js/user.js"></script>
+    <script src="/static/js/order.js"></script>
+
+    <!-- Основная логика приложения -->
     <script>
-        // Глобальные функции для главной страницы
+        // Инициализация Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand(); // Разворачиваем на весь экран
+            
+            // Настраиваем цвета под тему Telegram
+            window.Telegram.WebApp.setHeaderColor('#ffffff');
+            window.Telegram.WebApp.setBackgroundColor('#f0f0f0');
+        }
+
+        // Глобальные функции для навигации по главному меню
         window.showHome = function() {
-            navigationStack.length = 0;
-            window.pushScreen('home', 'home');
+            // Сбрасываем стек навигации
+            if (typeof navigationStack !== 'undefined') {
+                navigationStack.length = 0;
+            }
             
-            const content = document.getElementById('content');
-            content.innerHTML = `
-                <div class="menu-vertical">
-                    <button onclick="showRegions()">Адреса магазинов</button>
-                    <button onclick="showFeedback()">Оставить отзыв</button>
-                    <button onclick="showContacts()">Контакты</button>
-                    <button onclick="showVacancies()">Вакансии</button>
-                </div>
-                <div class="promotions-carousel" id="promotions-carousel"></div>
-            `;
+            document.getElementById('home-screen').style.display = 'block';
+            document.getElementById('catalog-container').style.display = 'none';
             
+            // Скрываем кнопку назад
+            const backButton = document.getElementById('back-button');
+            if (backButton) backButton.style.display = 'none';
+            if (window.Telegram?.WebApp?.BackButton) {
+                window.Telegram.WebApp.BackButton.hide();
+            }
+
+            // Обновляем футер
+            if (window.setActiveFooter) window.setActiveFooter('home');
+            
+            // Загружаем акции
             loadPromotions();
-            window.setActiveFooter('home');
         };
-        
+
         window.showCatalogPage = function() {
+            document.getElementById('home-screen').style.display = 'none';
+            document.getElementById('catalog-container').style.display = 'block';
+            
+            if (window.setActiveFooter) window.setActiveFooter('catalog');
             if (window.initCatalogPage) window.initCatalogPage();
         };
-        
+
         window.showUserPage = function() {
-            window.currentFooterSection = 'user';
-            window.setActiveFooter('user');
+            // Переход на отдельную страницу личного кабинета
             window.location.href = '/user';
         };
-        
-        window.showPromotions = function() {
-            window.currentFooterSection = 'promotions';
-            window.setActiveFooter('promotions');
-            loadPromotions();
+
+        window.showOrderPage = function() {
+            // Переход на отдельную страницу оформления заказа
+            window.location.href = '/order';
         };
-        
+
         // Функции для кнопок главного меню
         async function showRegions() {
             try {
                 const response = await fetch('/api/regions');
                 const regions = await response.json();
-                
-                window.pushScreen('regions', 'home');
                 
                 const html = `
                     <h3>Выберите регион</h3>
@@ -108,7 +186,9 @@
                         ${regions.map(r => `<button onclick="showCities('${r}')">${r}</button>`).join('')}
                     </div>
                 `;
-                setContent(html);
+                document.getElementById('content').innerHTML = html;
+                
+                if (window.pushScreen) window.pushScreen('regions', 'home');
             } catch (error) {
                 console.error('Ошибка загрузки регионов:', error);
                 showToast('Ошибка загрузки данных');
@@ -120,15 +200,15 @@
                 const response = await fetch(`/api/cities/${region}`);
                 const cities = await response.json();
                 
-                window.pushScreen(`cities-${region}`, 'home');
-                
                 const html = `
                     <h3>Города в регионе ${region}</h3>
                     <div class="menu-vertical">
                         ${cities.map(c => `<button onclick="showStores('${region}', '${c}')">${c}</button>`).join('')}
                     </div>
                 `;
-                setContent(html);
+                document.getElementById('content').innerHTML = html;
+                
+                if (window.pushScreen) window.pushScreen(`cities-${region}`, 'home');
             } catch (error) {
                 console.error('Ошибка загрузки городов:', error);
                 showToast('Ошибка загрузки данных');
@@ -140,8 +220,6 @@
                 const response = await fetch(`/api/stores/${region}/${city}`);
                 const stores = await response.json();
                 
-                window.pushScreen(`stores-${city}`, 'home');
-                
                 const html = `
                     <h3>Магазины в городе ${city}</h3>
                     <div class="menu-vertical">
@@ -150,12 +228,14 @@
                                 <h4>${s.name}</h4>
                                 <p>Адрес: ${s.address}</p>
                                 <p>Режим работы: ${s.hours}</p>
-                                ${s.map_link ? `<a href="${s.map_link}" target="_blank" class="auth-fill-button">Посмотреть на карте</a>` : ''}
+                                ${s.map_link ? `<a href="${s.map_link}" target="_blank" class="auth-fill-button" style="text-decoration:none; display:block; text-align:center;">Посмотреть на карте</a>` : ''}
                             </div>
                         `).join('')}
                     </div>
                 `;
-                setContent(html);
+                document.getElementById('content').innerHTML = html;
+                
+                if (window.pushScreen) window.pushScreen(`stores-${city}`, 'home');
             } catch (error) {
                 console.error('Ошибка загрузки магазинов:', error);
                 showToast('Ошибка загрузки данных');
@@ -163,19 +243,19 @@
         }
         
         function showFeedback() {
-            window.pushScreen('feedback', 'home');
-            setContent(`
+            const html = `
                 <h3>Оставить отзыв</h3>
                 <p style="text-align: center; padding: 20px;">
                     Для оставления отзыва напишите нам в Telegram:<br>
-                    <a href="https://t.me/Shop_NEKURIBY_bot" target="_blank" class="auth-fill-button">@Shop_NEKURIBY_bot</a>
+                    <a href="https://t.me/Shop_NEKURIBY_bot" target="_blank" class="auth-fill-button" style="text-decoration:none; display:inline-block; margin-top:10px;">@Shop_NEKURIBY_bot</a>
                 </p>
-            `);
+            `;
+            document.getElementById('content').innerHTML = html;
+            if (window.pushScreen) window.pushScreen('feedback', 'home');
         }
         
         function showContacts() {
-            window.pushScreen('contacts', 'home');
-            setContent(`
+            const html = `
                 <h3>Контакты</h3>
                 <div class="user-data">
                     <div class="data-row">
@@ -187,18 +267,21 @@
                         <span class="data-value">nekuri.by</span>
                     </div>
                 </div>
-            `);
+            `;
+            document.getElementById('content').innerHTML = html;
+            if (window.pushScreen) window.pushScreen('contacts', 'home');
         }
         
         function showVacancies() {
-            window.pushScreen('vacancies', 'home');
-            setContent(`
+            const html = `
                 <h3>Вакансии</h3>
                 <p style="text-align: center; padding: 20px;">
                     Актуальные вакансии уточняйте в Telegram:<br>
-                    <a href="https://t.me/Shop_NEKURIBY_bot" target="_blank" class="auth-fill-button">@Shop_NEKURIBY_bot</a>
+                    <a href="https://t.me/Shop_NEKURIBY_bot" target="_blank" class="auth-fill-button" style="text-decoration:none; display:inline-block; margin-top:10px;">@Shop_NEKURIBY_bot</a>
                 </p>
-            `);
+            `;
+            document.getElementById('content').innerHTML = html;
+            if (window.pushScreen) window.pushScreen('vacancies', 'home');
         }
         
         // Загрузка акций
@@ -208,7 +291,7 @@
                 const promotions = await response.json();
                 
                 const carousel = document.getElementById('promotions-carousel');
-                if (!carousel || !promotions.length) return;
+                if (!carousel || !promotions || !promotions.length) return;
                 
                 carousel.innerHTML = `
                     <div class="carousel-container">
@@ -225,19 +308,8 @@
                 console.error('Ошибка загрузки акций:', error);
             }
         }
-        
-        function setContent(html) {
-            const el = document.getElementById("content");
-            if (!el) return;
-            
-            el.style.opacity = 0;
-            setTimeout(() => {
-                el.innerHTML = html;
-                el.style.opacity = 1;
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 100);
-        }
-        
+
+        // Утилита для уведомлений
         function showToast(message, duration = 2000) {
             const toast = document.createElement('div');
             toast.textContent = message;
@@ -249,11 +321,17 @@
                 setTimeout(() => toast.remove(), 300);
             }, duration);
         }
-        
-        // Инициализация при загрузке
+        window.showToast = showToast;
+
+        // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
-            window.pushScreen('home', 'home');
-            loadPromotions();
+            // Показываем главный экран
+            window.showHome();
+            
+            // Обновляем бейдж корзины
+            if (window.cart) {
+                window.cart.updateBadge();
+            }
         });
     </script>
 </body>
