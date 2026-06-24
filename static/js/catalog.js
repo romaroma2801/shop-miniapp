@@ -1,5 +1,6 @@
-// catalog.js - Каталог без конфликтов навигации
+// catalog.js - Исправленный каталог
 
+// Глобальные переменные
 let catalog = {};
 const categoryIcons = {
     "Парогенераторы": "vape.png",
@@ -12,39 +13,44 @@ const categoryIcons = {
     "Уценённые Парогенераторы": "sale.png"
 };
 
+// Кэш для подкатегорий и текущие данные
 const subCache = [];
 let productViewData = [];
 let selectedOptionName = '';
 let selectedOptionImage = '';
 
 /**
- * Инициализация страницы каталога
+ * Точка входа: инициализация страницы каталога
  */
 window.initCatalogPage = function() {
     window.currentFooterSection = 'catalog';
     if (window.setActiveFooter) window.setActiveFooter('catalog');
     
-    const catalogHTML = `
-        <div class="header">
-            <img src="/static/logo22.png" alt="Логотип" class="logo">
-        </div>
-        <div id="loader" class="loader">
-            <img src="/static/Eicon.png" alt="Загрузка...">
-        </div>
-        <div id="content" class="catalog-content"></div>
-    `;
+    // Создаем структуру, если её нет
+    const contentEl = document.getElementById('content');
+    if (contentEl) {
+        contentEl.innerHTML = `
+            <div class="header">
+                <img src="/static/logo22.png" alt="Логотип" class="logo">
+            </div>
+            <div id="loader" class="loader" style="display: none;">
+                <img src="/static/Eicon.png" alt="Загрузка...">
+            </div>
+            <div id="catalog-container"></div>
+        `;
+    }
     
-    showContent(catalogHTML);
     loadCatalog();
 };
 
 /**
- * Загрузить каталог с сервера
+ * Загрузка данных с сервера
  */
 async function loadCatalog() {
     showLoader(true);
     try {
         const response = await fetch("/api/catalog");
+        if (!response.ok) throw new Error('Network error');
         catalog = await response.json();
         showLoader(false);
         renderMainCategories();
@@ -61,21 +67,21 @@ function showLoader(state) {
 }
 
 /**
- * Отрисовать главные категории
+ * Отрисовка главных категорий (Корень)
  */
 function renderMainCategories() {
     const top = Object.values(catalog).filter(c => c.parent_id === "0");
     
     const html = `
-        <form onsubmit="search(event)">
-            <input id="search-bar" placeholder="Поиск">
+        <form onsubmit="window.search(event)" style="padding: 10px;">
+            <input id="search-bar" placeholder="Поиск товаров..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 20px;">
         </form>
-        <div class="grid">
+        <div class="grid" style="padding: 10px;">
             ${top.map(c => `
-                <div class="category-button" onclick="openCategory('${c.id}')">
+                <div class="category-button" onclick="window.openCategory('${c.id}')">
                     <img class="category-icon" src="/static/${categoryIcons[c.name] || 'vape.png'}">
                     <div>${c.name}</div>
-                </div>
+                </
             `).join('')}
         </div>
     `;
@@ -84,14 +90,16 @@ function renderMainCategories() {
 }
 
 /**
- * Открыть категорию
+ * Открытие категории (Управляет навигацией)
  */
 window.openCategory = function(id) {
     const cat = catalog[id];
     if (!cat) return;
     
+    // 1. Сначала добавляем в стек
     window.pushScreen(`Category:${id}`, 'catalog');
     
+    // 2. Потом рисуем
     if (cat.subcategories && Object.keys(cat.subcategories).length) {
         renderSubcategories(cat.subcategories);
     } else if (cat.products?.length) {
@@ -100,25 +108,24 @@ window.openCategory = function(id) {
 };
 
 /**
- * Отрисовать подкатегории
+ * Отрисовка подкатегорий
  */
 function renderSubcategories(subs) {
     const values = Object.values(subs);
     
     const html = `
-        <form onsubmit="search(event)">
-            <input id="search-bar" placeholder="Поиск">
+        <form onsubmit="window.search(event)" style="padding: 10px;">
+            <input id="search-bar" placeholder="Поиск..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 20px;">
         </form>
-        <div class="grid">
+        <div class="grid" style="padding: 10px;">
             ${values.map((s, i) => `
-                <div class="category-button" onclick="openSubSub(${cache(s)})">
+                <div class="category-button" onclick="window.openSubSub(${cache(s)})">
                     <img class="category-icon" src="${fixImg(s.icon)}">
                     <div>${s.name}</div>
                 </div>
             `).join('')}
         </div>
     `;
-    
     setContent(html);
 }
 
@@ -128,7 +135,7 @@ function cache(obj) {
 }
 
 /**
- * Открыть подподкатегорию
+ * Открытие подкатегории
  */
 window.openSubSub = function(index) {
     const s = subCache[index];
@@ -144,22 +151,19 @@ window.openSubSub = function(index) {
 };
 
 /**
- * Отрисовать продукты
+ * Отрисовка списка товаров
  */
 function renderProducts(arr) {
     productViewData = arr;
     
     const html = `
-        <form onsubmit="search(event)">
-            <input id="search-bar" placeholder="Поиск">
-        </form>
-        <div class="sort-buttons">
-            <button onclick="sortBy('price')">По цене</button>
-            <button onclick="sortBy('availability')">В наличии</button>
+        <div class="sort-buttons" style="display: flex; gap: 10px; padding: 10px;">
+            <button onclick="window.sortBy('price')" class="auth-fill-button" style="flex:1;">По цене</button>
+            <button onclick="window.sortBy('availability')" class="auth-fill-button" style="flex:1;">В наличии</button>
         </div>
-        <div class="grid">
+        <div class="grid" style="padding: 10px;">
             ${arr.map((p, i) => `
-                <div class="product-card" onclick="viewProduct(${i})">
+                <div class="product-card" onclick="window.viewProduct(${i})">
                     <img src="${fixImg(p.image)}">
                     ${p.special_price ? '<img src="/static/sale.png" class="sale-icon">' : ''}
                     <div class="content">
@@ -171,9 +175,7 @@ function renderProducts(arr) {
                             }
                         </p>
                         <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
-                             onclick="event.stopPropagation(); ${p.available === 'out_of_stock' 
-                                ? "showToast('К сожалению, товар недоступен')" 
-                                : `addProductToCart(productViewData[${i}])`}">
+                             onclick="event.stopPropagation(); window.handleBuyClick(${i})">
                             ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
                         </div>
                     </div>
@@ -181,12 +183,23 @@ function renderProducts(arr) {
             `).join('')}
         </div>
     `;
-    
     setContent(html);
 }
 
 /**
- * Сортировка продуктов
+ * Обработка клика "Купить" (чтобы не срабатывал клик по карточке)
+ */
+window.handleBuyClick = function(index) {
+    const p = productViewData[index];
+    if (p.available === 'out_of_stock') {
+        showToast('К сожалению, товар недоступен');
+        return;
+    }
+    window.addProductToCart(p);
+};
+
+/**
+ * Сортировка
  */
 window.sortBy = function(type) {
     const sorted = [...productViewData];
@@ -196,7 +209,7 @@ window.sortBy = function(type) {
 };
 
 /**
- * Просмотр детальной информации о продукте
+ * Просмотр товара (Детали)
  */
 window.viewProduct = function(i) {
     const p = productViewData[i];
@@ -214,50 +227,53 @@ function renderDetailView(i) {
     if (!p) return;
     
     const attributesTable = p.attributes?.length 
-        ? `<table>${p.attributes.map(attr => `
+        ? `<table style="width:100%; border-collapse: collapse;">${p.attributes.map(attr => `
             <tr>
-                <td><strong>${attr.name}</strong></td>
-                <td>${attr.value.replace(/,\s*/g, ', ')}</td>
+                <td style="padding: 5px; border-bottom: 1px solid #eee;"><strong>${attr.name}</strong></td>
+                <td style="padding: 5px; border-bottom: 1px solid #eee;">${attr.value.replace(/,\s*/g, ', ')}</td>
             </tr>
         `).join('')}</table>`
         : `<p>${p.description || ''}</p>`;
     
     const optionsBlock = p.options?.length 
         ? p.options.map(opt => `
-            <div><strong>${opt.name}:</strong></div>
-            <div class="option-values">
+            <div style="margin-bottom: 10px;"><strong>${opt.name}:</strong></div>
+            <div class="option-values" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
                 ${opt.values.map((val, idx) => `
-                    <div onclick="selectOption(${i}, '${opt.name}', ${idx})" 
-                         class="option-value ${selectedOptionName === val.name ? 'selected' : ''} ${val.available ? '' : 'unavailable'}">
-                        ${val.image ? `<img src="${fixImg(val.image)}">` : ''}
-                        <div>${val.name}</div>
+                    <div onclick="window.selectOption(${i}, '${opt.name}', ${idx})" 
+                         class="option-value ${selectedOptionName === val.name ? 'selected' : ''} ${val.available ? '' : 'unavailable'}"
+                         style="min-width: 60px; border: 1px solid #ddd; border-radius: 8px; padding: 5px; text-align: center; cursor: pointer;">
+                        ${val.image ? `<img src="${fixImg(val.image)}" style="max-height: 40px;">` : ''}
+                        <div style="font-size: 10px; margin-top: 4px;">${val.name}</div>
                     </div>
                 `).join('')}
             </div>
         `).join('')
         : '';
     
+    const isUnavailable = p.available === 'out_of_stock';
+    
     const html = `
-        <div class="product-detail">
+        <div class="product-detail" style="padding: 15px;">
             <img id="product-main-img" src="${fixImg(selectedOptionImage)}" 
-                 style="max-width: 100%; height: auto; max-height: 250px; object-fit: contain; margin: 0 auto 16px; display: block;">
-            <h4>${p.title}</h4>
+                 style="max-width: 100%; height: auto; max-height: 250px; object-fit: contain; margin: 0 auto 16px; display: block; border-radius: 10px;">
+            <h3>${p.title}</h3>
             ${attributesTable}
             ${optionsBlock}
             
-            <p class="price">
+            <p class="price" style="font-size: 20px; font-weight: bold; margin: 15px 0;">
                 ${p.special_price
-                    ? `<span style="text-decoration: line-through; color: #999; margin-right: 8px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
+                    ? `<span style="text-decoration: line-through; color: #999; font-size: 16px;">${parseFloat(p.regular_price).toFixed(2)} BYN</span>
                        <span style="color: #a30000;">${parseFloat(p.special_price).toFixed(2)} BYN</span>`
                     : `${parseFloat(p.price).toFixed(2)} BYN`}
             </p>
             
-            <div class="${p.available === 'out_of_stock' ? 'map-button' : 'add-button'}"
+            <div class="${isUnavailable ? 'map-button' : 'add-button'}"
                  onclick="${p.options?.length 
-                    ? `if (!selectedOptionName) { showToast('Пожалуйста, выберите вариант товара'); return; } else { addProductToCart(productViewData[${i}], selectedOptionName); }`
-                    : `addProductToCart(productViewData[${i}])`}"
-                 style="width: 100%; height: 40px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center;">
-                ${p.available === 'out_of_stock' ? 'Недоступен' : 'Купить'}
+                    ? `if (!selectedOptionName && !p.options[0].values.find(v=>v.available)) { showToast('Выберите вариант'); return; } window.addProductToCart(productViewData[${i}], selectedOptionName)`
+                    : `window.addProductToCart(productViewData[${i}])`}"
+                 style="width: 100%; height: 45px; border-radius: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center; margin-top: 20px;">
+                ${isUnavailable ? 'Недоступен' : 'Купить'}
             </div>
         </div>
     `;
@@ -266,7 +282,7 @@ function renderDetailView(i) {
 }
 
 /**
- * Выбор опции продукта
+ * Выбор опции
  */
 window.selectOption = function(productIndex, optionName, valueIndex) {
     const opt = productViewData[productIndex].options.find(o => o.name === optionName);
@@ -275,11 +291,13 @@ window.selectOption = function(productIndex, optionName, valueIndex) {
         selectedOptionImage = val.image || productViewData[productIndex].image;
         selectedOptionName = val.name;
         renderDetailView(productIndex);
+    } else {
+        showToast('Этот вариант недоступен');
     }
 };
 
 /**
- * Исправить URL изображения
+ * Исправление URL картинок
  */
 function fixImg(url) {
     if (!url || typeof url !== 'string') return '/static/placeholder.png';
@@ -287,35 +305,40 @@ function fixImg(url) {
 }
 
 /**
- * Поиск по каталогу
+ * Поиск
  */
 window.search = function(e) {
     e.preventDefault();
-    const val = document.getElementById('search-bar').value.toLowerCase();
-    const arr = Object.values(catalog).flatMap(c => c.products || []);
-    const found = arr.filter(p => p.title.toLowerCase().includes(val));
+    const query = document.getElementById('search-bar').value.toLowerCase();
+    if (!query) return;
     
-    window.pushScreen(`Search:${val}`, 'catalog');
+    const allProducts = Object.values(catalog).flatMap(c => c.products || []);
+    const found = allProducts.filter(p => p.title.toLowerCase().includes(query));
+    
+    window.pushScreen(`Search:${query}`, 'catalog');
     renderProducts(found);
 };
 
 /**
- * Установить контент с анимацией
+ * Вспомогательная: установка контента с анимацией
  */
 function setContent(html) {
-    const el = document.getElementById("content");
-    if (!el) return;
+    const container = document.getElementById('catalog-container');
+    const contentEl = document.getElementById('content');
+    const target = container || contentEl;
     
-    el.style.opacity = 0;
+    if (!target) return;
+    
+    target.style.opacity = 0;
     setTimeout(() => {
-        el.innerHTML = html;
-        el.style.opacity = 1;
+        target.innerHTML = html;
+        target.style.opacity = 1;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
 }
 
 /**
- * Добавить продукт в корзину
+ * Добавление в корзину
  */
 window.addProductToCart = function(product, selectedOption = null) {
     const price = parseFloat(product.special_price || product.price || product.regular_price || 0);
@@ -324,29 +347,44 @@ window.addProductToCart = function(product, selectedOption = null) {
             id: product.id,
             title: product.title,
             price,
-            option: selectedOption
+            option: selectedOption,
+            image: product.image
         }, selectedOption);
         showToast("Товар добавлен в корзину");
     }
 };
 
 /**
- * Восстановить экран при нажатии "Назад"
+ * ВОССТАНОВЛЕНИЕ ЭКРАНА (Вызывается при нажатии "Назад")
+ * Эта функция нужна, чтобы navigation.js знал, что рисовать
  */
 window.restoreScreen = function(name) {
+    console.log("Restoring screen:", name);
+    
     if (name.startsWith('Category:')) {
         const id = name.split(':')[1];
-        openCategory(id);
+        // Мы не пушим в стек, а сразу рисуем
+        const cat = catalog[id];
+        if (cat) {
+            if (cat.subcategories && Object.keys(cat.subcategories).length) {
+                renderSubcategories(cat.subcategories);
+            } else if (cat.products?.length) {
+                renderProducts(cat.products);
+            }
+        }
     } else if (name.startsWith('SubSub:')) {
-        const id = name.split(':')[1];
+        // Для простоты возвращаемся на уровень выше или в главную
         renderMainCategories();
     } else if (name === 'catalog-main') {
         renderMainCategories();
     } else if (name.startsWith('Search:')) {
         const query = name.split(':')[1];
-        document.getElementById('search-bar').value = query;
-        search({ preventDefault: () => {} });
+        // Повторяем поиск
+        const allProducts = Object.values(catalog).flatMap(c => c.products || []);
+        const found = allProducts.filter(p => p.title.toLowerCase().includes(query));
+        renderProducts(found);
     } else {
+        // По умолчанию - главная каталога
         renderMainCategories();
     }
 };
@@ -354,7 +392,7 @@ window.restoreScreen = function(name) {
 function showToast(message, duration = 2000) {
     const toast = document.createElement('div');
     toast.textContent = message;
-    toast.style.cssText = `position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 12px 24px; border-radius: 4px; z-index: 1000; opacity: 0; transition: opacity 0.3s;`;
+    toast.style.cssText = `position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 25px; z-index: 1000; font-size: 14px; transition: opacity 0.3s;`;
     document.body.appendChild(toast);
     setTimeout(() => toast.style.opacity = 1, 10);
     setTimeout(() => {
