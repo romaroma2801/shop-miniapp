@@ -264,23 +264,24 @@ def telegram_webhook():
         loop.close()
     return 'ok'
 
-# --- Health Check Route ---
 @app.route('/health')
 def health():
     return 'OK', 200
 
-# --- Set Webhook on Startup ---
-def set_webhook():
+# --- Set Webhook at Module Level (выполняется при импорте) ---
+def setup_webhook():
     webhook_url = os.getenv('RENDER_EXTERNAL_URL')
-    if webhook_url:
-        telegram_app.bot.set_webhook(url=f"{webhook_url}/webhook")
-        logging.info(f"✅ Webhook установлен: {webhook_url}/webhook")
+    if webhook_url and BOT_TOKEN:
+        try:
+            telegram_app.bot.set_webhook(url=f"{webhook_url}/webhook")
+            logging.info(f"✅ Webhook установлен: {webhook_url}/webhook")
+        except Exception as e:
+            logging.error(f"❌ Ошибка установки webhook: {str(e)}")
+
+# Вызываем сразу при загрузке модуля
+setup_webhook()
 
 # --- Launch Flask App ---
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    
-    # Устанавливаем webhook перед запуском
-    set_webhook()
-    
     app.run(host='0.0.0.0', port=PORT)
