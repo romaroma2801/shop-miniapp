@@ -1,15 +1,11 @@
 import os
 import json
 import logging
-import asyncio
-import requests
+import requests as req_lib
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from requests import post
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
 # --- Flask App Setup ---
 app = Flask(__name__)
@@ -64,6 +60,7 @@ def user_page():
 def order_page():
     return render_template('order.html')
 
+# --- API Routes ---
 @app.route('/api/get-user')
 def get_user():
     username = request.args.get('username')
@@ -116,7 +113,7 @@ def save_user():
 def get_catalog():
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get('https://nekuri.by/parser/output/catalog.json', headers=headers)
+        response = req_lib.get('https://nekuri.by/parser/output/catalog.json', headers=headers)
         response.raise_for_status()
         data = response.json()
         if isinstance(data, list):
@@ -129,7 +126,7 @@ def get_catalog():
 @app.route('/api/promotions')
 def get_promotions():
     try:
-        response = requests.get('https://nekuri.by/api/news-feed.json')
+        response = req_lib.get('https://nekuri.by/api/news-feed.json')
         response.raise_for_status()
         return jsonify(response.json())
     except Exception as e:
@@ -212,74 +209,94 @@ def send_order_notification(order_id, order_data):
         TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN') 
         CHAT_ID = '568416622' 
         
-        post(f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage', json={
+        req_lib.post(f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage', json={
             'chat_id': CHAT_ID, 'text': message, 'parse_mode': 'HTML'
         })
     except Exception as e:
         logging.error(f"Error sending Telegram notification: {str(e)}")
 
-# --- Telegram Bot Setup ---
+# --- Telegram Bot via Webhook (БЕЗ python-telegram-bot) ---
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
-telegram_app = Application.builder().token(BOT_TOKEN).build()
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    web_app_url = os.getenv('RENDER_EXTERNAL_URL', 'https://shop-miniapp.onrender.com')
-    
-    keyboard = [
-        [InlineKeyboardButton("🛒 Открыть магазин", web_app=WebAppInfo(url=web_app_url))]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(
-        "Добро пожаловать в <b>NEKURI</b>! 👋\nНажмите кнопку ниже, чтобы открыть мини-приложение.", 
-        reply_markup=reply_markup,
-        parse_mode='HTML'
-    )
-
-async def handle_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    city = update.message.text.strip()
-    found = False
-    for region, cities in STORE_DATA.items():
-        if city in cities:
-            stores = cities[city]
-            buttons = [[InlineKeyboardButton(store["address"], url=store.get("map_link", "#"))] for store in stores]
-            await update.message.reply_text(f"Магазины в городе {city}:", reply_markup=InlineKeyboardMarkup(buttons))
-            found = True
-            break
-    if not found:
-        await update.message.reply_text("Город не найден. Попробуйте снова или откройте Mini App.")
-
-telegram_app.add_handler(CommandHandler("start", start))
-telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_city))
-
-# --- Webhook Route for Telegram ---
 @app.route('/webhook', methods=['POST'])
 def telegram_webhook():
-    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     try:
-        loop.run_until_complete(telegram_app.process_update(update))
-    finally:
-        loop.close()
-    return 'ok'
+        update = request.get_json(force=True)
+        
+        # Проверяем, что это команда /start
+        if 'message' in update:
+            chat_id = update['message']['chat']['id']
+            text = update['message'].get('text', '')
+            
+            if text == '/start':
+                web_app_url = os.getenv('RENDER_EXTERNAL_URL', 'https://shop-miniapp.onrender.com')
+                
+                # Отправляем сообщение с кнопкой Web App
+                req_lib.post(f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage', json={
+                    'chat_id': chat_id,
+                    'text': 'Добро пожаловать в <b>NEKURI</b>! 👋\nНажмите кнопку ниже, чтобы открыть мини-приложение.',
+                    'parse_mode': 'HTML',
+                    'reply_markup': {
+                        'inline_keyboard': [[
+                            {
+                                'text': '🛒 Открыть магазин',
+                                'web_app': {'url': web_app_url}
+                            }
+                        ]]
+                    }
+                })
+            
+            # Обработка текста (поиск города)
+            elif text and not text.startswith('/'):
+                city = text.strip()
+                found = False
+                for region, cities in STORE_DATA.items():
+                    if city in cities:
+                        stores = cities[city]
+                        buttons = [[{'text': store["address"], 'url': store.get("map_link", "#")}]]
+                        req_lib.post(f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage', json={
+                            'chat_id': chat_id,
+                            'text': f'Магазины в городе {city}:',
+                            'reply_markup': {'inline_keyboard': buttons}
+                        })
+                        found = True
+                        break
+                
+                if not found:
+                    req_lib.post(f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage', json={
+                        'chat_id': chat_id,
+                        'text': 'Город не найден. Попробуйте снова или откройте Mini App.'
+                    })
+        
+        return 'ok', 200
+    except Exception as e:
+        logging.error(f"Webhook error: {str(e)}")
+        return 'error', 500
 
+# --- Health Check ---
 @app.route('/health')
 def health():
     return 'OK', 200
 
-# --- Set Webhook at Module Level (выполняется при импорте) ---
-def setup_webhook():
+# --- Set Webhook on Startup ---
+def set_webhook():
     webhook_url = os.getenv('RENDER_EXTERNAL_URL')
     if webhook_url and BOT_TOKEN:
         try:
-            telegram_app.bot.set_webhook(url=f"{webhook_url}/webhook")
-            logging.info(f"✅ Webhook установлен: {webhook_url}/webhook")
+            # Удаляем старый webhook
+            req_lib.post(f'https://api.telegram.org/bot{BOT_TOKEN}/deleteWebhook')
+            
+            # Устанавливаем новый
+            response = req_lib.post(f'https://api.telegram.org/bot{BOT_TOKEN}/setWebhook', json={
+                'url': f"{webhook_url}/webhook",
+                'allowed_updates': ['message', 'callback_query']
+            })
+            logging.info(f"✅ Webhook set: {response.json()}")
         except Exception as e:
-            logging.error(f"❌ Ошибка установки webhook: {str(e)}")
+            logging.error(f"❌ Error setting webhook: {str(e)}")
 
-# Вызываем сразу при загрузке модуля
-setup_webhook()
+# Вызываем при импорте модуля
+set_webhook()
 
 # --- Launch Flask App ---
 if __name__ == '__main__':
